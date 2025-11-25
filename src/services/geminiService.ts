@@ -307,7 +307,7 @@ export const initializeChat = (): Chat | null => {
         model: 'gemini-2.5-flash',
         config: {
           systemInstruction: getSystemInstructionWithContext(),
-          tools: [...tools, { googleSearch: {} }],
+          tools, // 👈 no googleSearch here
         },
       });
     } catch (error) {
@@ -319,6 +319,7 @@ export const initializeChat = (): Chat | null => {
 
   return chatSession;
 };
+
 
 export const sendMessageToGemini = async function* (message: string): AsyncGenerator<string, void, unknown> {
   if (!chatSession) {
@@ -440,7 +441,7 @@ export const connectLiveSession = async (callbacks: {
         voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
       },
       systemInstruction: voiceSystemInstruction,
-      tools: [...tools, { googleSearch: {} }], 
+      tools, // again, only your custom tools 
     },
   });
   
