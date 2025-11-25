@@ -102,7 +102,7 @@ export const Hero: React.FC = () => {
       
       <ParticleBackground />
 
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-24 lg:mt-32">
         <div className="animate-slide-up opacity-0 [animation-delay:200ms]">
           <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-8 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
             <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse"></span>
