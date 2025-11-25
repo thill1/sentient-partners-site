@@ -103,7 +103,7 @@ export const Footer: React.FC = () => {
                 className="flex items-center text-sm text-slate-500 dark:text-slate-500 justify-center mt-4 hover:text-brand-600 dark:hover:text-brand-400 transition-colors w-full"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                hello@sentientpartners.com
+                hello@sentientpartners.ai
               </button>
             </div>
           </div>
