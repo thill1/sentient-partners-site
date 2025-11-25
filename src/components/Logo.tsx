@@ -16,9 +16,13 @@ export const Logo: React.FC<LogoProps> = ({ className = '' }) => {
         className="rounded-full object-contain shadow-md shadow-cyan-500/30"
       />
       <div className="flex flex-col leading-tight">
-        <span className="text-base md:text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-          Sentient Partners
-        </span>
+  {/* Main brand text */}
+  <span
+    className="font-medium tracking-tight text-slate-900 dark:text-slate-50 text-[18px] md:text-[20px]"
+    style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif' }}
+  >
+    Sentient Partners
+  </span>
         <span className="text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-cyan-400">
           AI · Automations · Always-On Revenue
         </span>
