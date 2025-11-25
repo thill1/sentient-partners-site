@@ -23,7 +23,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '' }) => {
   >
     Sentient Partners
   </span>
-        <span className="text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-cyan-400">
+        <span className="hidden md:inline text-[11px] tracking-[0.16em] uppercase text-slate-400">
           AI · Automations · Always-On Revenue
         </span>
       </div>
