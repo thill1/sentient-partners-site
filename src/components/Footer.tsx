@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-5">
             <div className="flex items-center mb-6">
               <div className="mr-4 shrink-0">
-                <Logo className="h-10" />
+                <Logo className="lg" />
               </div>
               
             </div>
