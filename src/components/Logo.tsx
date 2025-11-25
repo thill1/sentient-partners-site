@@ -11,7 +11,7 @@ type LogoProps = {
 const sizeClasses: Record<LogoSize, string> = {
   sm: 'h-8 w-8',
   md: 'h-10 w-10',
-  lg: 'h-24 w-24', // bigger for nav/footer
+  lg: 'h-28 w-28', // bigger for nav/footer
 };
 
 export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
