@@ -8,13 +8,19 @@ let aiClient: GoogleGenAI | null = null;
 const getClient = () => {
   if (aiClient) return aiClient;
   
-  // The define plugin in vite.config.ts replaces process.env.API_KEY with the actual string.
-  // We access it directly so the replacement works.
+  // This will be replaced at build time by Vite
   const apiKey = process.env.API_KEY;
 
-  if (apiKey) {
-    aiClient = new GoogleGenAI({ apiKey });
+  if (!apiKey) {
+    console.error(
+      '[GeminiService] API key is missing in client bundle. ' +
+      'Check Vite define() and GitHub Actions secret `API_KEY`.'
+    );
+    return null;
   }
+
+  console.log('[GeminiService] Initializing Gemini client. Key present:', !!apiKey);
+  aiClient = new GoogleGenAI({ apiKey });
   return aiClient;
 };
 
