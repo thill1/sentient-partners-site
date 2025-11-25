@@ -66,9 +66,7 @@ export const Header: React.FC = () => {
               <div className="transition-transform duration-300 group-hover:scale-105 mr-3 flex items-center shrink-0">
                 <Logo className="h-10 md:h-12" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Sentient<span className="text-brand-600 dark:text-brand-500">Partners</span>
-              </span>
+            
             </div>
 
             <nav className="hidden md:flex items-center gap-8">
