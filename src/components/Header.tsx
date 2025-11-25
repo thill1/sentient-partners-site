@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center cursor-pointer group shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
               <div className="transition-transform duration-300 group-hover:scale-105 mr-3 flex items-center shrink-0">
-                <Logo className="h-10 md:h-12" />
+                <Logo className="lg" />
               </div>
             
             </div>
