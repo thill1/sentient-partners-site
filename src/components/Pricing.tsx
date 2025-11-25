@@ -67,7 +67,7 @@ export const Pricing: React.FC = () => {
 
               <Button 
                 variant={plan.highlight ? 'primary' : 'outline'} 
-                className={`w-full ${plan.highlight ? 'bg-white text-slate-900 hover:bg-slate-100' : ''}`}
+                className={`w-full ${plan.highlight ? 'shadow-lg shadow-brand-500/40' : ''}`}
                 onClick={plan.name === "Enterprise" ? openContact : openBooking}
               >
                 {plan.cta}
