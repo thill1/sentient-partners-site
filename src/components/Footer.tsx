@@ -50,9 +50,7 @@ export const Footer: React.FC = () => {
               <div className="mr-4 shrink-0">
                 <Logo className="h-10" />
               </div>
-              <span className="text-xl font-bold text-slate-900 dark:text-white">
-                Sentient<span className="text-brand-600">Partners</span>
-              </span>
+              
             </div>
             <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-sm">
               Empowering businesses with next-generation AI automation. 
