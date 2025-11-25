@@ -1,31 +1,26 @@
-import React, { useState } from 'react';
-import { Hexagon } from 'lucide-react';
+import React from 'react';
+import spLogo from '../assets/sp-logo-teal.png';
 
-interface LogoProps {
+type LogoProps = {
   className?: string;
-}
+};
 
-export const Logo: React.FC<LogoProps> = ({ className = "h-10" }) => {
-  const [imgError, setImgError] = useState(false);
-
-  if (imgError) {
-    return (
-      <div className={`relative flex items-center justify-center ${className} aspect-square`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-500 to-purple-600 rounded-lg opacity-20 rotate-6"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-600 to-brand-500 rounded-lg shadow-lg flex items-center justify-center text-white">
-          <Hexagon className="w-3/5 h-3/5 fill-current" strokeWidth={1.5} />
-          <span className="absolute text-[10px] font-bold text-white">SP</span>
-        </div>
-      </div>
-    );
-  }
-
+export const Logo: React.FC<LogoProps> = ({ className = '' }) => {
   return (
-    <img 
-      src="/logo.png" 
-      alt="Sentient Partners" 
-      className={`${className} object-contain`}
-      onError={() => setImgError(true)}
-    />
+    <div className={`flex items-center gap-3 ${className}`}>
+      <img
+        src={spLogo}
+        alt="Sentient Partners"
+        className="h-9 w-9 rounded-full object-contain shadow-md shadow-cyan-500/30"
+      />
+      <div className="flex flex-col leading-tight">
+        <span className="text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          Sentient Partners
+        </span>
+        <span className="text-[11px] uppercase tracking-[0.18em] text-cyan-400">
+          AI · Automations · Always-On Revenue
+        </span>
+      </div>
+    </div>
   );
 };
