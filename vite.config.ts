@@ -10,9 +10,9 @@ export default defineConfig(({ mode }) => {
     // Use relative base path so the app works in subdirectories (like GitHub Pages)
     base: './', 
     define: {
-      // Robust replacement for API Key
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
-      // Empty polyfill for other process.env accesses to prevent runtime crashes
+  'process.env.API_KEY': JSON.stringify(env.API_KEY),
+  },
+    // Empty polyfill for other process.env accesses to prevent runtime crashes
       'process.env': {} 
     },
     build: {
