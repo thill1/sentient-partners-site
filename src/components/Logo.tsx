@@ -12,7 +12,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '' }) => {
         src={spLogo}
         alt="Sentient Partners"
         // HARD SIZE: adjust these two numbers to taste
-        style={{ width: '42px', height: '42px' }}
+        style={{ width: '60px', height: '60px' }}
         className="rounded-full object-contain shadow-md shadow-cyan-500/30"
       />
       <div className="flex flex-col leading-tight">
