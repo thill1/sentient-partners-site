@@ -13,6 +13,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
+import { WhySentient } from './components/WhySentient';
 
 function App() {
   return (
@@ -24,11 +25,13 @@ function App() {
         <DemoSection />
         <Services />
         <Process />
+        <WhySentient />
         <Testimonials />
         <Pricing />
         <FAQ />
         <CTASection />
       </main>
+
 
       <Footer />
 
