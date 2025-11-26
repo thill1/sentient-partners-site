@@ -13,6 +13,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
+import { WhySentient } from './components/WhySentient'; // ✅ NEW
 
 function App() {
   return (
@@ -32,37 +33,4 @@ function App() {
         {/* 1. Hero: your existing animated hero + FAB */}
         <Hero />
 
-        {/* 2. Demo: bring the “see it in action” section up high */}
-        <DemoSection />
-
-        {/* 3. Services: what they actually get */}
-        <Services />
-
-        {/* 4. Process: how implementation works */}
-        <Process />
-
-        {/* 5. Testimonials: social proof before pricing */}
-        <Testimonials />
-
-        {/* 6. Pricing: packages / offers */}
-        <Pricing />
-
-        {/* 7. FAQ: handle objections */}
-        <FAQ />
-
-        {/* 8. Final CTA: last push to book a demo */}
-        <CTASection />
-      </main>
-
-      <Footer />
-
-      {/* Global overlays / modals that sit above the page */}
-      <ChatInterface />
-      <BookingModal />
-      <ContactModal />
-      <Toast />
-    </div>
-  );
-}
-
-export default App;
+        {/
