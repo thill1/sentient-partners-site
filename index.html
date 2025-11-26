@@ -2,38 +2,128 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- Mobile viewport: keep zoom enabled for accessibility -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0"
     />
+
+    <!-- Primary SEO -->
+    <title>Sentient Partners | AI Implementation Agency</title>
     <meta
       name="description"
-      content="Premium AI consulting agency website featuring interactive AI demos, dynamic aesthetics, and high-conversion landing pages."
+      content="Sentient Partners is an AI implementation agency that deploys AI voice agents, chatbots, and automation systems for SMBs to capture more leads and book more appointments 24/7."
     />
-    <meta name="theme-color" content="#144665" />
-    <title>Sentient Partners | AI Implementation Agency</title>
+    <meta name="robots" content="index, follow" />
 
+    <!-- Themed address bar color (adjust to match your brand) -->
+    <meta name="theme-color" content="#0F172A" />
+
+    <!-- Canonical URL (update if you move off GitHub Pages) -->
+    <link
+      rel="canonical"
+      href="https://thill1.github.io/sentient-partners-site/"
+    />
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Sentient Partners | AI Implementation Agency"
+    />
+    <meta
+      property="og:description"
+      content="AI voice agents, chatbots, and automation systems for SMBs — built and implemented by Sentient Partners to drive always-on revenue."
+    />
+    <meta
+      property="og:url"
+      content="https://thill1.github.io/sentient-partners-site/"
+    />
+    <!-- TODO: update this to your actual hosted OG image -->
+    <meta
+      property="og:image"
+      content="https://thill1.github.io/sentient-partners-site/og-image.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Sentient Partners | AI Implementation Agency"
+    />
+    <meta
+      name="twitter:description"
+      content="Deploy AI voice, chat, and automation systems that book more appointments and capture more leads — without adding headcount."
+    />
+    <meta
+      name="twitter:image"
+      content="https://thill1.github.io/sentient-partners-site/og-image.jpg"
+    />
+
+    <!-- Preconnect for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Web fonts: Space Grotesk + Inter -->
     <link
-  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
-  rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-        <link
-      href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+
+    <!-- System font stack for SF Pro look on Apple devices -->
+    <style>
+      :root {
+        --font-display: "Space Grotesk", system-ui, -apple-system,
+          BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI",
+          sans-serif;
+        --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+      }
+
+      body {
+        font-family: var(--font-body);
+      }
+
+      .font-display {
+        font-family: var(--font-display);
+      }
+    </style>
+
+    <!-- Favicon & App Icons (update paths to your actual assets) -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
     />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
+
   <body
     class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300"
   >
+    <noscript>
+      This experience works best with JavaScript enabled. Please enable
+      JavaScript to explore the Sentient Partners AI demos and interface.
+    </noscript>
+
     <div id="root"></div>
 
-    <!-- Single entry point: Vite will bundle CSS via imports in src/index.tsx -->
+    <!-- Vite entry (React/TypeScript app) -->
     <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
