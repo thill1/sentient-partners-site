@@ -1,48 +1,305 @@
-import React from 'react';
-import { Button } from './Button';
-import { MessageSquare, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  PhoneCall,
+  MessageCircle,
+  Globe2,
+  Star,
+  ArrowRight,
+  PlayCircle,
+} from 'lucide-react';
+
+type DemoTab = 'voice' | 'chat' | 'web' | 'reputation';
+
+const TABS: { id: DemoTab; label: string; icon: React.ReactNode }[] = [
+  { id: 'voice', label: 'Voice AI Receptionist', icon: <PhoneCall className="h-4 w-4" /> },
+  { id: 'chat', label: 'Website Chatbot', icon: <MessageCircle className="h-4 w-4" /> },
+  { id: 'web', label: 'AI Funnels & Web', icon: <Globe2 className="h-4 w-4" /> },
+  { id: 'reputation', label: 'Reputation Engine', icon: <Star className="h-4 w-4" /> },
+];
 
 export const DemoSection: React.FC = () => {
-  const openChat = () => {
-    window.dispatchEvent(new CustomEvent('open-sentient-chat'));
+  const [activeTab, setActiveTab] = useState<DemoTab>('voice');
+
+  const openBooking = () => {
+    window.dispatchEvent(new CustomEvent('open-booking-modal'));
   };
 
   return (
-    <section id="demo" className="py-24 relative overflow-hidden bg-slate-50 dark:bg-[#0c0c0c]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative z-10 bg-white dark:bg-dark-card rounded-3xl p-8 md:p-16 border border-slate-200 dark:border-dark-border shadow-2xl text-center overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-30 pointer-events-none">
-            <div className="absolute -top-[200px] -right-[200px] w-[500px] h-[500px] bg-brand-500/20 rounded-full blur-[100px]"></div>
-            <div className="absolute -bottom-[200px] -left-[200px] w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px]"></div>
+    <section
+      id="demo"
+      className="relative bg-slate-950 py-20 sm:py-24"
+      aria-labelledby="demo-heading"
+    >
+      {/* Background gradient */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-slate-900/70 to-transparent" />
+        <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
+        <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/25 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
+            See the Agent in Action
+          </p>
+          <h2
+            id="demo-heading"
+            className="mt-3 font-display text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white"
+          >
+            Watch Sentient Systems work before you ever sign.
+          </h2>
+          <p className="mt-4 text-sm sm:text-base text-slate-300">
+            Pick a channel to see how your AI receptionist, chatbot, and funnels
+            would actually handle real leads—from first touch to booked
+            appointments.
+          </p>
+        </div>
+
+        {/* Main demo panel */}
+        <div className="mt-10 glass-panel rounded-3xl border border-white/10 p-5 sm:p-7 shadow-2xl shadow-black/50">
+          {/* Tabs */}
+          <div
+            className="flex flex-wrap gap-2 rounded-full bg-slate-900/70 p-1 text-xs sm:text-sm"
+            role="tablist"
+            aria-label="Demo channels"
+          >
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 transition ${
+                    isActive
+                      ? 'bg-slate-800 text-slate-50 shadow-sm shadow-black/40'
+                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <div className="inline-flex items-center space-x-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 px-4 py-1.5 rounded-full text-sm font-medium mb-8">
-              <Zap size={16} />
-              <span>Interactive Live Demo</span>
+          {/* Content */}
+          <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
+            {/* Transcript / preview */}
+            <div className="space-y-3 rounded-2xl bg-slate-950/60 p-4 sm:p-5 border border-white/5">
+              {activeTab === 'voice' && (
+                <>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">
+                    Sample call · AI Voice Receptionist
+                  </p>
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-100">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-cyan-400 grid place-items-center text-[10px] font-semibold">
+                        SP
+                      </div>
+                      <div className="rounded-2xl bg-slate-900/80 px-3 py-2">
+                        <p>
+                          “Thanks for calling. Are you looking to book an
+                          appointment or get pricing today?”
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%] rounded-2xl bg-brand-500/90 px-3 py-2 text-right">
+                        <p>“I&apos;d like to see if you can help with our roof.”</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-cyan-400 grid place-items-center text-[10px] font-semibold">
+                        SP
+                      </div>
+                      <div className="rounded-2xl bg-slate-900/80 px-3 py-2">
+                        <p>
+                          “Absolutely. I&apos;ve got an opening tomorrow at 2:30 PM
+                          or Thursday at 10:00 AM. Which works best and what&apos;s
+                          the best number for confirmation?”
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'chat' && (
+                <>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">
+                    Sample conversation · Website Chat
+                  </p>
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-100">
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%] rounded-2xl bg-brand-500/90 px-3 py-2 text-right">
+                        <p>“Do you work with small clinics or just big hospitals?”</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-cyan-400 grid place-items-center text-[10px] font-semibold">
+                        SP
+                      </div>
+                      <div className="rounded-2xl bg-slate-900/80 px-3 py-2">
+                        <p>
+                          “We support both. A quick question: are you looking for
+                          new patient growth, better follow-up, or both?”
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%] rounded-2xl bg-brand-500/90 px-3 py-2 text-right">
+                        <p>“Mainly new patients, but we need better follow-up too.”</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="mt-1 h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-cyan-400 grid place-items-center text-[10px] font-semibold">
+                        SP
+                      </div>
+                      <div className="rounded-2xl bg-slate-900/80 px-3 py-2">
+                        <p>
+                          “Got it. I can grab a few details and then offer times
+                          for a quick consult so we can tailor the system to
+                          your clinic.”
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'web' && (
+                <>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">
+                    Sample flow · AI Funnels & Web
+                  </p>
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-100">
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="text-[11px] text-slate-400">Step 1</p>
+                      <p className="font-medium">Landing page visit</p>
+                      <p className="mt-1 text-slate-300">
+                        Visitor hits your ad-specific landing page with
+                        AI-tuned copy and forms.
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="text-[11px] text-slate-400">Step 2</p>
+                      <p className="font-medium">Instant qualification</p>
+                      <p className="mt-1 text-slate-300">
+                        Form and chat work together to qualify, score, and route
+                        the lead in real time.
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="text-[11px] text-slate-400">Step 3</p>
+                      <p className="font-medium">Booked & nurtured</p>
+                      <p className="mt-1 text-slate-300">
+                        Best leads are auto-booked onto your calendar with
+                        follow-up sequences ready to go.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'reputation' && (
+                <>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">
+                    Sample workflow · Reputation Engine
+                  </p>
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-100">
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="font-medium">Smart review requests</p>
+                      <p className="mt-1 text-slate-300">
+                        After a positive interaction, the system automatically
+                        sends a branded text and email asking for a review with
+                        one tap.
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="font-medium">Issue-catching feedback</p>
+                      <p className="mt-1 text-slate-300">
+                        If sentiment is negative, it routes feedback back to
+                        your team instead of pushing it public.
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                      <p className="font-medium">Always-on reputation</p>
+                      <p className="mt-1 text-slate-300">
+                        See all reviews and scores in one place with alerts when
+                        key platforms move.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              See the Agent in Action
-            </h2>
-            
-            <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
-              We've deployed a live version of our Sentient Agent on this page. 
-              Click the button below to open the floating interface and experience real-time voice and text automation.
-            </p>
+            {/* Stats + CTA */}
+            <div className="space-y-4 rounded-2xl bg-slate-950/70 p-4 sm:p-5 border border-white/5">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                What this looks like in your numbers
+              </p>
 
-            <Button 
-              size="lg" 
-              onClick={openChat}
-              className="px-10 py-4 text-lg shadow-xl shadow-brand-500/30 hover:scale-105 transition-transform"
-            >
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Launch Interactive Demo
-            </Button>
-            
-            <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
-              Try asking: "What time is it in Tokyo?" or "Book an appointment."
-            </p>
+              <div className="grid gap-3 sm:grid-cols-2 text-xs sm:text-sm">
+                <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                  <p className="text-[11px] text-slate-400">Response time</p>
+                  <p className="mt-1 text-lg font-semibold text-emerald-400">
+                    &lt; 10 seconds
+                  </p>
+                  <p className="mt-1 text-slate-300">
+                    Every qualified lead gets an instant reply—voice, chat, or web.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                  <p className="text-[11px] text-slate-400">Missed calls</p>
+                  <p className="mt-1 text-lg font-semibold text-emerald-400">
+                    -70–90%
+                  </p>
+                  <p className="mt-1 text-slate-300">
+                    AI picks up when your team can&apos;t, and books straight
+                    onto your calendar.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                  <p className="text-[11px] text-slate-400">Lead capture</p>
+                  <p className="mt-1 text-lg font-semibold text-brand-300">
+                    +30–50%
+                  </p>
+                  <p className="mt-1 text-slate-300">
+                    More forms, calls, and chats converted into real
+                    opportunities.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-900/80 px-3 py-2">
+                  <p className="text-[11px] text-slate-400">Go-live</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-50">
+                    &lt; 14 days
+                  </p>
+                  <p className="mt-1 text-slate-300">
+                    Most clients see their first Sentient Systems live in two weeks.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-2">
+                <button
+                  type="button"
+                  onClick={openBooking}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-brand-500/40 transition hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  <span>Book a Live Demo & Strategy Call</span>
+                </button>
+                <p className="text-[11px] text-slate-400 text-center">
+                  Want to just play with it first? Use the demo launcher in the
+                  bottom-right corner to see your agent in action.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
