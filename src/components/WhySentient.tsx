@@ -15,7 +15,8 @@ export const WhySentient: React.FC = () => {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
+        {/* Centered heading block */}
+        <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             Why Sentient Partners
           </p>
@@ -33,7 +34,8 @@ export const WhySentient: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        {/* Cards row – still left-aligned inside each card */}
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="glass-panel flex flex-col rounded-2xl border border-white/10 p-5">
             <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
               <Target className="h-4 w-4" />
