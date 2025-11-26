@@ -21,11 +21,15 @@ const ParticleBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
 
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
+    const ctxEl = canvasEl.getContext('2d', { alpha: true });
+    if (!ctxEl) return;
+
+    // From here on, TS knows these are non-null
+    const canvas: HTMLCanvasElement = canvasEl;
+    const ctx: CanvasRenderingContext2D = ctxEl;
 
     const MINIMUM_BEAMS = 20;
     const opacityMap: Record<Intensity, number> = {
@@ -95,7 +99,12 @@ const ParticleBackground: React.FC = () => {
       beams = Array.from({ length: total }, () => createBeam(w, h));
     }
 
-    function drawBeam(c: CanvasRenderingContext2D, beam: Beam, w: number, h: number) {
+    function drawBeam(
+      c: CanvasRenderingContext2D,
+      beam: Beam,
+      w: number,
+      h: number
+    ) {
       c.save();
       c.translate(beam.x, beam.y);
       c.rotate((beam.angle * Math.PI) / 180);
