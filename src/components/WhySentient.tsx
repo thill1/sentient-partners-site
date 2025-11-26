@@ -8,7 +8,6 @@ export const WhySentient: React.FC = () => {
       className="relative bg-slate-950 py-20 sm:py-24"
       aria-labelledby="why-heading"
     >
-      {/* soft background wash */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/80 to-transparent" />
         <div className="absolute -right-32 top-1/3 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
@@ -16,7 +15,6 @@ export const WhySentient: React.FC = () => {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             Why Sentient Partners
@@ -29,13 +27,12 @@ export const WhySentient: React.FC = () => {
           </h2>
           <p className="mt-4 text-sm sm:text-base text-slate-300">
             Sentient Partners is an AI implementation studio focused on small and
-            mid-sized businesses. The same mindset used with large enterprise
-            teams is now pointed at building you unfair advantages in voice, chat,
+            mid-sized businesses. The same mindset used in enterprise environments
+            is now pointed at building you unfair advantages in voice, chat,
             funnels, and follow-up.
           </p>
         </div>
 
-        {/* Cards */}
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div className="glass-panel flex flex-col rounded-2xl border border-white/10 p-5">
             <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
@@ -46,8 +43,7 @@ export const WhySentient: React.FC = () => {
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-slate-300">
               We start from your pipeline and profit targets, then design AI
-              systems to support those—not generic “automation for automation’s
-              sake.”
+              systems to support those—never automation for its own sake.
             </p>
           </div>
 
@@ -95,4 +91,5 @@ export const WhySentient: React.FC = () => {
     </section>
   );
 };
+
 
