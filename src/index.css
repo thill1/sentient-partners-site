@@ -5,14 +5,22 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    /* Honor reduced-motion preference while keeping smooth scrolling by default */
     scroll-behavior: smooth;
+    color-scheme: light dark;
+  }
+
+  /* Full-height layout baseline */
+  html,
+  body {
+    min-height: 100%;
   }
   
   body {
     @apply font-sans antialiased bg-white text-slate-900;
   }
   
-  /* Ensure root takes full height */
+  /* Ensure root takes full height and allows footer to sit at the bottom */
   #root {
     @apply min-h-screen flex flex-col;
   }
