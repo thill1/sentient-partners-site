@@ -2,6 +2,21 @@ import React, { useEffect, useRef } from 'react';
 import { Button } from './Button';
 import { ArrowRight, PlayCircle } from 'lucide-react';
 
+type Intensity = 'subtle' | 'medium' | 'strong';
+
+interface Beam {
+  x: number;
+  y: number;
+  width: number;
+  length: number;
+  angle: number;
+  speed: number;
+  opacity: number;
+  hue: number;
+  pulse: number;
+  pulseSpeed: number;
+}
+
 const ParticleBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -9,92 +24,172 @@ const ParticleBackground: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+    const MINIMUM_BEAMS = 20;
+    const opacityMap: Record<Intensity, number> = {
+      subtle: 0.7,
+      medium: 0.85,
+      strong: 1.0,
+    };
 
-    const particles: {x: number, y: number, vx: number, vy: number}[] = [];
-    // Adjust particle count based on screen size for performance
-    const particleCount = Math.min(width * 0.15, 120); 
+    const intensity: Intensity = 'strong';
+    let beams: Beam[] = [];
+    let rafId = 0;
 
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3, // Slower, more elegant movement
-        vy: (Math.random() - 0.5) * 0.3
-      });
+    function createBeam(w: number, h: number): Beam {
+      const angle = -35 + Math.random() * 10;
+      return {
+        x: Math.random() * w * 1.5 - w * 0.25,
+        y: Math.random() * h * 1.5 - h * 0.25,
+        width: 30 + Math.random() * 60,
+        length: h * 2.5,
+        angle,
+        speed: 0.6 + Math.random() * 1.2,
+        opacity: 0.12 + Math.random() * 0.16,
+        hue: 190 + Math.random() * 70,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.02 + Math.random() * 0.03,
+      };
     }
 
-    let animationFrameId: number;
+    function resetBeam(
+      beam: Beam,
+      index: number,
+      totalBeams: number,
+      w: number,
+      h: number
+    ): Beam {
+      const column = index % 3;
+      const spacing = w / 3;
+      beam.y = h + 100;
+      beam.x =
+        column * spacing +
+        spacing / 2 +
+        (Math.random() - 0.5) * spacing * 0.5;
+      beam.width = 100 + Math.random() * 100;
+      beam.speed = 0.5 + Math.random() * 0.4;
+      beam.hue = 190 + (index * 70) / totalBeams;
+      beam.opacity = 0.2 + Math.random() * 0.1;
+      return beam;
+    }
 
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-      
-      // Check for Dark Mode to adjust colors
-      const isDark = document.documentElement.classList.contains('dark');
-      
-      const particleColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(14, 165, 233, 0.4)'; // Brand Blue in light mode
-      const lineColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(14, 165, 233, 0.1)';
+    function updateCanvasSize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.floor(rect.width || window.innerWidth);
+      const h = Math.floor(rect.height || window.innerHeight);
 
-      ctx.fillStyle = particleColor;
-      ctx.strokeStyle = lineColor;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
 
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
 
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
+      const density = Math.min(1.5, Math.max(1, (w * h) / (1280 * 800)));
+      const total = Math.floor(MINIMUM_BEAMS * density * 1.5);
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fill();
+      beams = Array.from({ length: total }, () => createBeam(w, h));
+    }
 
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+    function drawBeam(c: CanvasRenderingContext2D, beam: Beam, w: number, h: number) {
+      c.save();
+      c.translate(beam.x, beam.y);
+      c.rotate((beam.angle * Math.PI) / 180);
 
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
+      const pulsingOpacity =
+        beam.opacity *
+        (0.8 + Math.sin(beam.pulse) * 0.2) *
+        opacityMap[intensity];
+
+      const gradient = c.createLinearGradient(0, 0, 0, beam.length);
+      gradient.addColorStop(0, `hsla(${beam.hue},85%,65%,0)`);
+      gradient.addColorStop(
+        0.1,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(
+        0.4,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.6,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.9,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(1, `hsla(${beam.hue},85%,65%,0)`);
+
+      c.fillStyle = gradient;
+      c.fillRect(-beam.width / 2, 0, beam.width, beam.length);
+      c.restore();
+    }
+
+    function animate() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || window.innerWidth;
+      const h = rect.height || window.innerHeight;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.filter = 'blur(35px)';
+
+      const total = beams.length;
+      for (let i = 0; i < total; i++) {
+        const b = beams[i];
+        b.y -= b.speed;
+        b.pulse += b.pulseSpeed;
+
+        if (b.y + b.length < -100) {
+          resetBeam(b, i, total, w, h);
         }
-      });
+        drawBeam(ctx, b, w, h);
+      }
 
-      animationFrameId = requestAnimationFrame(render);
-    };
+      rafId = requestAnimationFrame(animate);
+    }
 
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      updateCanvasSize();
     };
 
+    updateCanvasSize();
+    animate();
     window.addEventListener('resize', handleResize);
-    render();
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-       {/* Background Color Base */}
-       <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500"></div>
-       
-       {/* Canvas */}
-       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-100" />
-       
-       {/* Gradient Overlay for depth */}
-       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-dark-bg z-10"></div>
+      {/* Base background for light/dark */}
+      <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
+
+      {/* Beams canvas + overlays */}
+      <div className="absolute inset-0 bg-neutral-950/0 dark:bg-neutral-950/100">
+        <div className="relative w-full h-full">
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+          />
+          {/* Soft blur & pulse for depth */}
+          <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
+          {/* Gradients & radial glow */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b to-transparent from-neutral-950/90 dark:from-neutral-950" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white dark:from-neutral-950" />
+            <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(80,200,255,0.20),transparent)]" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -106,7 +201,6 @@ export const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32 pb-20">
-      
       <ParticleBackground />
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
