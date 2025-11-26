@@ -601,7 +601,7 @@ export const ChatInterface: React.FC = () => {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 group flex items-center gap-3 bg-slate-900/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/20 text-white p-4 pr-6 rounded-full shadow-2xl shadow-black/20 transition-all duration-300 hover:scale-105 active:scale-95 hover:border-brand-500/50 hover:bg-slate-900/80"
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-slate-900/40 border border-brand-400/60 px-4 py-3 text-sm font-medium text-slate-50 shadow-xl shadow-black/40 backdrop-blur-md hover:bg-slate-900/60 hover:border-brand-300/70 transition"
       >
         <div className="relative">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
