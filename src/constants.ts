@@ -17,7 +17,7 @@ export const NAV_LINKS = [
   { name: 'FAQ', href: '#faq' },
 ];
 
-export const BOOKING_URL = 'https://cal.com/sentient-partners/20-minute-ai-discovery-call';
+export const BOOKING_URL = 'https://cal.com/sentient-partners-strategy/coffee-talk';
 
 export const PRICING_PLANS = [
   {
