@@ -13,18 +13,10 @@ import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
-import { WhySentient } from './components/WhySentient';
 
 function App() {
   return (
     <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-full focus:bg-slate-900 focus:text-white focus:shadow-lg"
-      >
-        Skip to main content
-      </a>
-
       <Header />
 
       <main id="main-content" className="pt-20 md:pt-24">
@@ -32,7 +24,6 @@ function App() {
         <DemoSection />
         <Services />
         <Process />
-        <WhySentient />
         <Testimonials />
         <Pricing />
         <FAQ />
