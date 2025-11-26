@@ -27,35 +27,21 @@ function App() {
 
       <Header />
 
-      <main id="main-content">
-        {/* 1. Hero: big promise + primary CTA */}
+      {/* Add padding-top to clear the fixed header */}
+      <main id="main-content" className="pt-20 md:pt-24">
         <Hero />
-
-        {/* 2. Demo early: show the magic quickly */}
         <DemoSection />
-
-        {/* 3. Services: what they actually get */}
         <Services />
-
-        {/* 4. Process: how it works / implementation steps */}
         <Process />
-
-        {/* 5. Social proof before asking for money */}
         <Testimonials />
-
-        {/* 6. Pricing: plans / offers */}
         <Pricing />
-
-        {/* 7. FAQ: clear objections */}
         <FAQ />
-
-        {/* 8. Final CTA: one last strong push to book */}
         <CTASection />
       </main>
 
       <Footer />
 
-      {/* Global Overlays (portals / dialogs) */}
+      {/* Global Overlays */}
       <ChatInterface />
       <BookingModal />
       <ContactModal />
