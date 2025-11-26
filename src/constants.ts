@@ -26,10 +26,10 @@ export const PRICING_PLANS = [
     price: "$497",
     period: "/month",
     features: [
-      "AI Voice Receptionist (Business Hours)",
+      "AI Voice Receptionist",
       "Basic Call Routing",
       "Missed Call Text Back",
-      "Monthly Performance Report",
+      "Real-Time Transcripts",
       "Email Support"
     ],
     cta: "Get Started",
@@ -44,9 +44,9 @@ export const PRICING_PLANS = [
       "24/7 AI Voice Agents",
       "Advanced CRM Setup",
       "Website Chatbot & SMS Agent",
-      "Automated Review Requests",
+      "Automated Workflows",
       "Priority Support",
-      "Custom Lead Nurture Flows"
+      "AI Lead Capture/Nurture Flows"
     ],
     cta: "Start Scaling",
     highlight: true
@@ -57,9 +57,9 @@ export const PRICING_PLANS = [
     price: "Custom",
     period: "",
     features: [
-      "Custom LLM Fine-tuning",
+      "Custom AI/LLM Fine-tuning",
       "Multi-location Dashboard",
-      "Dedicated Account Manager",
+      "Dedicated Success Manager",
       "Custom API Integrations",
       "SLA Guarantees",
       "Strategic Consulting"
