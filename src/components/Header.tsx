@@ -83,14 +83,14 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Main navigation – glass pill */}
+      {/* Main navigation – glass pill over beams background */}
       <div className="px-4 sm:px-6 lg:px-8 pb-2">
         <div className="mx-auto max-w-7xl">
           <nav
             className="mt-1 flex h-16 sm:h-20 items-center justify-between rounded-full bg-slate-900/40 dark:bg-slate-900/65 backdrop-blur-xl border border-white/10 px-4 sm:px-6 shadow-[0_18px_45px_rgba(15,23,42,0.75)]"
             aria-label="Main navigation"
           >
-            {/* Left: Logo only (no duplicate text here) */}
+            {/* Left: Logo only (Logo already includes wordmark/tagline) */}
             <div className="flex items-center gap-3">
               <Logo />
             </div>
@@ -100,6 +100,7 @@ export const Header: React.FC = () => {
               {NAV_ITEMS.map((item) => (
                 <button
                   key={item.href}
+                  type="button"
                   onClick={() => handleNavClick(item.href)}
                   className="transition-colors hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60 rounded-full px-1"
                 >
@@ -125,4 +126,15 @@ export const Header: React.FC = () => {
 
               <div className="hidden sm:block">
                 <Button size="lg" onClick={openBooking}>
-                  Book Str
+                  Book Strategy Call
+                </Button>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
