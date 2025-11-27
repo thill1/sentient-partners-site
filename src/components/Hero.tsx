@@ -21,14 +21,13 @@ const ParticleBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvasEl = canvasRef.current;
-    if (!canvasEl) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const ctxEl = canvasEl.getContext('2d', { alpha: true });
-    if (!ctxEl) return;
+    const ctxRaw = canvas.getContext('2d', { alpha: true });
+    if (!ctxRaw) return;
 
-    const canvas: HTMLCanvasElement = canvasEl;
-    const ctx: CanvasRenderingContext2D = ctxEl;
+    const ctx: CanvasRenderingContext2D = ctxRaw;
 
     const MINIMUM_BEAMS = 20;
     const opacityMap: Record<Intensity, number> = {
@@ -38,8 +37,11 @@ const ParticleBackground: React.FC = () => {
     };
 
     const intensity: Intensity = 'strong';
+
     let beams: Beam[] = [];
     let rafId = 0;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
 
     function createBeam(w: number, h: number): Beam {
       const angle = -35 + Math.random() * 10;
@@ -80,30 +82,32 @@ const ParticleBackground: React.FC = () => {
 
     function updateCanvasSize() {
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      const rect = canvas.getBoundingClientRect();
-      const w = Math.floor(rect.width || window.innerWidth);
-      const h = Math.floor(rect.height || window.innerHeight);
 
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+
+      canvas.width = Math.floor(viewportWidth * dpr);
+      canvas.height = Math.floor(viewportHeight * dpr);
+
+      // Let CSS handle layout; canvas always fills viewport
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
 
-      const density = Math.min(1.5, Math.max(1, (w * h) / (1280 * 800)));
+      const density = Math.min(
+        1.5,
+        Math.max(1, (viewportWidth * viewportHeight) / (1280 * 800))
+      );
       const total = Math.floor(MINIMUM_BEAMS * density * 1.5);
 
-      beams = Array.from({ length: total }, () => createBeam(w, h));
+      beams = Array.from({ length: total }, () =>
+        createBeam(viewportWidth, viewportHeight)
+      );
     }
 
-    function drawBeam(
-      c: CanvasRenderingContext2D,
-      beam: Beam,
-      w: number,
-      h: number
-    ) {
+    function drawBeam(c: CanvasRenderingContext2D, beam: Beam) {
       c.save();
       c.translate(beam.x, beam.y);
       c.rotate((beam.angle * Math.PI) / 180);
@@ -139,11 +143,7 @@ const ParticleBackground: React.FC = () => {
     }
 
     function animate() {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width || window.innerWidth;
-      const h = rect.height || window.innerHeight;
-
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, viewportWidth, viewportHeight);
       ctx.filter = 'blur(35px)';
 
       const total = beams.length;
@@ -153,9 +153,9 @@ const ParticleBackground: React.FC = () => {
         b.pulse += b.pulseSpeed;
 
         if (b.y + b.length < -100) {
-          resetBeam(b, i, total, w, h);
+          resetBeam(b, i, total, viewportWidth, viewportHeight);
         }
-        drawBeam(ctx, b, w, h);
+        drawBeam(ctx, b);
       }
 
       rafId = requestAnimationFrame(animate);
@@ -167,10 +167,15 @@ const ParticleBackground: React.FC = () => {
 
     updateCanvasSize();
     animate();
-    window.addEventListener('resize', handleResize);
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, {
+      passive: true,
+    });
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
       cancelAnimationFrame(rafId);
     };
   }, []);
@@ -181,7 +186,6 @@ const ParticleBackground: React.FC = () => {
       <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
 
       {/* Beams canvas + overlays */}
-      {/* CHANGED: removed dark:bg-neutral-950/100 so we don't flatten to pure black */}
       <div className="absolute inset-0">
         <div className="relative w-full h-full">
           <canvas
@@ -191,11 +195,11 @@ const ParticleBackground: React.FC = () => {
           />
           {/* Soft blur & pulse for depth */}
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
+
           {/* Gradients & radial glow */}
           <div className="pointer-events-none absolute inset-0">
-            {/* 🔻 Removed the dark top gradient that caused the black band on desktop */}
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white dark:from-neutral-950" />
-            <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(80,200,255,0.20),transparent)]" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white/80 dark:from-neutral-950" />
+            <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(56,189,248,0.28),transparent)]" />
           </div>
         </div>
       </div>
@@ -215,7 +219,7 @@ export const Hero: React.FC = () => {
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-slide-up opacity-0 [animation-delay:200ms]">
           <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-8 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
-            <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse"></span>
+            <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
             Accepting New Partners
           </span>
         </div>
@@ -230,7 +234,8 @@ export const Hero: React.FC = () => {
         </h1>
 
         <p className="max-w-2xl mx-auto text-xl text-slate-600 dark:text-slate-300 mb-10 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-          Transform your business with AI voice agents, intelligent chatbots, and automated revenue systems. No tech expertise required.
+          Transform your business with AI voice agents, intelligent chatbots,
+          and automated revenue systems. No tech expertise required.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
@@ -242,7 +247,7 @@ export const Hero: React.FC = () => {
                 ?.scrollIntoView({ behavior: 'smooth' })
             }
           >
-            View Plans & Pricing
+            View Plans &amp; Pricing
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           <Button size="lg" variant="outline" onClick={openChat}>
@@ -254,11 +259,20 @@ export const Hero: React.FC = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
         </svg>
       </div>
     </section>
   );
 };
-
