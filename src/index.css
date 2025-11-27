@@ -2,33 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Root sizing / layout + dark overscroll background */
+/* Root sizing / layout */
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: #020617; /* deep navy so overscroll/safe-area isn't white */
+  /* Reduce sideways + rubber-band scroll behavior */
   overscroll-behavior-x: none;
-  overscroll-behavior-y: none; /* reduce rubber-band / jumpiness on touch */
 }
 
 /* React root fills the viewport and cannot scroll sideways */
 #root {
   min-height: 100%;
   overflow-x: hidden;
-  background-color: transparent;
 }
 
-/* Legacy override: if any element still uses bg-[#0C4A6E] (old top bar),
-   keep it transparent so the beams background shows through */
+/* Keep the old top bar color class transparent so beams show through */
 .bg-\[\#0C4A6E\] {
   background-color: transparent !important;
   border-bottom-color: transparent !important;
 }
 
-/* Ensure header itself never draws a divider line */
+/* Ensure header itself never draws a dividing line or background band */
 header {
   border-bottom: 0 !important;
-  background-color: transparent;
+  background-color: transparent !important;
 }
