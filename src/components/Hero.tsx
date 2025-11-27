@@ -1,156 +1,256 @@
-import React, { useEffect, useState } from "react";
-import { Sun, Moon } from "lucide-react";
-import { Logo } from "./Logo";
-import { Button } from "./Button";
+import React, { useEffect, useRef } from 'react';
+import { Button } from './Button';
+import { ArrowRight, PlayCircle } from 'lucide-react';
 
-type Theme = "light" | "dark";
+type Intensity = 'subtle' | 'medium' | 'strong';
 
-const NAV_ITEMS: { label: string; href: string }[] = [
-  { label: "Services", href: "#services" },
-  { label: "Process", href: "#process" },
-  { label: "Demo", href: "#demo" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Results", href: "#results" },
-  { label: "FAQ", href: "#faq" },
-];
+interface Beam {
+  x: number;
+  y: number;
+  width: number;
+  length: number;
+  angle: number;
+  speed: number;
+  opacity: number;
+  hue: number;
+  pulse: number;
+  pulseSpeed: number;
+}
 
-const getInitialTheme = (): Theme => {
-  if (typeof window === "undefined") return "dark";
-  const stored = window.localStorage.getItem("theme");
-  if (stored === "light" || stored === "dark") return stored;
-
-  return window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-};
-
-const applyThemeToDocument = (theme: Theme) => {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  if (theme === "dark") {
-    root.classList.add("dark");
-  } else {
-    root.classList.remove("dark");
-  }
-};
-
-export const Header: React.FC = () => {
-  const [theme, setTheme] = useState<Theme>("dark");
+const ParticleBackground: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const initial = getInitialTheme();
-    setTheme(initial);
-    applyThemeToDocument(initial);
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+
+    const ctxEl = canvasEl.getContext('2d', { alpha: true });
+    if (!ctxEl) return;
+
+    const canvas: HTMLCanvasElement = canvasEl;
+    const ctx: CanvasRenderingContext2D = ctxEl;
+
+    const MINIMUM_BEAMS = 20;
+    const opacityMap: Record<Intensity, number> = {
+      subtle: 0.7,
+      medium: 0.85,
+      strong: 1.0,
+    };
+
+    const intensity: Intensity = 'strong';
+    let beams: Beam[] = [];
+    let rafId = 0;
+
+    function createBeam(w: number, h: number): Beam {
+      const angle = -35 + Math.random() * 10;
+      return {
+        x: Math.random() * w * 1.5 - w * 0.25,
+        y: Math.random() * h * 1.5 - h * 0.25,
+        width: 30 + Math.random() * 60,
+        length: h * 2.5,
+        angle,
+        speed: 0.6 + Math.random() * 1.2,
+        opacity: 0.12 + Math.random() * 0.16,
+        hue: 190 + Math.random() * 70,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.02 + Math.random() * 0.03,
+      };
+    }
+
+    function resetBeam(
+      beam: Beam,
+      index: number,
+      totalBeams: number,
+      w: number,
+      h: number
+    ): Beam {
+      const column = index % 3;
+      const spacing = w / 3;
+      beam.y = h + 100;
+      beam.x =
+        column * spacing +
+        spacing / 2 +
+        (Math.random() - 0.5) * spacing * 0.5;
+      beam.width = 100 + Math.random() * 100;
+      beam.speed = 0.5 + Math.random() * 0.4;
+      beam.hue = 190 + (index * 70) / totalBeams;
+      beam.opacity = 0.2 + Math.random() * 0.1;
+      return beam;
+    }
+
+    function updateCanvasSize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.floor(rect.width || window.innerWidth);
+      const h = Math.floor(rect.height || window.innerHeight);
+
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      const density = Math.min(1.5, Math.max(1, (w * h) / (1280 * 800)));
+      const total = Math.floor(MINIMUM_BEAMS * density * 1.5);
+
+      beams = Array.from({ length: total }, () => createBeam(w, h));
+    }
+
+    function drawBeam(
+      c: CanvasRenderingContext2D,
+      beam: Beam,
+      w: number,
+      h: number
+    ) {
+      c.save();
+      c.translate(beam.x, beam.y);
+      c.rotate((beam.angle * Math.PI) / 180);
+
+      const pulsingOpacity =
+        beam.opacity *
+        (0.8 + Math.sin(beam.pulse) * 0.2) *
+        opacityMap[intensity];
+
+      const gradient = c.createLinearGradient(0, 0, 0, beam.length);
+      gradient.addColorStop(0, `hsla(${beam.hue},85%,65%,0)`);
+      gradient.addColorStop(
+        0.1,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(
+        0.4,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.6,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.9,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(1, `hsla(${beam.hue},85%,65%,0)`);
+
+      c.fillStyle = gradient;
+      c.fillRect(-beam.width / 2, 0, beam.width, beam.length);
+      c.restore();
+    }
+
+    function animate() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || window.innerWidth;
+      const h = rect.height || window.innerHeight;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.filter = 'blur(35px)';
+
+      const total = beams.length;
+      for (let i = 0; i < total; i++) {
+        const b = beams[i];
+        b.y -= b.speed;
+        b.pulse += b.pulseSpeed;
+
+        if (b.y + b.length < -100) {
+          resetBeam(b, i, total, w, h);
+        }
+        drawBeam(ctx, b, w, h);
+      }
+
+      rafId = requestAnimationFrame(animate);
+    }
+
+    const handleResize = () => {
+      updateCanvasSize();
+    };
+
+    updateCanvasSize();
+    animate();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
-  const toggleTheme = () => {
-    const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    applyThemeToDocument(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("theme", next);
-    }
-  };
-
-  const handleNavClick = (href: string) => {
-    const id = href.replace("#", "");
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  const openBooking = () => {
-    // Keep behavior consistent with Pricing / other CTAs
-    window.dispatchEvent(new CustomEvent("open-booking-modal"));
-  };
-
   return (
-    <header className="fixed inset-x-0 top-0 z-40">
-      {/* Top promo banner – now fully transparent so the hero background reaches the very top */}
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center justify-center py-2 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wide text-sky-100 drop-shadow-lg">
-            <span className="uppercase">
-              LIMITED TIME OFFER · FREE 2ND MONTH · ENDS 12/31/25
-            </span>
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none">
+      {/* Base background for light/dark */}
+      <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
+
+      {/* Beams canvas + overlays */}
+      <div className="absolute inset-0 bg-neutral-950/0 dark:bg-neutral-950/100">
+        <div className="relative w-full h-full">
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+          />
+          {/* Soft blur & pulse for depth */}
+          <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
+          {/* Gradients & radial glow */}
+          <div className="pointer-events-none absolute inset-0">
+            {/* 🔻 Removed the dark top gradient that caused the black band on desktop */}
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white dark:from-neutral-950" />
+            <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(80,200,255,0.20),transparent)]" />
           </div>
         </div>
       </div>
-
-      {/* Main navigation bar – translucent pill, no full-width borders/lines */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-2">
-        <div className="mx-auto max-w-7xl">
-          <nav
-            className="
-              mt-1
-              flex
-              h-16 sm:h-20
-              items-center
-              justify-between
-              rounded-full
-              bg-gradient-to-r from-slate-900/60 via-sky-900/60 to-slate-900/60
-              backdrop-blur-xl
-              px-4 sm:px-6
-              shadow-[0_18px_45px_rgba(15,23,42,0.75)]
-            "
-            aria-label="Main navigation"
-          >
-            {/* Left: logo + wordmark */}
-            <div className="flex items-center gap-3">
-              <div className="shrink-0">
-                <Logo />
-              </div>
-              <div className="hidden sm:flex flex-col">
-                <span className="font-display text-sm sm:text-base font-semibold text-slate-50">
-                  Sentient Partners
-                </span>
-                <span className="text-[11px] tracking-[0.18em] uppercase text-slate-300">
-                  AI · Automations · Always-On Revenue
-                </span>
-              </div>
-            </div>
-
-            {/* Center: nav links (desktop) */}
-            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-100">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => handleNavClick(item.href)}
-                  className="relative transition-colors hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60 rounded-full px-1"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Right: theme toggle + CTA */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label="Toggle dark mode"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/40 text-slate-200 hover:text-sky-300 hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </button>
-
-              <div className="hidden sm:block">
-                <Button size="lg" onClick={openBooking}>
-                  Book Strategy Call
-                </Button>
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div>
-    </header>
+    </div>
   );
 };
 
-export default Header;
+export const Hero: React.FC = () => {
+  const openChat = () => {
+    window.dispatchEvent(new CustomEvent('open-sentient-chat'));
+  };
+
+  return (
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-32 pb-20">
+      <ParticleBackground />
+
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="animate-slide-up opacity-0 [animation-delay:200ms]">
+          <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-8 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
+            <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse"></span>
+            Accepting New Partners
+          </span>
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
+          We Build <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400">Sentient Systems</span><br />
+          That Never Sleep
+        </h1>
+        
+        <p className="max-w-2xl mx-auto text-xl text-slate-600 dark:text-slate-300 mb-10 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+          Transform your business with AI voice agents, intelligent chatbots, and automated revenue systems. No tech expertise required.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
+          <Button
+            size="lg"
+            onClick={() =>
+              document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          >
+            View Plans & Pricing
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          <Button size="lg" variant="outline" onClick={openChat}>
+            <PlayCircle className="mr-2 h-5 w-5" />
+            Try Interactive Demo
+          </Button>
+        </div>
+      </div>
+      
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </div>
+    </section>
+  );
+};
