@@ -192,7 +192,7 @@ const ParticleBackground: React.FC = () => {
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
           {/* Gradients & radial glow */}
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b to-transparent from-neutral-950/90 dark:from-neutral-950" />
+            {/* 🔻 Removed the dark top gradient that caused the black band on desktop */}
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white dark:from-neutral-950" />
             <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(80,200,255,0.20),transparent)]" />
           </div>
