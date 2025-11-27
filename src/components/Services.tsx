@@ -12,10 +12,10 @@ import {
 import { Button } from './Button';
 import { ServiceItem } from '../types';
 
-const ServiceModal: React.FC<{
-  service: ServiceItem;
-  onClose: () => void;
-}> = ({ service, onClose }) => {
+const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
+  service,
+  onClose,
+}) => {
   const handleBook = () => {
     window.dispatchEvent(new CustomEvent('open-booking-modal'));
   };
@@ -49,7 +49,6 @@ const ServiceModal: React.FC<{
           <X size={24} />
         </button>
 
-        {/* Left rail */}
         <div className="w-full md:w-2/5 bg-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden shrink-0">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-600/20 to-purple-600/20" />
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -80,7 +79,6 @@ const ServiceModal: React.FC<{
           </div>
         </div>
 
-        {/* Right content */}
         <div className="w-full md:w-3/5 p-8 md:p-12 bg-white dark:bg-dark-card overflow-y-auto">
           <div className="max-w-xl mx-auto md:max-w-none">
             <div className="mb-10">
@@ -91,7 +89,6 @@ const ServiceModal: React.FC<{
             </div>
 
             <div className="space-y-8 mb-12">
-              {/* Features */}
               <div>
                 <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">
                   Key Features
@@ -111,7 +108,6 @@ const ServiceModal: React.FC<{
                 </div>
               </div>
 
-              {/* Strategic benefits */}
               <div>
                 <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">
                   Strategic Benefits
@@ -129,7 +125,6 @@ const ServiceModal: React.FC<{
               </div>
             </div>
 
-            {/* Footer buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100 dark:border-white/10">
               <Button
                 size="lg"
@@ -194,7 +189,6 @@ export const Services: React.FC = () => {
   return (
     <section id="services" className="py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
             Core Services
@@ -211,7 +205,6 @@ export const Services: React.FC = () => {
           </p>
         </div>
 
-        {/* Service cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
           {SERVICES.map((service, index) => {
             let colSpan = 'md:col-span-1';
@@ -235,7 +228,7 @@ export const Services: React.FC = () => {
                     ${
                       isDarkCard
                         ? 'bg-slate-900 text-white shadow-2xl shadow-brand-900/20'
-                        : 'bg-white/90 dark:bg-dark-card text-slate-900 dark:text-white shadow-sm border border-slate-100/60 dark:border-dark-border'
+                        : 'bg-white dark:bg-dark-card text-slate-900 dark:text-white shadow-sm border border-slate-100 dark:border-dark-border'
                     }
                   `}
                 >
@@ -323,7 +316,7 @@ export const Services: React.FC = () => {
             window.history.replaceState(
               '',
               document.title,
-              window.location.pathname + window.location.search
+              window.location.pathname + window.location.search,
             );
           }}
         />
