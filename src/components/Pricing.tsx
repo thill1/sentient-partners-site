@@ -13,17 +13,8 @@ export const Pricing: React.FC = () => {
   };
 
   return (
-    <section id="pricing" className="py-24 relative">
-      {/* Gentle blend with animated beams above/below */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-950/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/80 to-transparent" />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section id="pricing" className="py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
             Pricing Plans
@@ -33,7 +24,7 @@ export const Pricing: React.FC = () => {
             <br />
             <span className="text-slate-400">Not Overhead</span>
           </h3>
-          <p className="text-lg text-slate-700 dark:text-slate-400">
+          <p className="text-lg text-slate-600 dark:text-slate-400">
             Replace the cost of 3 full-time employees with one intelligent
             system. Simple, transparent pricing with no hidden implementation
             fees.
@@ -44,10 +35,10 @@ export const Pricing: React.FC = () => {
           {PRICING_PLANS.map((plan, index) => (
             <div
               key={index}
-              className={`relative rounded-3xl p-8 transition-all duration-300 ${
+              className={`relative rounded-3xl p-8 transition-all duration-300 backdrop-blur-xl ${
                 plan.highlight
-                  ? 'bg-slate-900 text-white shadow-2xl scale-105 border-2 border-brand-500 z-10'
-                  : 'bg-slate-50/90 dark:bg-dark-card text-slate-900 dark:text-white border border-slate-200/70 dark:border-dark-border hover:shadow-lg'
+                  ? 'bg-slate-950/85 text-white shadow-2xl scale-105 border-2 border-brand-500 z-10'
+                  : 'bg-white/80 dark:bg-dark-card/90 text-slate-900 dark:text-white border border-slate-200/70 dark:border-dark-border/70 hover:shadow-lg'
               }`}
             >
               {plan.highlight && (
@@ -58,7 +49,9 @@ export const Pricing: React.FC = () => {
 
               <h4
                 className={`text-xl font-bold mb-2 ${
-                  plan.highlight ? 'text-white' : 'text-slate-900 dark:text-white'
+                  plan.highlight
+                    ? 'text-white'
+                    : 'text-slate-900 dark:text-white'
                 }`}
               >
                 {plan.name}
@@ -67,7 +60,7 @@ export const Pricing: React.FC = () => {
                 className={`text-sm mb-6 h-10 ${
                   plan.highlight
                     ? 'text-slate-300'
-                    : 'text-slate-600 dark:text-slate-400'
+                    : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
                 {plan.description}
@@ -116,9 +109,7 @@ export const Pricing: React.FC = () => {
                 className={`w-full ${
                   plan.highlight ? 'shadow-lg shadow-brand-500/40' : ''
                 }`}
-                onClick={
-                  plan.name === 'Enterprise' ? openContact : openBooking
-                }
+                onClick={plan.name === 'Enterprise' ? openContact : openBooking}
               >
                 {plan.cta}
               </Button>
@@ -127,7 +118,7 @@ export const Pricing: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             Need a custom implementation roadmap?{' '}
             <button
               onClick={openBooking}
