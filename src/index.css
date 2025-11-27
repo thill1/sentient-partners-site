@@ -2,34 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Root sizing / layout */
+/* Root sizing / layout + dark overscroll background */
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
+  background-color: #020617; /* deep navy so overscroll/safe-area isn't white */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none; /* reduce rubber-band / jumpiness on touch */
 }
 
 /* React root fills the viewport and cannot scroll sideways */
 #root {
   min-height: 100%;
   overflow-x: hidden;
+  background-color: transparent;
 }
 
-/* ------------------------------------------------------------------
-   Sentient Partners overrides
-   ------------------------------------------------------------------ */
-
-/* 1) Top banner background override
-   Anything using bg-[#0C4A6E] (your promo strip) becomes transparent,
-   so the hero/beams background shows all the way to the very top. */
+/* Legacy override: if any element still uses bg-[#0C4A6E] (old top bar),
+   keep it transparent so the beams background shows through */
 .bg-\[\#0C4A6E\] {
   background-color: transparent !important;
   border-bottom-color: transparent !important;
 }
 
-/* 2) Kill any header bottom border that might create a hard seam
-   between the navigation/header stack and the hero section. */
+/* Ensure header itself never draws a divider line */
 header {
   border-bottom: 0 !important;
+  background-color: transparent;
 }
