@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Normalize root sizing */
+/* Root sizing / layout */
 html,
 body {
   margin: 0;
@@ -10,8 +10,26 @@ body {
   height: 100%;
 }
 
-/* Make the React app fill the viewport and prevent sideways scroll */
+/* React root fills the viewport and cannot scroll sideways */
 #root {
   min-height: 100%;
-  overflow-x: hidden; /* 🚫 prevents the UI from being pushed sideways */
+  overflow-x: hidden;
+}
+
+/* ------------------------------------------------------------------
+   Sentient Partners overrides
+   ------------------------------------------------------------------ */
+
+/* 1) Top banner background override
+   Anything using bg-[#0C4A6E] (your promo strip) becomes transparent,
+   so the hero/beams background shows all the way to the very top. */
+.bg-\[\#0C4A6E\] {
+  background-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+/* 2) Kill any header bottom border that might create a hard seam
+   between the navigation/header stack and the hero section. */
+header {
+  border-bottom: 0 !important;
 }
