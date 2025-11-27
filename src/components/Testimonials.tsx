@@ -6,18 +6,10 @@ export const Testimonials: React.FC = () => {
   return (
     <section
       id="testimonials"
-      className="py-24 text-white overflow-hidden relative"
+      className="relative py-24 text-white overflow-hidden"
     >
-      {/* Soft gradients to blend with animated beams */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-950/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/80 to-transparent" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
-      </div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
@@ -37,7 +29,7 @@ export const Testimonials: React.FC = () => {
           {TESTIMONIALS.map((t, i) => (
             <div
               key={i}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 pt-12 rounded-2xl hover:bg-white/10 transition-colors duration-300 flex flex-col relative group"
+              className="bg-slate-950/70 backdrop-blur-xl border border-white/10 p-8 pt-12 rounded-2xl hover:bg-slate-950/80 transition-colors duration-300 flex flex-col relative group"
             >
               <div className="absolute top-4 right-4 bg-brand-500 text-white px-3 py-1 rounded-lg text-xs font-bold border border-brand-400/50 whitespace-nowrap shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300 z-10">
                 {t.metric}
@@ -47,13 +39,13 @@ export const Testimonials: React.FC = () => {
                 <Quote className="w-10 h-10 text-brand-500 opacity-50" />
               </div>
 
-              <p className="text-lg text-slate-100/90 italic mb-8 leading-relaxed flex-grow">
+              <p className="text-lg text-slate-200 italic mb-8 leading-relaxed flex-grow">
                 "{t.quote}"
               </p>
 
               <div className="border-t border-white/10 pt-6">
                 <h4 className="font-bold text-white">{t.author}</h4>
-                <p className="text-sm text-slate-300">{t.role}</p>
+                <p className="text-sm text-slate-400">{t.role}</p>
               </div>
             </div>
           ))}
