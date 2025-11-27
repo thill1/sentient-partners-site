@@ -49,6 +49,7 @@ const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
           <X size={24} />
         </button>
 
+        {/* Left panel */}
         <div className="w-full md:w-2/5 bg-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden shrink-0">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-600/20 to-purple-600/20" />
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -79,6 +80,7 @@ const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
           </div>
         </div>
 
+        {/* Right panel */}
         <div className="w-full md:w-3/5 p-8 md:p-12 bg-white dark:bg-dark-card overflow-y-auto">
           <div className="max-w-xl mx-auto md:max-w-none">
             <div className="mb-10">
@@ -154,7 +156,7 @@ const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
 
 export const Services: React.FC = () => {
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -187,8 +189,9 @@ export const Services: React.FC = () => {
   const activeService = SERVICES.find((s) => s.id === selectedServiceId);
 
   return (
-    <section id="services" className="py-24 relative">
+    <section id="services" className="py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
             Core Services
@@ -205,6 +208,7 @@ export const Services: React.FC = () => {
           </p>
         </div>
 
+        {/* Service cards as floating tiles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
           {SERVICES.map((service, index) => {
             let colSpan = 'md:col-span-1';
@@ -223,12 +227,11 @@ export const Services: React.FC = () => {
               >
                 <div
                   className={`
-                    w-full h-full rounded-3xl p-8 overflow-hidden relative
-                    flex flex-col
+                    w-full h-full rounded-3xl p-8 overflow-hidden relative flex flex-col
                     ${
                       isDarkCard
-                        ? 'bg-slate-900 text-white shadow-2xl shadow-brand-900/20'
-                        : 'bg-white dark:bg-dark-card text-slate-900 dark:text-white shadow-sm border border-slate-100 dark:border-dark-border'
+                        ? 'bg-slate-900/85 text-white shadow-2xl shadow-brand-900/20 border border-white/10 backdrop-blur-xl'
+                        : 'bg-white/80 dark:bg-dark-card/90 text-slate-900 dark:text-white shadow-sm border border-slate-100/60 dark:border-dark-border/60 backdrop-blur-xl'
                     }
                   `}
                 >
@@ -243,7 +246,7 @@ export const Services: React.FC = () => {
                         ${
                           isDarkCard
                             ? 'bg-white/10 text-brand-400'
-                            : 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
+                            : 'bg-brand-50/80 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400'
                         }
                       `}
                     >
@@ -278,7 +281,9 @@ export const Services: React.FC = () => {
                         >
                           <CheckCircle2
                             className={`w-4 h-4 mr-2 ${
-                              isDarkCard ? 'text-brand-400' : 'text-brand-500'
+                              isDarkCard
+                                ? 'text-brand-400'
+                                : 'text-brand-500'
                             }`}
                           />
                           <span>{feature}</span>
@@ -288,14 +293,11 @@ export const Services: React.FC = () => {
 
                     <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
                       <div
-                        className={`
-                           p-2 rounded-full
-                           ${
-                             isDarkCard
-                               ? 'bg-white/10 text-white'
-                               : 'bg-brand-50 text-brand-600 dark:bg-white/10 dark:text-white'
-                           }
-                         `}
+                        className={`p-2 rounded-full ${
+                          isDarkCard
+                            ? 'bg-white/10 text-white'
+                            : 'bg-brand-50 text-brand-600 dark:bg-white/10 dark:text-white'
+                        }`}
                       >
                         <ArrowRight className="w-5 h-5" />
                       </div>
