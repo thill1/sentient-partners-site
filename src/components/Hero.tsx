@@ -27,7 +27,6 @@ const ParticleBackground: React.FC = () => {
     const ctxEl = canvasEl.getContext('2d', { alpha: true });
     if (!ctxEl) return;
 
-    // From here on, TS knows these are non-null
     const canvas: HTMLCanvasElement = canvasEl;
     const ctx: CanvasRenderingContext2D = ctxEl;
 
@@ -177,7 +176,7 @@ const ParticleBackground: React.FC = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none">
       {/* Base background for light/dark */}
       <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
 
@@ -230,7 +229,12 @@ export const Hero: React.FC = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
-          <Button size="lg" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>
+          <Button
+            size="lg"
+            onClick={() =>
+              document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          >
             View Plans & Pricing
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
