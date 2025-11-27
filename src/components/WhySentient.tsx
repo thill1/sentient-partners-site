@@ -42,5 +42,61 @@ export const WhySentient: React.FC = () => {
 
           {/* Cards row */}
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="glass-panel flex flex-col rounded-2xl border border-white/10 bg-white/10 dark:bg-white/5
+            <div className="glass-panel flex flex-col rounded-2xl border border-white/10 bg-white/10 dark:bg-white/5 p-5 backdrop-blur-md">
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
+                <Target className="h-4 w-4" />
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                Strategy tied to revenue
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                We start from your pipeline and profit targets, then design AI
+                systems to support those—never automation for its own sake.
+              </p>
+            </div>
 
+            <div className="glass-panel flex flex-col rounded-2xl border border-white/10 bg-white/10 dark:bg-white/5 p-5 backdrop-blur-md">
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
+                <Workflow className="h-4 w-4" />
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                Full implementation, not just ideas
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                We plug into your phones, calendars, and CRM, then handle the build,
+                testing, and tuning so your team isn&apos;t left stitching tools
+                together.
+              </p>
+            </div>
+
+            <div className="glass-panel flex flex-col rounded-2xl border border-white/10 bg-white/10 dark:bg-white/5 p-5 backdrop-blur-md">
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
+                <LineChart className="h-4 w-4" />
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                Enterprise-grade thinking
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                Experience across complex, high-volume environments—applied to give
+                SMBs simple, reliable systems that scale without extra headcount.
+              </p>
+            </div>
+
+            <div className="glass-panel flex flex-col rounded-2xl border border-white/10 bg-white/10 dark:bg-white/5 p-5 backdrop-blur-md">
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                Ongoing tuning & support
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                Your systems don&apos;t get dumped and forgotten—we review, refine,
+                and expand them as your offers and volume evolve.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
