@@ -18,13 +18,13 @@ interface Beam {
 }
 
 const ParticleBackground: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvasInitial = canvasRef.current;
+    if (!canvasInitial) return;
 
-    const ctxRaw = canvas.getContext('2d', { alpha: true });
+    const ctxRaw = canvasInitial.getContext('2d', { alpha: true });
     if (!ctxRaw) return;
 
     const ctx: CanvasRenderingContext2D = ctxRaw;
@@ -80,18 +80,17 @@ const ParticleBackground: React.FC = () => {
       return beam;
     }
 
-    function updateCanvasSize() {
+    function updateCanvasSize(canvasEl: HTMLCanvasElement) {
       const dpr = Math.max(1, window.devicePixelRatio || 1);
 
       viewportWidth = window.innerWidth;
       viewportHeight = window.innerHeight;
 
-      canvas.width = Math.floor(viewportWidth * dpr);
-      canvas.height = Math.floor(viewportHeight * dpr);
+      canvasEl.width = Math.floor(viewportWidth * dpr);
+      canvasEl.height = Math.floor(viewportHeight * dpr);
 
-      // Let CSS handle layout; canvas always fills viewport
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
+      canvasEl.style.width = '100%';
+      canvasEl.style.height = '100%';
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
@@ -162,10 +161,14 @@ const ParticleBackground: React.FC = () => {
     }
 
     const handleResize = () => {
-      updateCanvasSize();
+      const c = canvasRef.current;
+      if (c) {
+        updateCanvasSize(c);
+      }
     };
 
-    updateCanvasSize();
+    // Initial sizing + start animation
+    updateCanvasSize(canvasInitial);
     animate();
 
     window.addEventListener('resize', handleResize, { passive: true });
