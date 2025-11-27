@@ -67,4 +67,63 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!
+    <!-- Web fonts: Space Grotesk + Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- System font stack for SF Pro look on Apple devices -->
+    <style>
+      :root {
+        --font-display: "Space Grotesk", system-ui, -apple-system,
+          BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI",
+          sans-serif;
+        --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+      }
+
+      body {
+        font-family: var(--font-body);
+      }
+
+      .font-display {
+        font-family: var(--font-display);
+      }
+    </style>
+
+    <!-- Favicon & App Icons (update paths to your actual assets) -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  </head>
+
+  <body
+    class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300"
+  >
+    <noscript>
+      This experience works best with JavaScript enabled. Please enable
+      JavaScript to explore the Sentient Partners AI demos and interface.
+    </noscript>
+
+    <div id="root"></div>
+
+    <!-- Vite entry (React/TypeScript app) -->
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
