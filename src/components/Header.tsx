@@ -1,137 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Moon, Sun } from 'lucide-react';
-import { NAV_LINKS } from '../constants';
-import { Button } from './Button';
-import { Logo } from './Logo';
+import React, { useEffect, useState } from "react";
+import { Sun, Moon } from "lucide-react";
+import { Logo } from "./Logo";
+import { Button } from "./Button";
+
+type Theme = "light" | "dark";
+
+const NAV_ITEMS: { label: string; href: string }[] = [
+  { label: "Services", href: "#services" },
+  { label: "Process", href: "#process" },
+  { label: "Demo", href: "#demo" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Results", href: "#results" },
+  { label: "FAQ", href: "#faq" },
+];
+
+const getInitialTheme = (): Theme => {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem("theme");
+  if (stored === "light" || stored === "dark") return stored;
+
+  return window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const applyThemeToDocument = (theme: Theme) => {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  if (theme === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+};
 
 export const Header: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  // Banner text configuration
-  const bannerText = "Limited Time Offer - Free 2nd Month - Ends 12/31/25";
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDark(false);
-      document.documentElement.classList.remove('dark');
-    }
-
-    return () => window.removeEventListener('scroll', handleScroll);
+    const initial = getInitialTheme();
+    setTheme(initial);
+    applyThemeToDocument(initial);
   }, []);
 
   const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.theme = 'dark';
-      setIsDark(true);
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    applyThemeToDocument(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("theme", next);
     }
   };
 
-  const handleBookCall = () => {
-    window.dispatchEvent(new CustomEvent('open-booking-modal'));
+  const handleNavClick = (href: string) => {
+    const id = href.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const openBooking = () => {
+    // Keep behavior consistent with Pricing / other CTAs
+    window.dispatchEvent(new CustomEvent("open-booking-modal"));
   };
 
   return (
-    <header 
-      className={`fixed top-0 w-full z-50 transition-all duration-300 flex flex-col ${
-        isScrolled 
-          ? 'glass-panel border-b border-slate-200 dark:border-dark-border shadow-sm' 
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="bg-slate-900 dark:bg-brand-900 text-white py-2.5 relative z-[51] shrink-0 border-b border-white/10 flex justify-center items-center px-4">
-        <span className="text-xs font-bold tracking-widest uppercase text-center">
-          {bannerText}
-        </span>
+    <header className="fixed inset-x-0 top-0 z-40">
+      {/* Top promo banner – now fully transparent so the hero background reaches the very top */}
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex items-center justify-center py-2 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wide text-sky-100 drop-shadow-lg">
+            <span className="uppercase">
+              LIMITED TIME OFFER · FREE 2ND MONTH · ENDS 12/31/25
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className={`w-full transition-all duration-300 ${isScrolled ? 'py-3' : 'py-5'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center cursor-pointer group shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
-              <div className="transition-transform duration-300 group-hover:scale-105 mr-3 flex items-center shrink-0">
-                <Logo className="lg" />
+      {/* Main navigation bar – translucent pill, no full-width borders/lines */}
+      <div className="px-4 sm:px-6 lg:px-8 pb-2">
+        <div className="mx-auto max-w-7xl">
+          <nav
+            className="
+              mt-1
+              flex
+              h-16 sm:h-20
+              items-center
+              justify-between
+              rounded-full
+              bg-gradient-to-r from-slate-900/60 via-sky-900/60 to-slate-900/60
+              backdrop-blur-xl
+              px-4 sm:px-6
+              shadow-[0_18px_45px_rgba(15,23,42,0.75)]
+            "
+            aria-label="Main navigation"
+          >
+            {/* Left: logo + wordmark */}
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <Logo />
               </div>
-            
+              <div className="hidden sm:flex flex-col">
+                <span className="font-display text-sm sm:text-base font-semibold text-slate-50">
+                  Sentient Partners
+                </span>
+                <span className="text-[11px] tracking-[0.18em] uppercase text-slate-300">
+                  AI · Automations · Always-On Revenue
+                </span>
+              </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-8">
-              {NAV_LINKS.map((link) => (
-                <a 
-                  key={link.name} 
-                  href={link.href}
-                  className="text-sm font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300 dark:hover:text-white transition-colors"
+            {/* Center: nav links (desktop) */}
+            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-100">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.href}
+                  onClick={() => handleNavClick(item.href)}
+                  className="relative transition-colors hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60 rounded-full px-1"
                 >
-                  {link.name}
-                </a>
+                  {item.label}
+                </button>
               ))}
-              <button 
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10 transition-colors"
-              >
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-              <Button size="sm" onClick={handleBookCall}>
-                Book Strategy Call
-              </Button>
-            </nav>
-
-            <div className="md:hidden flex items-center gap-4">
-              <button 
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-slate-600 dark:text-slate-300"
-              >
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-slate-900 dark:text-white"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
             </div>
-          </div>
+
+            {/* Right: theme toggle + CTA */}
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label="Toggle dark mode"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/40 text-slate-200 hover:text-sky-300 hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </button>
+
+              <div className="hidden sm:block">
+                <Button size="lg" onClick={openBooking}>
+                  Book Strategy Call
+                </Button>
+              </div>
+            </div>
+          </nav>
         </div>
       </div>
-
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full glass-panel border-b border-slate-200 dark:border-dark-border shadow-xl animate-fade-in">
-          <div className="px-4 py-6 space-y-4">
-            {NAV_LINKS.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-base font-medium text-slate-900 dark:text-white hover:text-brand-600"
-              >
-                {link.name}
-              </a>
-            ))}
-            <div className="pt-4">
-              <Button className="w-full" onClick={() => {
-                setIsMobileMenuOpen(false);
-                handleBookCall();
-              }}>
-                Book Strategy Call
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
-}
+};
+
+export default Header;
