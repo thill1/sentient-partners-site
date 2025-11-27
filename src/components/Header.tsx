@@ -83,11 +83,11 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Main navigation – glass pill over beams background */}
+      {/* Main navigation – fully transparent so it floats over the background */}
       <div className="px-4 sm:px-6 lg:px-8 pb-2">
         <div className="mx-auto max-w-7xl">
           <nav
-            className="mt-1 flex h-16 sm:h-20 items-center justify-between rounded-full bg-slate-900/40 dark:bg-slate-900/65 backdrop-blur-xl border border-white/10 px-4 sm:px-6 shadow-[0_18px_45px_rgba(15,23,42,0.75)]"
+            className="mt-1 flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6"
             aria-label="Main navigation"
           >
             {/* Left: Logo only (Logo already includes wordmark/tagline) */}
@@ -102,7 +102,7 @@ export const Header: React.FC = () => {
                   key={item.href}
                   type="button"
                   onClick={() => handleNavClick(item.href)}
-                  className="transition-colors hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60 rounded-full px-1"
+                  className="transition-colors hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-full px-1"
                 >
                   {item.label}
                 </button>
@@ -115,7 +115,7 @@ export const Header: React.FC = () => {
                 type="button"
                 onClick={toggleTheme}
                 aria-label="Toggle dark mode"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/40 text-slate-200 hover:text-sky-300 hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900/60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/40 text-slate-200 hover:text-sky-300 hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               >
                 {theme === "dark" ? (
                   <Sun className="h-4 w-4" />
