@@ -176,7 +176,7 @@ const ParticleBackground: React.FC = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none select-none">
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none">
       {/* Base background for light/dark */}
       <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
 
