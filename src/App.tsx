@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
@@ -16,6 +16,24 @@ import { Toast } from './components/Toast';
 import { WhySentient } from './components/WhySentient';
 
 function App() {
+  useEffect(() => {
+    const root = document.documentElement;
+
+    // Respect any saved theme; otherwise default to LIGHT
+    const saved =
+      localStorage.getItem('theme') ||
+      localStorage.getItem('color-theme') ||
+      localStorage.getItem('sentient-theme');
+
+    if (saved === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      // Optional: persist the default so your toggle stays in sync on refresh
+      if (!saved) localStorage.setItem('theme', 'light');
+    }
+  }, []);
+
   return (
     <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
       <Header />
@@ -31,7 +49,6 @@ function App() {
         <FAQ />
         <CTASection />
       </main>
-
 
       <Footer />
 
