@@ -56,16 +56,21 @@ export const Header: React.FC = () => {
     setMobileOpen(false);
   };
 
+  const baseHeaderClasses =
+    'fixed inset-x-0 top-0 z-40 transition-all duration-300';
+
+  const headerStateClasses = scrolled
+    ? dark
+      ? 'bg-slate-950/80 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_40px_rgba(15,23,42,0.8)]'
+      : 'bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.12)]'
+    : dark
+    ? 'bg-transparent border-b border-transparent'
+    : 'bg-white/60 backdrop-blur-sm border-b border-transparent';
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? 'bg-slate-950/80 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_40px_rgba(15,23,42,0.8)]'
-          : 'bg-transparent border-b border-transparent'
-      }`}
-    >
+    <header className={`${baseHeaderClasses} ${headerStateClasses}`}>
       {/* Top promo banner */}
-      <div className="hidden sm:block text-center text-[11px] tracking-[0.16em] uppercase py-2 text-slate-100/80">
+      <div className="hidden sm:block text-center text-[11px] tracking-[0.16em] uppercase py-2 bg-slate-100 text-slate-700 dark:bg-slate-900/95 dark:text-slate-100/80">
         LIMITED TIME OFFER · FREE 2ND MONTH · ENDS 12/31/25
       </div>
 
@@ -89,7 +94,7 @@ export const Header: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => scrollToId(item.id)}
-                className="text-slate-200 hover:text-white transition-colors"
+                className="text-slate-900 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white transition-colors"
               >
                 {item.label}
               </button>
@@ -102,14 +107,10 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 backdrop-blur-md text-slate-100 hover:bg-white/10 transition"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-900 hover:bg-slate-100 shadow-sm transition dark:border-white/15 dark:bg-black/30 dark:text-slate-100 dark:hover:bg-white/10"
               aria-label="Toggle color mode"
             >
-              {dark ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
             {/* Desktop CTA */}
@@ -122,7 +123,7 @@ export const Header: React.FC = () => {
             {/* Mobile menu toggle */}
             <button
               type="button"
-              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/30 backdrop-blur-md text-slate-100 hover:bg-white/10 transition"
+              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-900 hover:bg-slate-100 shadow-sm transition dark:border-white/15 dark:bg-black/30 dark:text-slate-100 dark:hover:bg-white/10"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle navigation menu"
             >
@@ -134,14 +135,14 @@ export const Header: React.FC = () => {
 
       {/* Mobile slide-down menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-2xl">
+        <div className="md:hidden border-t bg-white/95 border-slate-200/80 backdrop-blur-2xl dark:bg-slate-950/95 dark:border-white/10">
           <div className="max-w-7xl mx-auto px-4 pb-4 space-y-1">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => scrollToId(item.id)}
-                className="block w-full text-left px-2 py-2 text-sm text-slate-100 hover:bg-white/5 rounded-lg"
+                className="block w-full text-left px-2 py-2 text-sm text-slate-900 hover:bg-slate-100 rounded-lg dark:text-slate-100 dark:hover:bg-white/5"
               >
                 {item.label}
               </button>
