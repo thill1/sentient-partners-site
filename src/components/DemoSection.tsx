@@ -49,4 +49,14 @@ export const DemoSection: React.FC = () => {
               We’ll walk through a real call flow, show you how bookings appear in your calendar,
               and answer questions about wiring this into your existing systems.
             </p>
-            <div className="flex f
+            <div className="flex flex-wrap gap-3 justify-start sm:justify-end">
+              <Button size="md" onClick={openBooking}>
+                Book a Live Demo
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
