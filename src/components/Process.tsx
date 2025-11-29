@@ -5,7 +5,6 @@ import {
   BarChart3,
   ArrowRight,
   X,
-  GitBranch,
   Database,
   Cog,
   FileText,
@@ -150,7 +149,8 @@ const GrowthDiagram = () => (
       <p className="text-sm text-slate-500">Continuous optimization for maximum conversion.</p>
     </div>
 
-    <div className="relative w-full max-w-lg h-64 border-l-2 border-b-2 border-slate-200 dark:border-slate-700 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-tr-3xl">
+    {/* ✅ FULL rounded corners on all sides (top+bottom) */}
+    <div className="relative w-full max-w-lg h-64 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 pointer-events-none opacity-10">
         {[...Array(6)].map((_, i) => (
           <div key={`v-${i}`} className="border-r border-slate-500 h-full" />
@@ -161,7 +161,7 @@ const GrowthDiagram = () => (
       </div>
 
       <svg
-        className="absolute inset-0 w-full h-full overflow-visible p-4"
+        className="absolute inset-0 w-full h-full p-4"
         preserveAspectRatio="none"
         viewBox="0 0 100 100"
       >
@@ -199,10 +199,10 @@ const GrowthDiagram = () => (
         <circle cx="100" cy="10" r="3" className="fill-brand-600 animate-pulse" />
       </svg>
 
-      <div className="absolute -left-10 top-4 text-xs font-bold text-slate-400">High</div>
-      <div className="absolute -left-10 bottom-4 text-xs font-bold text-slate-400">Low</div>
-      <div className="absolute -bottom-6 left-4 text-xs font-bold text-slate-400">Launch</div>
-      <div className="absolute -bottom-6 right-4 text-xs font-bold text-slate-400">Month 3</div>
+      <div className="absolute left-4 top-4 text-xs font-bold text-slate-400">High</div>
+      <div className="absolute left-4 bottom-4 text-xs font-bold text-slate-400">Low</div>
+      <div className="absolute bottom-3 left-14 text-xs font-bold text-slate-400">Launch</div>
+      <div className="absolute bottom-3 right-6 text-xs font-bold text-slate-400">Month 3</div>
     </div>
 
     <div className="flex gap-8 mt-8 bg-white dark:bg-slate-800 px-6 py-3 rounded-full shadow-lg border border-slate-100 dark:border-white/5">
@@ -253,24 +253,20 @@ export const Process: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="relative">
           {/* Local glow behind the process card */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10"
-          >
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/50 to-transparent dark:from-slate-900/70" />
             <div className="absolute -right-32 top-1/3 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
             <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/25 blur-3xl" />
           </div>
 
           {/* Floating glass card */}
-          <div className="rounded-3xl bg-white/6 dark:bg-slate-950/75 border border-white/10 backdrop-blur-xl shadow-[0_24px_70px_rgba(15,23,42,0.85)] p-8 sm:p-10">
+          <div className="rounded-3xl overflow-hidden bg-white/6 dark:bg-slate-950/75 border border-white/10 backdrop-blur-xl shadow-[0_24px_70px_rgba(15,23,42,0.85)] p-8 sm:p-10">
             <div className="text-center mb-16">
               <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
                 Our Process
               </h2>
               <h3 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-                From Discovery to{' '}
-                <span className="text-brand-600">Domination</span>
+                From Discovery to <span className="text-brand-600">Domination</span>
               </h3>
             </div>
 
@@ -295,7 +291,7 @@ export const Process: React.FC = () => {
                       </div>
                     </button>
 
-                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full">
+                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full">
                       <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
                         {step.title}
                       </h4>
@@ -332,9 +328,9 @@ export const Process: React.FC = () => {
               <X size={20} />
             </button>
 
-            <div className="flex-1 relative bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-dark-card dark:via-dark-bg dark:to-slate-900 overflow-hidden">
+            {/* Rounded top + clipped */}
+            <div className="flex-1 relative bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-dark-card dark:via-dark-bg dark:to-slate-900 overflow-hidden rounded-t-3xl">
               <BlueprintGrid />
-
               <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
               {selectedStep === 1 && <DiscoveryDiagram />}
@@ -342,7 +338,8 @@ export const Process: React.FC = () => {
               {selectedStep === 3 && <GrowthDiagram />}
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center relative z-10">
+            {/* Rounded bottom */}
+            <div className="p-4 bg-slate-50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center relative z-10 rounded-b-3xl">
               <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold flex items-center justify-center gap-2">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                 Sentient Partners Intelligence System
