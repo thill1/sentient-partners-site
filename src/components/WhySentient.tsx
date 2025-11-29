@@ -24,7 +24,7 @@ export const WhySentient: React.FC = () => {
             </p>
             <h2
               id="why-heading"
-              className="mt-3 font-display text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white"
+              className="mt-3 font-display text-2xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white"
             >
               Sentient Partners helps SMBs win more customers with enterprise-grade AI voice, chat, funnels, and automated follow-up. 
             </h2>
