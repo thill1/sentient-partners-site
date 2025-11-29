@@ -1,59 +1,48 @@
 import React from 'react';
-import { PlayCircle } from 'lucide-react';
 import { Button } from './Button';
+import { MessageSquare, Zap } from 'lucide-react';
 
 export const DemoSection: React.FC = () => {
-  const openBooking = () => {
-    window.dispatchEvent(new CustomEvent('open-booking-modal'));
+  const openChat = () => {
+    window.dispatchEvent(new CustomEvent('open-sentient-chat'));
   };
 
   return (
-    <section
-      id="demo"
-      className="py-20 sm:py-24 bg-slate-50 dark:bg-slate-950"
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
-        <div className="mb-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 dark:text-white">
-            See the Agent in Action
-          </h2>
-          <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Watch a live AI agent handle inbound calls, qualify leads, and book appointments
-            without you lifting a finger.
-          </p>
-        </div>
-
-        {/* Demo card with rounded corners */}
-        <div className="rounded-3xl border border-slate-200/80 bg-white shadow-xl overflow-hidden dark:border-slate-800/80 dark:bg-slate-900/80">
-          {/* Video / iframe placeholder */}
-          <div className="aspect-video bg-slate-900/90 flex items-center justify-center relative">
-            <button
-              type="button"
-              className="inline-flex items-center gap-3 rounded-full bg-white/95 px-5 py-2.5 text-sm font-medium text-slate-900 shadow-lg hover:bg-white transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
-              onClick={openBooking}
-            >
-              <PlayCircle className="h-5 w-5" />
-              Watch Live Demo
-            </button>
-
-            {/* Optional subtle overlay label */}
-            <span className="absolute bottom-4 right-4 text-[11px] uppercase tracking-[0.14em] text-slate-300/80">
-              Sentient Voice · Live Agent
-            </span>
+    <section id="demo" className="py-24 relative overflow-hidden bg-slate-50 dark:bg-[#0c0c0c]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 bg-white dark:bg-dark-card rounded-3xl p-8 md:p-16 border border-slate-200 dark:border-dark-border shadow-2xl text-center overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-30 pointer-events-none">
+            <div className="absolute -top-[200px] -right-[200px] w-[500px] h-[500px] bg-brand-500/20 rounded-full blur-[100px]"></div>
+            <div className="absolute -bottom-[200px] -left-[200px] w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px]"></div>
           </div>
 
-          {/* Card footer content */}
-          <div className="px-6 py-5 sm:px-8 sm:py-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl">
-              We’ll walk through a real call flow, show you how bookings appear in your calendar,
-              and answer questions about wiring this into your existing systems.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-start sm:justify-end">
-              <Button size="md" onClick={openBooking}>
-                Book a Live Demo
-              </Button>
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <div className="inline-flex items-center space-x-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 px-4 py-1.5 rounded-full text-sm font-medium mb-8">
+              <Zap size={16} />
+              <span>Interactive Live Demo</span>
             </div>
+
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+              See the Agent in Action
+            </h2>
+            
+            <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
+              We've deployed a live version of our Sentient Agent on this page. 
+              Click the button below to open the floating interface and experience real-time voice and text automation.
+            </p>
+
+            <Button 
+              size="lg" 
+              onClick={openChat}
+              className="px-10 py-4 text-lg shadow-xl shadow-brand-500/30 hover:scale-105 transition-transform"
+            >
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Launch Interactive Demo
+            </Button>
+            
+            <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+              Try asking: "What time is it in Tokyo?" or "Book an appointment."
+            </p>
           </div>
         </div>
       </div>
