@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- Default LIGHT mode early (before React renders) -->
+    <!-- FORCE DEFAULT LIGHT (mobile + desktop), overriding any previously saved dark -->
     <script>
       (function () {
         try {
-          var saved = localStorage.getItem("theme");
-          // Default LIGHT unless explicitly saved as dark
-          if (saved === "dark") document.documentElement.classList.add("dark");
-          else document.documentElement.classList.remove("dark");
-          if (!saved) localStorage.setItem("theme", "light");
+          // Normalize to a single key and force it to light
+          localStorage.setItem("theme", "light");
+          localStorage.removeItem("color-theme");
+          localStorage.removeItem("sentient-theme");
+
+          // Ensure the DOM starts in light
+          document.documentElement.classList.remove("dark");
         } catch (e) {}
       })();
     </script>
@@ -31,16 +33,25 @@
     <meta name="theme-color" content="#0F172A" />
 
     <!-- Canonical URL (update if you move off GitHub Pages) -->
-    <link rel="canonical" href="https://thill1.github.io/sentient-partners-site/" />
+    <link
+      rel="canonical"
+      href="https://thill1.github.io/sentient-partners-site/"
+    />
 
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Sentient Partners | AI Implementation Agency" />
+    <meta
+      property="og:title"
+      content="Sentient Partners | AI Implementation Agency"
+    />
     <meta
       property="og:description"
       content="AI voice agents, chatbots, and automation systems for SMBs — built and implemented by Sentient Partners to drive always-on revenue."
     />
-    <meta property="og:url" content="https://thill1.github.io/sentient-partners-site/" />
+    <meta
+      property="og:url"
+      content="https://thill1.github.io/sentient-partners-site/"
+    />
     <!-- TODO: update this to your actual hosted OG image -->
     <meta
       property="og:image"
@@ -51,7 +62,10 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sentient Partners | AI Implementation Agency" />
+    <meta
+      name="twitter:title"
+      content="Sentient Partners | AI Implementation Agency"
+    />
     <meta
       name="twitter:description"
       content="Deploy AI voice, chat, and automation systems that book more appointments and capture more leads — without adding headcount."
@@ -95,8 +109,18 @@
     </style>
 
     <!-- Favicon & App Icons (update paths to your actual assets) -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
   </head>
