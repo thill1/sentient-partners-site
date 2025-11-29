@@ -26,13 +26,10 @@ export const WhySentient: React.FC = () => {
               id="why-heading"
               className="mt-3 font-display text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white"
             >
-              Why Choose Sentient? Sentient Partners helps SMBs win more customers with enterprise-grade AI voice, chat, funnels, and automated follow-up.
+              Why Choose Sentient? 
             </h2>
             <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-              Sentient Partners is an AI implementation studio focused on small and
-              mid-sized businesses. The same mindset used in enterprise environments
-              is now pointed at building you unfair advantages in voice, chat,
-              funnels, and follow-up.
+              Sentient Partners helps SMBs win more customers with enterprise-grade AI voice, chat, funnels, and automated follow-up.
             </p>
           </div>
 
