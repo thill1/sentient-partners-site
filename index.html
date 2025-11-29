@@ -1,13 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth dark">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
 
+    <!-- Default LIGHT mode early (before React renders) -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          // Default LIGHT unless explicitly saved as dark
+          if (saved === "dark") document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+          if (!saved) localStorage.setItem("theme", "light");
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Mobile viewport: keep zoom enabled for accessibility -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary SEO -->
     <title>Sentient Partners | AI Implementation Agency</title>
@@ -21,25 +31,16 @@
     <meta name="theme-color" content="#0F172A" />
 
     <!-- Canonical URL (update if you move off GitHub Pages) -->
-    <link
-      rel="canonical"
-      href="https://thill1.github.io/sentient-partners-site/"
-    />
+    <link rel="canonical" href="https://thill1.github.io/sentient-partners-site/" />
 
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website" />
-    <meta
-      property="og:title"
-      content="Sentient Partners | AI Implementation Agency"
-    />
+    <meta property="og:title" content="Sentient Partners | AI Implementation Agency" />
     <meta
       property="og:description"
       content="AI voice agents, chatbots, and automation systems for SMBs — built and implemented by Sentient Partners to drive always-on revenue."
     />
-    <meta
-      property="og:url"
-      content="https://thill1.github.io/sentient-partners-site/"
-    />
+    <meta property="og:url" content="https://thill1.github.io/sentient-partners-site/" />
     <!-- TODO: update this to your actual hosted OG image -->
     <meta
       property="og:image"
@@ -50,10 +51,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Sentient Partners | AI Implementation Agency"
-    />
+    <meta name="twitter:title" content="Sentient Partners | AI Implementation Agency" />
     <meta
       name="twitter:description"
       content="Deploy AI voice, chat, and automation systems that book more appointments and capture more leads — without adding headcount."
@@ -97,18 +95,8 @@
     </style>
 
     <!-- Favicon & App Icons (update paths to your actual assets) -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png"
-    />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
   </head>
