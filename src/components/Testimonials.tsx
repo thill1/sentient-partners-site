@@ -6,7 +6,7 @@ export const Testimonials: React.FC = () => {
   return (
     <section
       id="testimonials"
-      className="relative py-24 overflow-hidden bg-white dark:bg-slate-950"
+      className="relative py-24 overflow-hidden"
     >
       {/* Glows */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
