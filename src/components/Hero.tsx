@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
 import { ArrowRight, PlayCircle } from 'lucide-react';
 
@@ -210,6 +210,15 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
+const phrases = [
+  'Sentient Systems',
+  'Sentient Partners',
+  'Automated Workflows',
+  'Automated Leads',
+  'AI Receptionists',
+  'Automated Appointments',
+];
+
 const Hero: React.FC = () => {
   const openChat = () => {
     window.dispatchEvent(new CustomEvent('open-sentient-chat'));
@@ -223,6 +232,42 @@ const Hero: React.FC = () => {
     e.preventDefault();
     openContact();
   };
+
+  // Typewriter / rotating text state
+  const [index, setIndex] = useState(0);
+  const [text, setText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = phrases[index];
+    const typingSpeed = 80;
+    const deletingSpeed = 40;
+    const pauseAtEnd = 1400;
+    const pauseBetween = 400;
+
+    let timeout: number;
+
+    if (!isDeleting && text.length < current.length) {
+      timeout = window.setTimeout(() => {
+        setText(current.slice(0, text.length + 1));
+      }, typingSpeed);
+    } else if (!isDeleting && text.length === current.length) {
+      timeout = window.setTimeout(() => setIsDeleting(true), pauseAtEnd);
+    } else if (isDeleting && text.length > 0) {
+      timeout = window.setTimeout(() => {
+        setText(current.slice(0, text.length - 1));
+      }, deletingSpeed);
+    } else if (isDeleting && text.length === 0) {
+      timeout = window.setTimeout(() => {
+        setIsDeleting(false);
+        setIndex((prev) => (prev + 1) % phrases.length);
+      }, pauseBetween);
+    }
+
+    return () => window.clearTimeout(timeout);
+  }, [text, isDeleting, index]);
+
+  const longestPhrase = 'Automated Appointments';
 
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16">
@@ -243,8 +288,20 @@ const Hero: React.FC = () => {
             <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
               We Build
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400">
-                Sentient Systems
+              {/* Rotating typewriter line */}
+              <span className="relative inline-block align-top">
+                {/* Hidden sizer to prevent layout shift */}
+                <span className="opacity-0 invisible whitespace-nowrap">
+                  {longestPhrase}
+                </span>
+                {/* Actual animated text */}
+                <span
+                  className="absolute inset-0 whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400"
+                  aria-live="polite"
+                >
+                  {text}
+                  <span className="inline-block w-[1ch] border-r-2 border-brand-500 ml-0.5 animate-pulse" />
+                </span>
               </span>
               <br />
               That Never Sleep
