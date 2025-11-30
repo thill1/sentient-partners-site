@@ -6,7 +6,7 @@ import { DemoSection } from './components/DemoSection';
 import { Testimonials } from './components/Testimonials';
 import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
-import Footer from './components/Footer'; // ⬅️ default import here
+import { Footer } from './components/Footer';
 import { CTASection } from './components/CTASection';
 import { Process } from './components/Process';
 import { ChatInterface } from './components/ChatInterface';
