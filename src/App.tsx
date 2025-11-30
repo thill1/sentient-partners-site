@@ -6,7 +6,7 @@ import { DemoSection } from './components/DemoSection';
 import { Testimonials } from './components/Testimonials';
 import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
-import { Footer } from './components/Footer';
+import Footer from './components/Footer'; // ⬅️ default import here
 import { CTASection } from './components/CTASection';
 import { Process } from './components/Process';
 import { ChatInterface } from './components/ChatInterface';
@@ -29,7 +29,6 @@ function App() {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
-      // Optional: persist the default so your toggle stays in sync on refresh
       if (!saved) localStorage.setItem('theme', 'light');
     }
   }, []);
