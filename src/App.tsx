@@ -15,6 +15,7 @@ import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
 import { WhySentient } from './components/WhySentient';
 
+
 function App() {
   useEffect(() => {
     const root = document.documentElement;
