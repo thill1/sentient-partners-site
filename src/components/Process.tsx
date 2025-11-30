@@ -149,7 +149,6 @@ const GrowthDiagram = () => (
       <p className="text-sm text-slate-500">Continuous optimization for maximum conversion.</p>
     </div>
 
-    {/* ✅ FULL rounded corners on all sides (top+bottom) */}
     <div className="relative w-full max-w-lg h-64 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 pointer-events-none opacity-10">
         {[...Array(6)].map((_, i) => (
@@ -251,7 +250,8 @@ export const Process: React.FC = () => {
       className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="relative">
+        {/* 🔹 ADD rounded + overflow-hidden so glow and card share the same radius */}
+        <div className="relative rounded-[32px] overflow-hidden">
           {/* Local glow behind the process card */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/50 to-transparent dark:from-slate-900/70" />
@@ -291,7 +291,7 @@ export const Process: React.FC = () => {
                       </div>
                     </button>
 
-                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full">
+                    <div className="bg-slate-50/90 dark:bg.white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full">
                       <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
                         {step.title}
                       </h4>
@@ -323,12 +323,11 @@ export const Process: React.FC = () => {
           <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl min-h-[500px] rounded-3xl shadow-2xl overflow-hidden animate-slide-up ring-1 ring-white/10 flex flex-col">
             <button
               onClick={() => setSelectedStep(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/10 z-20"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg.white/10 z-20"
             >
               <X size={20} />
             </button>
 
-            {/* Rounded top + clipped */}
             <div className="flex-1 relative bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-dark-card dark:via-dark-bg dark:to-slate-900 overflow-hidden rounded-t-3xl">
               <BlueprintGrid />
               <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -338,7 +337,6 @@ export const Process: React.FC = () => {
               {selectedStep === 3 && <GrowthDiagram />}
             </div>
 
-            {/* Rounded bottom */}
             <div className="p-4 bg-slate-50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center relative z-10 rounded-b-3xl">
               <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold flex items-center justify-center gap-2">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
