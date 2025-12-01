@@ -240,7 +240,7 @@ const Hero: React.FC = () => {
   useEffect(() => {
     const interval = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
-    }, 2000); // change every 2 seconds
+    }, 2500); // one phrase every 2.5 seconds
 
     return () => window.clearInterval(interval);
   }, []);
@@ -265,9 +265,9 @@ const Hero: React.FC = () => {
               We Build
               <br />
               {/* Upward-scrolling phrases */}
-              <span className="inline-block h-[1.1em] overflow-hidden align-top">
+              <span className="inline-block relative h-[1.1em] overflow-hidden align-top">
                 <span
-                  className="inline-flex flex-col text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 transition-transform duration-500 ease-out"
+                  className="absolute left-0 top-0 flex flex-col text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 transition-transform duration-700 ease-out"
                   style={{ transform: `translateY(-${index * 100}%)` }}
                 >
                   {phrases.map((phrase) => (
