@@ -248,7 +248,7 @@ const Hero: React.FC = () => {
   const currentPhrase = phrases[index];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16">
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-14">
       <ParticleBackground />
 
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -257,13 +257,13 @@ const Hero: React.FC = () => {
           {/* LEFT: hero content */}
           <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
             <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
-              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-8 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
                 <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
                 Accepting New Partners
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
+            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
               <span className="block">We Build</span>
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-nowrap">
                 {currentPhrase}
@@ -271,23 +271,12 @@ const Hero: React.FC = () => {
               <span className="block">That Never Sleep</span>
             </h1>
 
-            <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-10 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+            <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
               Transform your business with AI voice agents, intelligent chatbots,
               and automated revenue systems. No tech expertise required.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
-              <Button
-                size="lg"
-                onClick={() =>
-                  document
-                    .getElementById('pricing')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
-              >
-                View Plans &amp; Pricing
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
               <Button size="lg" variant="outline" onClick={openChat}>
                 <PlayCircle className="mr-2 h-5 w-5" />
                 Try Interactive Demo
