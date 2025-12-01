@@ -263,9 +263,9 @@ const Hero: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
               <span className="block">We Build</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-nowrap">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-normal sm:whitespace-nowrap">
                 {currentPhrase}
               </span>
               <span className="block">That Never Sleep</span>
