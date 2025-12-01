@@ -248,7 +248,7 @@ const Hero: React.FC = () => {
   const currentPhrase = phrases[index];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-16 pb-10">
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-14 pb-8">
       <ParticleBackground />
 
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -276,7 +276,7 @@ const Hero: React.FC = () => {
               and automated revenue systems. No tech expertise required.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
+            <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
               <Button size="lg" variant="outline" onClick={openChat}>
                 <PlayCircle className="mr-2 h-5 w-5" />
                 Try Interactive Demo
