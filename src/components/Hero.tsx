@@ -210,7 +210,7 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
-/** Upward-scrolling phrases for the hero line */
+/** Rotating phrases for the hero line */
 const phrases = [
   'AI Receptionist',
   'Smart Websites',
@@ -234,16 +234,18 @@ const Hero: React.FC = () => {
     openContact();
   };
 
-  // Upward scroll index
+  // Index of current phrase
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
-    }, 2500); // one phrase every 2.5 seconds
+    }, 2500); // change every 2.5 seconds
 
     return () => window.clearInterval(interval);
   }, []);
+
+  const currentPhrase = phrases[index];
 
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16">
@@ -262,24 +264,9 @@ const Hero: React.FC = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
-              We Build
-              <br />
-              {/* Upward-scrolling phrases */}
-              <span className="inline-block relative h-[1.1em] overflow-hidden align-top">
-                <span
-                  className="absolute left-0 top-0 flex flex-col transition-transform duration-700 ease-out"
-                  style={{ transform: `translateY(-${index * 1.1}em)` }}
-                >
-                  {phrases.map((phrase) => (
-                    <span
-                      key={phrase}
-                      className="leading-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400"
-                      style={{ height: '1.1em', lineHeight: '1.1em' }}
-                    >
-                      {phrase}
-                    </span>
-                  ))}
-                </span>
+              We Build{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400">
+                {currentPhrase}
               </span>
               <br />
               That Never Sleep
