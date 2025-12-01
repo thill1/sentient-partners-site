@@ -268,12 +268,13 @@ const Hero: React.FC = () => {
               <span className="inline-block relative h-[1.1em] overflow-hidden align-top">
                 <span
                   className="absolute left-0 top-0 flex flex-col transition-transform duration-700 ease-out"
-                  style={{ transform: `translateY(-${index * 100}%)` }}
+                  style={{ transform: `translateY(-${index * 1.1}em)` }}
                 >
                   {phrases.map((phrase) => (
                     <span
                       key={phrase}
-                      className="h-[1.1em] leading-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400"
+                      className="leading-tight text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400"
+                      style={{ height: '1.1em', lineHeight: '1.1em' }}
                     >
                       {phrase}
                     </span>
