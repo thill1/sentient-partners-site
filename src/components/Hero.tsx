@@ -148,8 +148,8 @@ const ParticleBackground: React.FC = () => {
       const total = beams.length;
       for (let i = 0; i < total; i++) {
         const b = beams[i];
-        b.y -= b.speed;
-        b.pulse += b.pulseSpeed;
+          b.y -= b.speed;
+          b.pulse += b.pulseSpeed;
 
         if (b.y + b.length < -100) {
           resetBeam(b, i, total, viewportWidth, viewportHeight);
@@ -264,8 +264,9 @@ const Hero: React.FC = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
-              We Build{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400">
+              We Build
+              <br />
+              <span className="block mt-1 text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-nowrap">
                 {currentPhrase}
               </span>
               <br />
