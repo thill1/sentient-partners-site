@@ -226,21 +226,21 @@ export const Process: React.FC = () => {
       icon: Search,
       title: 'Discovery & Readiness',
       desc: 'We audit your current workflows to identify high-impact automation opportunities. We tell you what to automate first and why.',
-      label: 'View Blueprint',
+      asset: 'Blueprint',
     },
     {
       id: 2,
       icon: Map,
       title: 'Strategic Roadmap',
       desc: 'We build a 30-90 day implementation plan. No guesswork. Just a clear path to integrating Voice, Chat, and CRM systems.',
-      label: 'View Timeline',
+      asset: 'Timeline',
     },
     {
       id: 3,
       icon: BarChart3,
       title: 'Optimization & Growth',
       desc: 'We don’t just launch and leave. We split-test, monitor performance, and optimize your agents for maximum conversion.',
-      label: 'View Projections',
+      asset: 'Projections',
     },
   ];
 
@@ -250,8 +250,7 @@ export const Process: React.FC = () => {
       className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
-        {/* 🔹 ADD rounded + overflow-hidden so glow and card share the same radius */}
-        <div className="relative rounded-[32px] overflow-hidden">
+        <div className="relative">
           {/* Local glow behind the process card */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/50 to-transparent dark:from-slate-900/70" />
@@ -276,22 +275,32 @@ export const Process: React.FC = () => {
               <div className="grid md:grid-cols-3 gap-12 relative z-10">
                 {steps.map((step, idx) => (
                   <div
-                    key={idx}
-                    className="group relative flex flex-col items-center text-center"
+                    key={step.id}
+                    className="relative flex flex-col items-center text-center"
                   >
+                    {/* Icon button opens modal */}
                     <button
                       onClick={() => setSelectedStep(step.id)}
-                      className="w-24 h-24 bg-white/90 dark:bg-slate-950 rounded-full flex items-center justify-center mb-8 border-4 border-slate-50/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300 group-hover:border-brand-500 group-hover:scale-110 relative z-10 cursor-pointer outline-none focus:ring-4 focus:ring-brand-500/20"
+                      className="w-24 h-24 bg-white/90 dark:bg-slate-950 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300 hover:border-brand-500 hover:scale-110 cursor-pointer outline-none focus:ring-4 focus:ring-brand-500/20"
+                      type="button"
                     >
                       <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/20 rounded-full flex items-center justify-center">
                         <step.icon className="w-8 h-8 text-brand-600 dark:text-brand-400" />
                       </div>
-                      <div className="absolute -bottom-2 px-3 py-1 bg-brand-600 text-white text-[10px] uppercase font-bold tracking-wider rounded-full opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 shadow-lg">
-                        {step.label}
-                      </div>
                     </button>
 
-                    <div className="bg-slate-50/90 dark:bg.white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full">
+                    {/* Always-visible asset link row (Blueprint / Timeline / Projections) */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStep(step.id)}
+                      className="inline-flex items-center text-xs font-semibold tracking-wide uppercase text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 mb-4"
+                    >
+                      <span className="mr-1">{step.asset}</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+
+                    {/* Card content */}
+                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full mt-2">
                       <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
                         {step.title}
                       </h4>
@@ -323,11 +332,12 @@ export const Process: React.FC = () => {
           <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl min-h-[500px] rounded-3xl shadow-2xl overflow-hidden animate-slide-up ring-1 ring-white/10 flex flex-col">
             <button
               onClick={() => setSelectedStep(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg.white/10 z-20"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/10 z-20"
             >
               <X size={20} />
             </button>
 
+            {/* Modal top section (rounded) */}
             <div className="flex-1 relative bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-dark-card dark:via-dark-bg dark:to-slate-900 overflow-hidden rounded-t-3xl">
               <BlueprintGrid />
               <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -337,6 +347,7 @@ export const Process: React.FC = () => {
               {selectedStep === 3 && <GrowthDiagram />}
             </div>
 
+            {/* Modal footer */}
             <div className="p-4 bg-slate-50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center relative z-10 rounded-b-3xl">
               <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold flex items-center justify-center gap-2">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
