@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
-import { PlayCircle } from 'lucide-react';
 
 type Intensity = 'subtle' | 'medium' | 'strong';
 
@@ -221,10 +220,6 @@ const phrases = [
 ];
 
 const Hero: React.FC = () => {
-  const openChat = () => {
-    window.dispatchEvent(new CustomEvent('open-sentient-chat'));
-  };
-
   const openContact = () => {
     window.dispatchEvent(new CustomEvent('open-contact-modal'));
   };
@@ -275,13 +270,6 @@ const Hero: React.FC = () => {
               Transform your business with AI voice agents, intelligent chatbots,
               and automated revenue systems. No tech expertise required.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 animate-slide-up opacity-0 [animation-delay:800ms]">
-              <Button size="lg" variant="outline" onClick={openChat}>
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Try Interactive Demo
-              </Button>
-            </div>
           </div>
 
           {/* RIGHT: lightweight contact form */}
