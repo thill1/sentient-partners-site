@@ -248,7 +248,7 @@ const Hero: React.FC = () => {
   const currentPhrase = phrases[index];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-14 pb-8">
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-12 pb-6">
       <ParticleBackground />
 
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
