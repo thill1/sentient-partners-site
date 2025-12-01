@@ -1,365 +1,378 @@
-import React, { useState } from 'react';
-import {
-  Search,
-  Map,
-  BarChart3,
-  ArrowRight,
-  X,
-  Database,
-  Cog,
-  FileText,
-  CheckCircle,
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button } from './Button';
 
-const BlueprintGrid = () => (
-  <div
-    className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
-    style={{
-      backgroundImage:
-        'linear-gradient(#0ea5e9 1px, transparent 1px), linear-gradient(90deg, #0ea5e9 1px, transparent 1px)',
-      backgroundSize: '30px 30px',
-    }}
-  />
-);
+type Intensity = 'subtle' | 'medium' | 'strong';
 
-const DiscoveryDiagram = () => (
-  <div className="flex flex-col items-center justify-center w-full h-full p-4 animate-fade-in relative z-10">
-    <div className="text-center mb-10">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
-        Workflow Audit Blueprint
-      </h4>
-      <p className="text-sm text-slate-500">
-        Mapping your data flow to identify bottlenecks.
-      </p>
-    </div>
+interface Beam {
+  x: number;
+  y: number;
+  width: number;
+  length: number;
+  angle: number;
+  speed: number;
+  opacity: number;
+  hue: number;
+  pulse: number;
+  pulseSpeed: number;
+}
 
-    <div className="relative flex items-center justify-center w-full max-w-lg gap-4 md:gap-8">
-      <div className="flex flex-col items-center gap-2 relative z-10">
-        <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 duration-300">
-          <Database className="w-8 h-8 text-slate-500" />
-        </div>
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-          Inputs
-        </span>
-      </div>
+const ParticleBackground: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-      <div className="h-1 w-12 md:w-24 bg-slate-200 dark:bg-slate-700 relative overflow-hidden rounded-full">
-        <div className="absolute top-0 left-0 h-full w-1/2 bg-brand-500 animate-[marquee_2s_linear_infinite]" />
-      </div>
+  useEffect(() => {
+    const canvasInitial = canvasRef.current;
+    if (!canvasInitial) return;
 
-      <div className="flex flex-col items-center gap-2 relative z-10">
-        <div className="w-24 h-24 rounded-2xl bg-brand-600 flex items-center justify-center shadow-xl shadow-brand-500/30 ring-4 ring-brand-100 dark:ring-brand-900/30 transition-transform hover:scale-110 duration-300">
-          <Cog className="w-12 h-12 text-white animate-spin-slow" />
-        </div>
-        <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
-          AI Analysis
-        </span>
-      </div>
+    const ctxRaw = canvasInitial.getContext('2d', { alpha: true });
+    if (!ctxRaw) return;
 
-      <div className="h-1 w-12 md:w-24 bg-slate-200 dark:bg-slate-700 relative overflow-hidden rounded-full">
-        <div className="absolute top-0 left-0 h-full w-1/2 bg-brand-500 animate-[marquee_2s_linear_infinite] [animation-delay:0.5s]" />
-      </div>
+    const ctx: CanvasRenderingContext2D = ctxRaw;
 
-      <div className="flex flex-col items-center gap-2 relative z-10">
-        <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-800 border-2 border-brand-500 flex items-center justify-center shadow-lg transition-transform hover:scale-110 duration-300">
-          <FileText className="w-8 h-8 text-brand-600" />
-        </div>
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-          Strategy
-        </span>
-      </div>
-    </div>
+    const MINIMUM_BEAMS = 20;
+    const opacityMap: Record<Intensity, number> = {
+      subtle: 0.7,
+      medium: 0.85,
+      strong: 1.0,
+    };
 
-    <div className="mt-10 bg-slate-50/80 dark:bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl text-sm text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 max-w-md w-full shadow-lg">
-      <ul className="space-y-3">
-        <li className="flex items-center">
-          <CheckCircle className="w-4 h-4 mr-3 text-brand-500" /> Identify manual data entry points
-        </li>
-        <li className="flex items-center">
-          <CheckCircle className="w-4 h-4 mr-3 text-brand-500" /> Map customer communication touchpoints
-        </li>
-        <li className="flex items-center">
-          <CheckCircle className="w-4 h-4 mr-3 text-brand-500" /> Calculate potential ROI of automation
-        </li>
-      </ul>
-    </div>
-  </div>
-);
+    const intensity: Intensity = 'strong';
 
-const RoadmapDiagram = () => (
-  <div className="w-full h-full p-6 animate-fade-in flex flex-col justify-center relative z-10">
-    <div className="text-center mb-10">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
-        Execution Timeline
-      </h4>
-      <p className="text-sm text-slate-500">A clear 90-day path to full automation.</p>
-    </div>
+    let beams: Beam[] = [];
+    let rafId = 0;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
 
-    <div className="space-y-8 max-w-lg mx-auto w-full">
-      <div className="group">
-        <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-wide text-slate-500 group-hover:text-brand-600 transition-colors">
-          <span>Month 1: Foundation</span>
-          <span>4 Weeks</span>
-        </div>
-        <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-1 shadow-inner">
-          <div className="h-full bg-gradient-to-r from-brand-400 to-brand-500 w-full rounded-full shadow-[0_0_15px_rgba(56,189,248,0.5)] animate-[slideUp_1s_ease-out]" />
-        </div>
-        <p className="text-xs mt-2 text-slate-400 font-medium">
-          CRM Setup, Data Migration, Voice Agent Training
-        </p>
-      </div>
+    function createBeam(w: number, h: number): Beam {
+      const angle = -35 + Math.random() * 10;
+      return {
+        x: Math.random() * w * 1.5 - w * 0.25,
+        y: Math.random() * h * 1.5 - h * 0.25,
+        width: 30 + Math.random() * 60,
+        length: h * 2.5,
+        angle,
+        speed: 0.6 + Math.random() * 1.2,
+        opacity: 0.12 + Math.random() * 0.16,
+        hue: 190 + Math.random() * 70,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.02 + Math.random() * 0.03,
+      };
+    }
 
-      <div className="group">
-        <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-wide text-slate-500 group-hover:text-indigo-600 transition-colors">
-          <span>Month 2: Integration</span>
-          <span>4 Weeks</span>
-        </div>
-        <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-1 flex shadow-inner">
-          <div className="h-full bg-transparent w-[10%]" />
-          <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-500 w-[90%] rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] animate-[slideUp_1.2s_ease-out]" />
-        </div>
-        <p className="text-xs mt-2 text-slate-400 font-medium">
-          SMS Flows, Website Chatbot, Soft Launch
-        </p>
-      </div>
+    function resetBeam(
+      beam: Beam,
+      index: number,
+      totalBeams: number,
+      w: number,
+      h: number
+    ): Beam {
+      const column = index % 3;
+      const spacing = w / 3;
+      beam.y = h + 100;
+      beam.x =
+        column * spacing +
+        spacing / 2 +
+        (Math.random() - 0.5) * spacing * 0.5;
+      beam.width = 100 + Math.random() * 100;
+      beam.speed = 0.5 + Math.random() * 0.4;
+      beam.hue = 190 + (index * 70) / totalBeams;
+      beam.opacity = 0.2 + Math.random() * 0.1;
+      return beam;
+    }
 
-      <div className="group">
-        <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-wide text-slate-500 group-hover:text-purple-600 transition-colors">
-          <span>Month 3: Scale</span>
-          <span>Ongoing</span>
-        </div>
-        <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-1 flex shadow-inner">
-          <div className="h-full bg-transparent w-[30%]" />
-          <div className="h-full bg-gradient-to-r from-purple-400 to-purple-500 w-[70%] rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-[slideUp_1.4s_ease-out]" />
-        </div>
-        <p className="text-xs mt-2 text-slate-400 font-medium">
-          A/B Testing, Optimization, Ad Scaling
-        </p>
-      </div>
-    </div>
-  </div>
-);
+    function updateCanvasSize(canvasEl: HTMLCanvasElement) {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
 
-const GrowthDiagram = () => (
-  <div className="w-full h-full p-4 animate-fade-in flex flex-col items-center justify-center relative z-10">
-    <div className="text-center mb-6">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
-        Revenue Impact
-      </h4>
-      <p className="text-sm text-slate-500">Continuous optimization for maximum conversion.</p>
-    </div>
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
 
-    <div className="relative w-full max-w-lg h-64 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-      <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 pointer-events-none opacity-10">
-        {[...Array(6)].map((_, i) => (
-          <div key={`v-${i}`} className="border-r border-slate-500 h-full" />
-        ))}
-        {[...Array(4)].map((_, i) => (
-          <div key={`h-${i}`} className="border-b border-slate-500 w-full" />
-        ))}
-      </div>
+      canvasEl.width = Math.floor(viewportWidth * dpr);
+      canvasEl.height = Math.floor(viewportHeight * dpr);
 
-      <svg
-        className="absolute inset-0 w-full h-full p-4"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
-        <defs>
-          <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="manualGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0" />
-          </linearGradient>
-        </defs>
+      canvasEl.style.width = '100%';
+      canvasEl.style.height = '100%';
 
-        <path d="M0 20 C 30 20, 50 60, 100 90" fill="url(#manualGradient)" stroke="none" />
-        <path
-          d="M0 20 C 30 20, 50 60, 100 90"
-          fill="none"
-          stroke="#94a3b8"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray="5,5"
-        />
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
 
-        <path d="M0 90 C 40 80, 50 40, 100 10" fill="url(#growthGradient)" stroke="none" />
-        <path
-          d="M0 90 C 40 80, 50 40, 100 10"
-          fill="none"
-          stroke="#0ea5e9"
-          strokeWidth="4"
-          strokeLinecap="round"
-          className="drop-shadow-lg"
-        />
+      const density = Math.min(
+        1.5,
+        Math.max(1, (viewportWidth * viewportHeight) / (1280 * 800))
+      );
+      const total = Math.floor(MINIMUM_BEAMS * density * 1.5);
 
-        <circle cx="100" cy="10" r="3" className="fill-brand-600 animate-pulse" />
-      </svg>
+      beams = Array.from({ length: total }, () =>
+        createBeam(viewportWidth, viewportHeight)
+      );
+    }
 
-      <div className="absolute left-4 top-4 text-xs font-bold text-slate-400">High</div>
-      <div className="absolute left-4 bottom-4 text-xs font-bold text-slate-400">Low</div>
-      <div className="absolute bottom-3 left-14 text-xs font-bold text-slate-400">Launch</div>
-      <div className="absolute bottom-3 right-6 text-xs font-bold text-slate-400">Month 3</div>
-    </div>
+    function drawBeam(c: CanvasRenderingContext2D, beam: Beam) {
+      c.save();
+      c.translate(beam.x, beam.y);
+      c.rotate((beam.angle * Math.PI) / 180);
 
-    <div className="flex gap-8 mt-8 bg-white dark:bg-slate-800 px-6 py-3 rounded-full shadow-lg border border-slate-100 dark:border-white/5">
-      <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-300">
-        <div className="w-3 h-3 bg-brand-500 rounded-full mr-2 shadow-[0_0_8px_#0ea5e9]" />
-        Automated Leads
-      </div>
-      <div className="flex items-center text-xs font-bold text-slate-400">
-        <div className="w-3 h-3 bg-slate-400 rounded-full mr-2 border border-slate-300" />
-        Manual Effort
-      </div>
-    </div>
-  </div>
-);
+      const pulsingOpacity =
+        beam.opacity *
+        (0.8 + Math.sin(beam.pulse) * 0.2) *
+        opacityMap[intensity];
 
-export const Process: React.FC = () => {
-  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+      const gradient = c.createLinearGradient(0, 0, 0, beam.length);
+      gradient.addColorStop(0, `hsla(${beam.hue},85%,65%,0)`);
+      gradient.addColorStop(
+        0.1,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(
+        0.4,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.6,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity})`
+      );
+      gradient.addColorStop(
+        0.9,
+        `hsla(${beam.hue},85%,65%,${pulsingOpacity * 0.5})`
+      );
+      gradient.addColorStop(1, `hsla(${beam.hue},85%,65%,0)`);
 
-  const steps = [
-    {
-      id: 1,
-      icon: Search,
-      title: 'Discovery & Readiness',
-      desc: 'We audit your current workflows to identify high-impact automation opportunities. We tell you what to automate first and why.',
-      label: 'View Blueprint',
-      asset: 'Blueprint',
-    },
-    {
-      id: 2,
-      icon: Map,
-      title: 'Strategic Roadmap',
-      desc: 'We build a 30-90 day implementation plan. No guesswork. Just a clear path to integrating Voice, Chat, and CRM systems.',
-      label: 'View Timeline',
-      asset: 'Timeline',
-    },
-    {
-      id: 3,
-      icon: BarChart3,
-      title: 'Optimization & Growth',
-      desc: 'We don’t just launch and leave. We split-test, monitor performance, and optimize your agents for maximum conversion.',
-      label: 'View Projections',
-      asset: 'Projections',
-    },
-  ];
+      c.fillStyle = gradient;
+      c.fillRect(-beam.width / 2, 0, beam.width, beam.length);
+      c.restore();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, viewportWidth, viewportHeight);
+      ctx.filter = 'blur(35px)';
+
+      const total = beams.length;
+      for (let i = 0; i < total; i++) {
+        const b = beams[i];
+        b.y -= b.speed;
+        b.pulse += b.pulseSpeed;
+
+        if (b.y + b.length < -100) {
+          resetBeam(b, i, total, viewportWidth, viewportHeight);
+        }
+        drawBeam(ctx, b);
+      }
+
+      rafId = requestAnimationFrame(animate);
+    }
+
+    const handleResize = () => {
+      const c = canvasRef.current;
+      if (c) {
+        updateCanvasSize(c);
+      }
+    };
+
+    // Initial sizing + start animation
+    updateCanvasSize(canvasInitial);
+    animate();
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
-    <section
-      id="process"
-      className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="relative">
-          {/* Local glow behind the process card */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/50 to-transparent dark:from-slate-900/70" />
-            <div className="absolute -right-32 top-1/3 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
-            <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/25 blur-3xl" />
-          </div>
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none">
+      {/* Base background for light/dark */}
+      <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
 
-          {/* Floating glass card */}
-          <div className="rounded-3xl overflow-hidden bg-white/6 dark:bg-slate-950/75 border border-white/10 backdrop-blur-xl shadow-[0_24px_70px_rgba(15,23,42,0.85)] p-8 sm:p-10">
-            <div className="text-center mb-16">
-              <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
-                Our Process
-              </h2>
-              <h3 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-                From Discovery to <span className="text-brand-600">Domination</span>
-              </h3>
+      {/* Beams canvas + overlays */}
+      <div className="absolute inset-0">
+        <div className="relative w-full h-full">
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+          />
+          {/* Soft blur & pulse for depth */}
+          <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
+
+          {/* Gradients & radial glow */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white/80 dark:from-neutral-950" />
+            <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(56,189,248,0.28),transparent)]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** Rotating phrases for the hero line */
+const phrases = [
+  'AI Receptionist',
+  'Smart Websites',
+  'Automated Leads',
+  'Automated Workflows',
+  'Automated Calendars',
+  'AI Chatbots',
+];
+
+const Hero: React.FC = () => {
+  const openContact = () => {
+    window.dispatchEvent(new CustomEvent('open-contact-modal'));
+  };
+
+  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    openContact();
+  };
+
+  // Index of current phrase
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % phrases.length);
+    }, 2500); // change every 2.5 seconds
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const currentPhrase = phrases[index];
+
+  return (
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-12 pb-6">
+      <ParticleBackground />
+
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 12-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
+          {/* LEFT: hero content */}
+          <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
+            <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
+                <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
+                Accepting New Partners
+              </span>
             </div>
 
-            <div className="relative">
-              <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-slate-200 via-brand-200 to-slate-200 dark:from-slate-800 dark:via-brand-900 dark:to-slate-800 z-0" />
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
+              <span className="block">We Build</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-normal sm:whitespace-nowrap">
+                {currentPhrase}
+              </span>
+              <span className="block">That Never Sleep</span>
+            </h1>
 
-              <div className="grid md:grid-cols-3 gap-12 relative z-10">
-                {steps.map((step, idx) => (
-                  <div
-                    key={step.id}
-                    className="group relative flex flex-col items-center text-center"
-                  >
-                    {/* Icon button opens modal */}
-                    <button
-                      onClick={() => setSelectedStep(step.id)}
-                      className="w-24 h-24 bg-white/90 dark:bg-slate-950 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300 group-hover:border-brand-500 group-hover:scale-110 relative z-10 cursor-pointer outline-none focus:ring-4 focus:ring-brand-500/20"
-                      type="button"
+            <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+              Transform your business with AI voice agents, intelligent chatbots,
+              and automated revenue systems. No tech expertise required.
+            </p>
+          </div>
+
+          {/* RIGHT: lightweight contact form */}
+          <div className="lg:col-span-5 xl:col-span-4 w-full">
+            <div className="animate-slide-up opacity-0 [animation-delay:900ms]">
+              <div className="bg-white/80 dark:bg-slate-950/75 border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xl backdrop-blur-xl p-6 sm:p-8">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                  Get a Custom AI Blueprint
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+                  Tell us who you are and what you’re trying to solve. We’ll follow up
+                  with a tailored Sentient Partners plan.
+                </p>
+
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="hero-name"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                     >
-                      <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/20 rounded-full flex items-center justify-center">
-                        <step.icon className="w-8 h-8 text-brand-600 dark:text-brand-400" />
-                      </div>
-                    </button>
-
-                    {/* Always-visible asset link (Blueprint / Timeline / Projections) */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStep(step.id)}
-                      className="inline-flex items-center text-xs font-semibold tracking-wide uppercase text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 mb-4"
-                    >
-                      <span className="mr-1">{step.asset}</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-
-                    {/* Card content */}
-                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full mt-2">
-                      <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-                        {step.title}
-                      </h4>
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                        {step.desc}
-                      </p>
-                    </div>
-
-                    {idx !== steps.length - 1 && (
-                      <div className="md:hidden mt-12 mb-4 text-slate-300 dark:text-slate-700">
-                        <ArrowRight className="w-6 h-6 rotate-90" />
-                      </div>
-                    )}
+                      Name
+                    </label>
+                    <input
+                      id="hero-name"
+                      name="name"
+                      type="text"
+                      required
+                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
+                      placeholder="Jane Doe"
+                    />
                   </div>
-                ))}
+
+                  <div>
+                    <label
+                      htmlFor="hero-email"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="hero-email"
+                      name="email"
+                      type="email"
+                      required
+                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
+                      placeholder="you@company.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="hero-message"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
+                    >
+                      What are you looking to automate?
+                    </label>
+                    <textarea
+                      id="hero-message"
+                      name="message"
+                      rows={3}
+                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70 resize-none"
+                      placeholder="Inbound calls, lead follow-up, missed web leads, etc."
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full mt-2"
+                  >
+                    Submit &amp; Connect
+                  </Button>
+
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                    No spam. We’ll review your note and respond with specific ideas for
+                    your business.
+                  </p>
+                </form>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {selectedStep && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm animate-fade-in"
-            onClick={() => setSelectedStep(null)}
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
           />
-
-          <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl min-h-[500px] rounded-3xl shadow-2xl overflow-hidden animate-slide-up ring-1 ring-white/10 flex flex-col">
-            <button
-              onClick={() => setSelectedStep(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-white/10 z-20"
-            >
-              <X size={20} />
-            </button>
-
-            {/* Modal top section (rounded) */}
-            <div className="flex-1 relative bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-dark-card dark:via-dark-bg dark:to-slate-900 overflow-hidden rounded-t-3xl">
-              <BlueprintGrid />
-              <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-              {selectedStep === 1 && <DiscoveryDiagram />}
-              {selectedStep === 2 && <RoadmapDiagram />}
-              {selectedStep === 3 && <GrowthDiagram />}
-            </div>
-
-            {/* Modal footer */}
-            <div className="p-4 bg-slate-50 dark:bg-black/20 border-t border-slate-100 dark:border-white/5 text-center relative z-10 rounded-b-3xl">
-              <span className="text-xs text-slate-400 uppercase tracking-widest font-semibold flex items-center justify-center gap-2">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                Sentient Partners Intelligence System
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+        </svg>
+      </div>
     </section>
   );
 };
+
+export default Hero;
+export { Hero };
