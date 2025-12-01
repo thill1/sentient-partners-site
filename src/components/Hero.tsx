@@ -210,13 +210,14 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
+/** Upward-scrolling phrases for the hero line */
 const phrases = [
-  'Sentient Systems',
-  'Sentient Partners',
-  'Automated Workflows',
+  'AI Receptionist',
+  'Smart Websites',
   'Automated Leads',
-  'AI Receptionists',
-  'Automated Appointments',
+  'Automated Workflows',
+  'Automated Calendars',
+  'AI Chatbots',
 ];
 
 const Hero: React.FC = () => {
@@ -233,41 +234,16 @@ const Hero: React.FC = () => {
     openContact();
   };
 
-  // Typewriter / rotating text state
+  // Upward scroll index
   const [index, setIndex] = useState(0);
-  const [text, setText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const current = phrases[index];
-    const typingSpeed = 80;
-    const deletingSpeed = 40;
-    const pauseAtEnd = 1400;
-    const pauseBetween = 400;
+    const interval = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % phrases.length);
+    }, 2000); // change every 2 seconds
 
-    let timeout: number;
-
-    if (!isDeleting && text.length < current.length) {
-      timeout = window.setTimeout(() => {
-        setText(current.slice(0, text.length + 1));
-      }, typingSpeed);
-    } else if (!isDeleting && text.length === current.length) {
-      timeout = window.setTimeout(() => setIsDeleting(true), pauseAtEnd);
-    } else if (isDeleting && text.length > 0) {
-      timeout = window.setTimeout(() => {
-        setText(current.slice(0, text.length - 1));
-      }, deletingSpeed);
-    } else if (isDeleting && text.length === 0) {
-      timeout = window.setTimeout(() => {
-        setIsDeleting(false);
-        setIndex((prev) => (prev + 1) % phrases.length);
-      }, pauseBetween);
-    }
-
-    return () => window.clearTimeout(timeout);
-  }, [text, isDeleting, index]);
-
-  const longestPhrase = 'Automated Appointments';
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16">
@@ -288,19 +264,17 @@ const Hero: React.FC = () => {
             <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
               We Build
               <br />
-              {/* Rotating typewriter line */}
-              <span className="relative inline-block align-top">
-                {/* Hidden sizer to prevent layout shift */}
-                <span className="opacity-0 invisible whitespace-nowrap">
-                  {longestPhrase}
-                </span>
-                {/* Actual animated text */}
+              {/* Upward-scrolling phrases */}
+              <span className="inline-block h-[1.1em] overflow-hidden align-top">
                 <span
-                  className="absolute inset-0 whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400"
-                  aria-live="polite"
+                  className="inline-flex flex-col text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 transition-transform duration-500 ease-out"
+                  style={{ transform: `translateY(-${index * 100}%)` }}
                 >
-                  {text}
-                  <span className="inline-block w-[1ch] border-r-2 border-brand-500 ml-0.5 animate-pulse" />
+                  {phrases.map((phrase) => (
+                    <span key={phrase} className="h-[1.1em] leading-tight">
+                      {phrase}
+                    </span>
+                  ))}
                 </span>
               </span>
               <br />
