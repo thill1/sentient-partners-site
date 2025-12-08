@@ -211,12 +211,16 @@ const ParticleBackground: React.FC = () => {
 
 /** Rotating phrases for the hero line */
 const phrases = [
-  'AI Receptionist',
+  'AI Receptionists',
+  'AI Sales Agents',
   'Smart Websites',
+  'AI SEO',
+  'AI Reviews',
   'Automated Leads',
   'Automated Workflows',
   'Automated Calendars',
   'AI Chatbots',
+  'Always-On Revenue'
 ];
 
 const Hero: React.FC = () => {
