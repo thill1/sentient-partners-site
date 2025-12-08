@@ -183,7 +183,11 @@ const ParticleBackground: React.FC = () => {
 
       <div className="absolute inset-0">
         <div className="relative w-full h-full">
-          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+          />
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
 
           <div className="pointer-events-none absolute inset-0">
@@ -220,11 +224,7 @@ const Hero: React.FC = () => {
     openContact();
   };
 
-  const scrollToDemo = () => {
-    const el = document.getElementById('demo');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
+  // Index of current phrase
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -238,182 +238,58 @@ const Hero: React.FC = () => {
   const currentPhrase = phrases[index];
 
   return (
-    <>
-      {/* HERO (form removed from here) */}
-      <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden pt-12 pb-10">
-        <ParticleBackground />
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-12 pb-6">
+      <ParticleBackground />
 
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
-            {/* LEFT: hero content */}
-            <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
-              <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
-                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
-                  <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
-                  Accepting New Partners
-                </span>
-              </div>
-
-              {/* UPDATED: more vertical room + bigger dynamic words */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.10] overflow-visible">
-                <span className="block">We Build</span>
-
-                <span
-                  className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
-                             whitespace-normal sm:whitespace-nowrap
-                             text-5xl sm:text-6xl md:text-8xl leading-[1.08] pb-[0.12em]"
-                >
-                  {currentPhrase}
-                </span>
-
-                <span className="block">That Never Sleep</span>
-              </h1>
-
-              <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-                Transform your business with AI voice agents, intelligent chatbots,
-                and automated revenue systems. No tech expertise required.
-              </p>
-
-              {/* Tightened CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up opacity-0 [animation-delay:750ms]">
-                <button
-                  type="button"
-                  onClick={scrollToDemo}
-                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
-                             bg-slate-900 text-white hover:bg-slate-800
-                             dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
-                             border border-slate-900/10 dark:border-white/10 backdrop-blur"
-                >
-                  See the Agent in Action
-                </button>
-
-                <button
-                  type="button"
-                  onClick={openContact}
-                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
-                             bg-white/80 hover:bg-white text-slate-900
-                             dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
-                             border border-slate-200/70 dark:border-white/10 backdrop-blur"
-                >
-                  Get a Custom AI Blueprint
-                </button>
-              </div>
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
+          {/* LEFT: hero content (rotating phrases kept) */}
+          <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
+            <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
+                <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
+                Accepting New Partners
+              </span>
             </div>
 
-            {/* RIGHT: compact "Agent preview" card (replaces contact form in hero) */}
-            <div className="lg:col-span-5 xl:col-span-4 w-full">
-              <div className="animate-slide-up opacity-0 [animation-delay:900ms]">
-                <div className="bg-white/70 dark:bg-slate-950/60 border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xl backdrop-blur-xl p-5 sm:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
-                        See the Agent in Action
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                        Live-like demo: instant answers, qualification, and booking—without dropping leads.
-                      </p>
-                    </div>
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 dark:bg-white/5 dark:text-brand-300 border border-brand-100 dark:border-white/10">
-                      60 sec
-                    </span>
-                  </div>
+            {/* FIXED: extra vertical space so descenders like "g" never clip */}
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
+              <span className="block">We Build</span>
 
-                  {/* Demo preview block */}
-                  <div className="mt-4 rounded-2xl border border-slate-200/70 dark:border-white/10 bg-gradient-to-br from-white/70 to-slate-50/60 dark:from-slate-900/40 dark:to-slate-950/40 overflow-hidden">
-                    <div className="aspect-[16/10] w-full relative">
-                      <div className="absolute inset-0 opacity-80">
-                        <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(56,189,248,0.25),transparent)]" />
-                        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(56,189,248,0.06)_1px,transparent_1px),linear-gradient(rgba(56,189,248,0.06)_1px,transparent_1px)] bg-[size:32px_32px]" />
-                      </div>
+              <span
+                className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
+                           whitespace-normal sm:whitespace-nowrap
+                           text-5xl sm:text-6xl md:text-8xl leading-[1.10] pb-[0.14em]"
+              >
+                {currentPhrase}
+              </span>
 
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="rounded-2xl bg-slate-900/90 text-white px-4 py-2 text-sm font-semibold shadow-lg">
-                          Demo preview
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <span className="block">That Never Sleep</span>
+            </h1>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-200/80">
-                    <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                      Answers 24/7
-                    </div>
-                    <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                      Qualifies leads
-                    </div>
-                    <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                      Books calls
-                    </div>
-                    <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                      Syncs to CRM
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={scrollToDemo}
-                    className="mt-4 w-full inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold
-                               bg-brand-600 hover:bg-brand-700 text-white"
-                  >
-                    Watch the Demo &amp; Request a Blueprint
-                  </button>
-                </div>
-              </div>
-            </div>
+            <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+              Transform your business with AI voice agents, intelligent chatbots,
+              and automated revenue systems. No tech expertise required.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* SEE THE AGENT IN ACTION (2-column section with the form) */}
-      <section id="demo" className="relative z-20 w-full py-14 sm:py-16">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-10 items-start">
-            {/* LEFT: demo content */}
-            <div className="lg:col-span-7 xl:col-span-8">
-              <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/55 shadow-xl backdrop-blur-xl p-5 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
-                  See the Agent in Action
-                </h2>
-                <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-                  This is where your demo video/interactive widget lives. Keep it short and punchy: show a call → qualification → booking.
-                </p>
-
-                {/* Video / widget placeholder */}
-                <div className="mt-4 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-black/90">
-                  <div className="aspect-video w-full flex items-center justify-center text-white/80">
-                    <span className="text-sm font-semibold">Embed demo video / interactive agent here</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2 text-slate-700 dark:text-slate-200/80">
-                    Captures lead details
-                  </div>
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2 text-slate-700 dark:text-slate-200/80">
-                    Handles objections
-                  </div>
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2 text-slate-700 dark:text-slate-200/80">
-                    Books appointments
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT: tightened contact form (moved down here) */}
-            <div className="lg:col-span-5 xl:col-span-4 w-full">
-              <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-5 sm:p-6">
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">
+          {/* RIGHT: contact form ONLY (demo card removed) */}
+          <div className="lg:col-span-5 xl:col-span-4 w-full">
+            <div className="animate-slide-up opacity-0 [animation-delay:900ms]">
+              <div className="bg-white/80 dark:bg-slate-950/75 border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xl backdrop-blur-xl p-6 sm:p-8">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                   Get a Custom AI Blueprint
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-                  Tell us what you want automated. We’ll respond with a tailored plan.
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+                  Tell us who you are and what you’re trying to solve. We’ll follow up
+                  with a tailored Sentient Partners plan.
                 </p>
 
-                <form onSubmit={handleContactSubmit} className="space-y-3">
+                <form onSubmit={handleContactSubmit} className="space-y-4">
                   <div>
                     <label
                       htmlFor="hero-name"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                     >
                       Name
                     </label>
@@ -430,7 +306,7 @@ const Hero: React.FC = () => {
                   <div>
                     <label
                       htmlFor="hero-email"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                     >
                       Email
                     </label>
@@ -447,7 +323,7 @@ const Hero: React.FC = () => {
                   <div>
                     <label
                       htmlFor="hero-message"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1"
+                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
                     >
                       What are you looking to automate?
                     </label>
@@ -460,20 +336,33 @@ const Hero: React.FC = () => {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full mt-1">
+                  <Button type="submit" size="lg" className="w-full mt-2">
                     Submit &amp; Connect
                   </Button>
 
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                    No spam. We’ll review your note and respond with specific ideas for your business.
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                    No spam. We’ll review your note and respond with specific ideas for
+                    your business.
                   </p>
                 </form>
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+
+      {/* Scroll indicator (kept) */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
+        </svg>
+      </div>
+    </section>
   );
 };
 
