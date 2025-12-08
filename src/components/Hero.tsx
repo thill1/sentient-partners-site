@@ -196,6 +196,7 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
+/** Rotating phrases for the hero line */
 const phrases = [
   'AI Receptionists',
   'AI Sales Agents',
@@ -229,10 +230,7 @@ const Hero: React.FC = () => {
   const scrollToBlueprint = () => {
     const el = document.getElementById('blueprint');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Focus after scroll settles
-    window.setTimeout(() => {
-      nameInputRef.current?.focus();
-    }, 350);
+    window.setTimeout(() => nameInputRef.current?.focus(), 350);
   };
 
   const [index, setIndex] = useState(0);
@@ -248,14 +246,14 @@ const Hero: React.FC = () => {
 
   return (
     <>
-      {/* HERO: rotating phrases + CTAs (right column intentionally blank placeholder) */}
+      {/* HERO */}
       <section className="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden pt-12 pb-10">
         <ParticleBackground />
 
         <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
             {/* LEFT */}
-            <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
+            <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left min-w-0">
               <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
                 <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
                   <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
@@ -263,14 +261,15 @@ const Hero: React.FC = () => {
                 </span>
               </div>
 
-              {/* Rotating phrase line hardened against clipping (descenders like g/y/p) */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
+              {/* Rotating phrase line: reduced sizing to prevent clipping into column 2 */}
+              <h1 className="min-w-0 text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
                 <span className="block">We Build</span>
 
                 <span
-                  className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
-                             whitespace-normal sm:whitespace-nowrap
-                             text-5xl sm:text-6xl md:text-8xl leading-[1.10] pb-[0.14em]"
+                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
+                             whitespace-nowrap
+                             text-[clamp(2.35rem,4.2vw,4.6rem)] lg:text-[clamp(2.1rem,3.0vw,4.0rem)]
+                             leading-[1.10] pb-[0.14em] pr-3"
                 >
                   {currentPhrase}
                 </span>
@@ -283,7 +282,7 @@ const Hero: React.FC = () => {
                 and automated revenue systems. No tech expertise required.
               </p>
 
-              {/* CTAs: Get Blueprint moved DOWN next to Interactive Demo */}
+              {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up opacity-0 [animation-delay:750ms]">
                 <button
                   type="button"
@@ -309,7 +308,7 @@ const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* RIGHT: blank placeholder (you can replace later) */}
+            {/* RIGHT: placeholder (you will replace later) */}
             <div className="lg:col-span-5 xl:col-span-4 w-full">
               <div className="hidden lg:block">
                 <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/40 dark:bg-slate-950/35 backdrop-blur-xl p-8">
@@ -321,11 +320,11 @@ const Hero: React.FC = () => {
         </div>
       </section>
 
-      {/* DEMO + BLUEPRINT FORM: aligned, symmetrical cards in SAME section */}
+      {/* DEMO + BLUEPRINT FORM (aligned cards) */}
       <section id="demo" className="relative z-20 w-full py-14 sm:py-16">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-10 items-stretch">
-            {/* LEFT: Interactive Demo card */}
+            {/* LEFT: Demo card */}
             <div className="lg:col-span-7 xl:col-span-8">
               <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4">
@@ -365,7 +364,7 @@ const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* RIGHT: Blueprint form card */}
+            {/* RIGHT: Blueprint card */}
             <div id="blueprint" className="lg:col-span-5 xl:col-span-4 w-full">
               <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
