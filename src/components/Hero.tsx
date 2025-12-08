@@ -166,7 +166,6 @@ const ParticleBackground: React.FC = () => {
       }
     };
 
-    // Initial sizing + start animation
     updateCanvasSize(canvasInitial);
     animate();
 
@@ -184,10 +183,8 @@ const ParticleBackground: React.FC = () => {
 
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none">
-      {/* Base background for light/dark */}
       <div className="absolute inset-0 bg-white dark:bg-dark-bg transition-colors duration-500" />
 
-      {/* Beams canvas + overlays */}
       <div className="absolute inset-0">
         <div className="relative w-full h-full">
           <canvas
@@ -195,10 +192,8 @@ const ParticleBackground: React.FC = () => {
             className="absolute inset-0 w-full h-full"
             aria-hidden="true"
           />
-          {/* Soft blur & pulse for depth */}
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
 
-          {/* Gradients & radial glow */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent from-white/80 dark:from-neutral-950" />
             <div className="absolute -inset-[25%] bg-[radial-gradient(60%_60%_at_50%_40%,rgba(56,189,248,0.28),transparent)]" />
@@ -209,7 +204,6 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
-/** Rotating phrases for the hero line */
 const phrases = [
   'AI Receptionists',
   'AI Sales Agents',
@@ -233,13 +227,12 @@ const Hero: React.FC = () => {
     openContact();
   };
 
-  // Index of current phrase
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
-    }, 2500); // change every 2.5 seconds
+    }, 2500);
 
     return () => window.clearInterval(interval);
   }, []);
@@ -251,9 +244,7 @@ const Hero: React.FC = () => {
       <ParticleBackground />
 
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 12-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
-          {/* LEFT: hero content */}
           <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
             <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
@@ -262,11 +253,17 @@ const Hero: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-tight">
+            {/* UPDATED: more vertical room + bigger dynamic words */}
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.10] overflow-visible">
               <span className="block">We Build</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-normal sm:whitespace-nowrap">
+
+              <span
+                className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 whitespace-normal sm:whitespace-nowrap
+                           text-5xl sm:text-6xl md:text-8xl leading-[1.08] pb-[0.12em]"
+              >
                 {currentPhrase}
               </span>
+
               <span className="block">That Never Sleep</span>
             </h1>
 
@@ -276,7 +273,6 @@ const Hero: React.FC = () => {
             </p>
           </div>
 
-          {/* RIGHT: lightweight contact form */}
           <div className="lg:col-span-5 xl:col-span-4 w-full">
             <div className="animate-slide-up opacity-0 [animation-delay:900ms]">
               <div className="bg-white/80 dark:bg-slate-950/75 border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xl backdrop-blur-xl p-6 sm:p-8">
@@ -358,7 +354,6 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
         <svg
           className="w-6 h-6"
