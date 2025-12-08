@@ -183,7 +183,11 @@ const ParticleBackground: React.FC = () => {
 
       <div className="absolute inset-0">
         <div className="relative w-full h-full">
-          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+          />
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
 
           <div className="pointer-events-none absolute inset-0">
@@ -196,7 +200,6 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
-/** Rotating phrases for the hero line */
 const phrases = [
   'AI Receptionists',
   'AI Sales Agents',
@@ -261,15 +264,14 @@ const Hero: React.FC = () => {
                 </span>
               </div>
 
-              {/* Rotating phrase line: reduced sizing to prevent clipping into column 2 */}
+              {/* Dynamic phrase now inherits SAME size as the rest of the H1 */}
               <h1 className="min-w-0 text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
                 <span className="block">We Build</span>
 
                 <span
                   className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
-                             whitespace-nowrap
-                             text-[clamp(2.35rem,4.2vw,4.6rem)] lg:text-[clamp(2.1rem,3.0vw,4.0rem)]
-                             leading-[1.10] pb-[0.14em] pr-3"
+                             truncate leading-[1.12] pb-[0.14em] pr-3"
+                  title={currentPhrase}
                 >
                   {currentPhrase}
                 </span>
@@ -438,7 +440,6 @@ const Hero: React.FC = () => {
                 </form>
               </div>
             </div>
-
           </div>
         </div>
       </section>
