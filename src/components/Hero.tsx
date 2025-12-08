@@ -183,11 +183,7 @@ const ParticleBackground: React.FC = () => {
 
       <div className="absolute inset-0">
         <div className="relative w-full h-full">
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full"
-            aria-hidden="true"
-          />
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
           <div className="absolute inset-0 backdrop-blur-3xl animate-pulse [animation-duration:8s] bg-neutral-950/5" />
 
           <div className="pointer-events-none absolute inset-0">
@@ -200,7 +196,6 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
-/** Rotating phrases for the hero line */
 const phrases = [
   'AI Receptionists',
   'AI Sales Agents',
@@ -224,68 +219,163 @@ const Hero: React.FC = () => {
     openContact();
   };
 
-  // Index of current phrase
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  const scrollToDemo = () => {
+    const el = document.getElementById('demo');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const scrollToBlueprint = () => {
+    const el = document.getElementById('blueprint');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Focus after scroll settles
+    window.setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 350);
+  };
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
     }, 2500);
-
     return () => window.clearInterval(interval);
   }, []);
 
   const currentPhrase = phrases[index];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-12 pb-6">
-      <ParticleBackground />
+    <>
+      {/* HERO: rotating phrases + CTAs (right column intentionally blank placeholder) */}
+      <section className="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden pt-12 pb-10">
+        <ParticleBackground />
 
-      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
-          {/* LEFT: hero content (rotating phrases kept) */}
-          <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
-            <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
-              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
-                <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
-                Accepting New Partners
-              </span>
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
+            {/* LEFT */}
+            <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left">
+              <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
+                  <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
+                  Accepting New Partners
+                </span>
+              </div>
+
+              {/* Rotating phrase line hardened against clipping (descenders like g/y/p) */}
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
+                <span className="block">We Build</span>
+
+                <span
+                  className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
+                             whitespace-normal sm:whitespace-nowrap
+                             text-5xl sm:text-6xl md:text-8xl leading-[1.10] pb-[0.14em]"
+                >
+                  {currentPhrase}
+                </span>
+
+                <span className="block">That Never Sleep</span>
+              </h1>
+
+              <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+                Transform your business with AI voice agents, intelligent chatbots,
+                and automated revenue systems. No tech expertise required.
+              </p>
+
+              {/* CTAs: Get Blueprint moved DOWN next to Interactive Demo */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start animate-slide-up opacity-0 [animation-delay:750ms]">
+                <button
+                  type="button"
+                  onClick={scrollToDemo}
+                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
+                             bg-slate-900 text-white hover:bg-slate-800
+                             dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
+                             border border-slate-900/10 dark:border-white/10 backdrop-blur"
+                >
+                  Interactive Demo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={scrollToBlueprint}
+                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
+                             bg-white/80 hover:bg-white text-slate-900
+                             dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
+                             border border-slate-200/70 dark:border-white/10 backdrop-blur"
+                >
+                  Get Blueprint
+                </button>
+              </div>
             </div>
 
-            {/* FIXED: extra vertical space so descenders like "g" never clip */}
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
-              <span className="block">We Build</span>
-
-              <span
-                className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
-                           whitespace-normal sm:whitespace-nowrap
-                           text-5xl sm:text-6xl md:text-8xl leading-[1.10] pb-[0.14em]"
-              >
-                {currentPhrase}
-              </span>
-
-              <span className="block">That Never Sleep</span>
-            </h1>
-
-            <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-              Transform your business with AI voice agents, intelligent chatbots,
-              and automated revenue systems. No tech expertise required.
-            </p>
+            {/* RIGHT: blank placeholder (you can replace later) */}
+            <div className="lg:col-span-5 xl:col-span-4 w-full">
+              <div className="hidden lg:block">
+                <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/40 dark:bg-slate-950/35 backdrop-blur-xl p-8">
+                  {/* Intentionally blank placeholder */}
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* RIGHT: contact form ONLY (demo card removed) */}
-          <div className="lg:col-span-5 xl:col-span-4 w-full">
-            <div className="animate-slide-up opacity-0 [animation-delay:900ms]">
-              <div className="bg-white/80 dark:bg-slate-950/75 border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xl backdrop-blur-xl p-6 sm:p-8">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+      {/* DEMO + BLUEPRINT FORM: aligned, symmetrical cards in SAME section */}
+      <section id="demo" className="relative z-20 w-full py-14 sm:py-16">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-10 items-stretch">
+            {/* LEFT: Interactive Demo card */}
+            <div className="lg:col-span-7 xl:col-span-8">
+              <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      Interactive Demo
+                    </h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                      Place your embedded agent/video here. Keep it short and high impact.
+                    </p>
+                  </div>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 dark:bg-white/5 dark:text-brand-300 border border-brand-100 dark:border-white/10">
+                    60 sec
+                  </span>
+                </div>
+
+                <div className="mt-4 flex-1 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-black/90">
+                  <div className="h-full min-h-[240px] sm:min-h-[320px] w-full flex items-center justify-center text-white/80">
+                    <span className="text-sm font-semibold">Embed demo widget / video here</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-700 dark:text-slate-200/80">
+                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
+                    Answers 24/7
+                  </div>
+                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
+                    Qualifies leads
+                  </div>
+                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
+                    Books calls
+                  </div>
+                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
+                    Syncs to CRM
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Blueprint form card */}
+            <div id="blueprint" className="lg:col-span-5 xl:col-span-4 w-full">
+              <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                   Get a Custom AI Blueprint
-                </h2>
+                </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-                  Tell us who you are and what you’re trying to solve. We’ll follow up
-                  with a tailored Sentient Partners plan.
+                  Tell us who you are and what you’re trying to solve. We’ll follow up with a tailored Sentient Partners plan.
                 </p>
 
-                <form onSubmit={handleContactSubmit} className="space-y-4">
+                <form onSubmit={handleContactSubmit} className="space-y-4 flex-1 flex flex-col">
                   <div>
                     <label
                       htmlFor="hero-name"
@@ -294,6 +384,7 @@ const Hero: React.FC = () => {
                       Name
                     </label>
                     <input
+                      ref={nameInputRef}
                       id="hero-name"
                       name="name"
                       type="text"
@@ -336,33 +427,23 @@ const Hero: React.FC = () => {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full mt-2">
-                    Submit &amp; Connect
-                  </Button>
+                  <div className="mt-auto">
+                    <Button type="submit" size="lg" className="w-full mt-2">
+                      Submit &amp; Connect
+                    </Button>
 
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                    No spam. We’ll review your note and respond with specific ideas for
-                    your business.
-                  </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                      No spam. We’ll review your note and respond with specific ideas for your business.
+                    </p>
+                  </div>
                 </form>
               </div>
             </div>
+
           </div>
         </div>
-      </div>
-
-      {/* Scroll indicator (kept) */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-slate-400 dark:text-slate-600 z-20">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 14l-7 7m0 0l-7-7m7 7V3"
-          />
-        </svg>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 
