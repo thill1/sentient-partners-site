@@ -26,7 +26,7 @@ export const PRICING_PLANS = [
     price: "$497",
     period: "/month",
     features: [
-      "AI Voice Receptionist",
+      "Smart Website",
       "Basic Call Routing",
       "Missed Call Text Back",
       "Real-Time Transcripts",
