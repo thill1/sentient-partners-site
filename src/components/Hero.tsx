@@ -225,7 +225,6 @@ const Hero: React.FC = () => {
 
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
-  // NOTE: Interactive Demo section removed, so we scroll to blueprint instead
   const scrollToBlueprint = () => {
     const el = document.getElementById("blueprint");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -305,7 +304,7 @@ const Hero: React.FC = () => {
         </div>
       </section>
 
-      {/* BLUEPRINT FORM ONLY (Interactive Demo removed) */}
+      {/* BLUEPRINT FORM ONLY */}
       <section id="blueprint" className="relative z-20 w-full py-14 sm:py-16">
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
@@ -317,10 +316,7 @@ const Hero: React.FC = () => {
               up with a tailored Sentient Partners plan.
             </p>
 
-            <form
-              onSubmit={handleContactSubmit}
-              className="space-y-4 flex flex-col"
-            >
+            <form onSubmit={handleContactSubmit} className="space-y-4 flex flex-col">
               <div>
                 <label
                   htmlFor="hero-name"
@@ -377,9 +373,9 @@ const Hero: React.FC = () => {
                   Submit &amp; Connect
                 </Button>
 
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                  No spam. We’ll review your note and respond with specific ideas
-                  for your business.
+                {/* CENTERED helper text */}
+                <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                  No spam. We’ll review your note and respond with specific ideas for your business.
                 </p>
               </div>
             </form>
