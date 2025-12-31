@@ -6,7 +6,7 @@ type Intensity = "subtle" | "medium" | "strong";
 interface Beam {
   x: number;
   y: number;
-  width: number;
+ width: number;
   length: number;
   angle: number;
   speed: number;
@@ -271,12 +271,11 @@ const Hero: React.FC = () => {
                 <span className="block">That Never Sleep</span>
               </h1>
 
+              {/* UPDATED H2 COPY */}
               <p className="max-w-4xl mx-auto text-xl sm:text-2xl lg:text-2xl text-slate-600 dark:text-slate-300 mb-10 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-                Transform your business with AI voice agents, intelligent chatbots,
-                and automated revenue systems.
+                TRANSFORM AND UPGRADE YOUR BUSINESS TODAY!
               </p>
 
-              {/* CTA: remove Get Blueprint, center Quick Start */}
               <div className="flex justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
                 <button
                   type="button"
