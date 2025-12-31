@@ -4,18 +4,13 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
 
-  // Use root base for production unless explicitly overridden
-  // - For GitHub Pages, set VITE_BASE=./ in that environment
+  // Root base for Cloudflare Pages by default.
+  // If you still deploy to GitHub Pages, you can set VITE_BASE=./ in that workflow.
   const base = env.VITE_BASE || "/";
 
   return {
     plugins: [react()],
     base,
-    define: {
-      // NOTE: this still bakes into the client bundle if used in browser code.
-      // Prefer server-side proxy for real production security.
-      "process.env.API_KEY": JSON.stringify(env.API_KEY || ""),
-    },
     build: {
       outDir: "dist",
       assetsDir: "assets",
