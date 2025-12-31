@@ -3,32 +3,32 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- DEFAULT DARK (first load), but RESPECT a saved user choice -->
+    <!-- THEME INIT: default to DARK on first load, but RESPECT saved user choice -->
     <script>
       (function () {
         try {
-          // Read any legacy keys, then normalize to ONE key: "theme"
+          // Read any existing/legacy keys
           var stored =
             localStorage.getItem("theme") ||
             localStorage.getItem("color-theme") ||
             localStorage.getItem("sentient-theme");
 
-          // If nothing saved yet, default to DARK
+          // Default to dark if nothing saved
           var theme = stored === "light" || stored === "dark" ? stored : "dark";
 
-          // Normalize storage
+          // Normalize to a single key
           localStorage.setItem("theme", theme);
           localStorage.removeItem("color-theme");
           localStorage.removeItem("sentient-theme");
 
-          // Apply theme to <html> before paint (prevents flash)
+          // Apply to <html> before paint to avoid flash
           if (theme === "dark") {
             document.documentElement.classList.add("dark");
           } else {
             document.documentElement.classList.remove("dark");
           }
         } catch (e) {
-          // If storage is blocked, default to dark
+          // If storage is blocked, still default to dark
           document.documentElement.classList.add("dark");
         }
       })();
@@ -125,8 +125,18 @@
     </style>
 
     <!-- Favicon & App Icons (update paths to your actual assets) -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon-16x16.png"
+    />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
   </head>
