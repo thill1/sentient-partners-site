@@ -3,36 +3,39 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- THEME INIT: default to DARK on first load, but RESPECT saved user choice -->
+    <!-- THEME INIT:
+         - Default to DARK for first-time visitors
+         - Respect saved preference ("theme" = "light" or "dark")
+         - Normalize legacy keys
+         - Apply BEFORE paint to prevent flash
+    -->
     <script>
       (function () {
         try {
-          // Read any existing/legacy keys
           var stored =
             localStorage.getItem("theme") ||
             localStorage.getItem("color-theme") ||
             localStorage.getItem("sentient-theme");
 
-          // Default to dark if nothing saved
+          // Default to dark ONLY if no valid saved preference exists
           var theme = stored === "light" || stored === "dark" ? stored : "dark";
 
-          // Normalize to a single key
+          // Normalize storage keys
           localStorage.setItem("theme", theme);
           localStorage.removeItem("color-theme");
           localStorage.removeItem("sentient-theme");
 
-          // Apply to <html> before paint to avoid flash
-          if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
+          // Apply to <html>
+          document.documentElement.classList.toggle("dark", theme === "dark");
         } catch (e) {
           // If storage is blocked, still default to dark
           document.documentElement.classList.add("dark");
         }
       })();
     </script>
+
+    <!-- Helps form controls render correctly for dark/light -->
+    <meta name="color-scheme" content="dark light" />
 
     <!-- Mobile viewport: keep zoom enabled for accessibility -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -68,7 +71,6 @@
       property="og:url"
       content="https://thill1.github.io/sentient-partners-site/"
     />
-    <!-- TODO: update this to your actual hosted OG image -->
     <meta
       property="og:image"
       content="https://thill1.github.io/sentient-partners-site/og-image.jpg"
@@ -124,7 +126,7 @@
       }
     </style>
 
-    <!-- Favicon & App Icons (update paths to your actual assets) -->
+    <!-- Favicon & App Icons -->
     <link
       rel="icon"
       type="image/png"
