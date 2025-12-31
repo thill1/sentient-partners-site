@@ -3,12 +3,7 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- THEME INIT:
-         - Default to DARK for first-time visitors
-         - Respect saved preference ("theme" = "light" or "dark")
-         - Normalize legacy keys
-         - Apply BEFORE paint to prevent flash
-    -->
+    <!-- THEME INIT: default to DARK on first load, respect saved preference -->
     <script>
       (function () {
         try {
@@ -17,27 +12,26 @@
             localStorage.getItem("color-theme") ||
             localStorage.getItem("sentient-theme");
 
-          // Default to dark ONLY if no valid saved preference exists
+          // default to dark if nothing valid is stored
           var theme = stored === "light" || stored === "dark" ? stored : "dark";
 
-          // Normalize storage keys
+          // normalize keys
           localStorage.setItem("theme", theme);
           localStorage.removeItem("color-theme");
           localStorage.removeItem("sentient-theme");
 
-          // Apply to <html>
+          // apply to <html> BEFORE paint
           document.documentElement.classList.toggle("dark", theme === "dark");
         } catch (e) {
-          // If storage is blocked, still default to dark
+          // if storage blocked, default to dark
           document.documentElement.classList.add("dark");
         }
       })();
     </script>
 
-    <!-- Helps form controls render correctly for dark/light -->
     <meta name="color-scheme" content="dark light" />
 
-    <!-- Mobile viewport: keep zoom enabled for accessibility -->
+    <!-- Mobile viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary SEO -->
@@ -48,16 +42,14 @@
     />
     <meta name="robots" content="index, follow" />
 
-    <!-- Themed address bar color (adjust to match your brand) -->
     <meta name="theme-color" content="#0F172A" />
 
-    <!-- Canonical URL (update if you move off GitHub Pages) -->
     <link
       rel="canonical"
       href="https://thill1.github.io/sentient-partners-site/"
     />
 
-    <!-- Open Graph / Social Sharing -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
@@ -78,7 +70,7 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
-    <!-- Twitter Card -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
@@ -93,11 +85,10 @@
       content="https://thill1.github.io/sentient-partners-site/og-image.jpg"
     />
 
-    <!-- Preconnect for Google Fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Web fonts: Space Grotesk + Inter -->
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -107,7 +98,6 @@
       rel="stylesheet"
     />
 
-    <!-- System font stack for SF Pro look on Apple devices -->
     <style>
       :root {
         --font-display: "Space Grotesk", system-ui, -apple-system,
@@ -126,19 +116,9 @@
       }
     </style>
 
-    <!-- Favicon & App Icons -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png"
-    />
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
   </head>
@@ -153,7 +133,7 @@
 
     <div id="root"></div>
 
-    <!-- Vite entry (React/TypeScript app) -->
+    <!-- Vite entry -->
     <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
