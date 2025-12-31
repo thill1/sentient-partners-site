@@ -281,7 +281,7 @@ const Hero: React.FC = () => {
 
               <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
                 Transform your business with AI voice agents, intelligent chatbots,
-                and automated revenue systems. No tech expertise required.
+                and automated revenue systems.
               </p>
 
               {/* CTAs */}
