@@ -1,11 +1,12 @@
 // @ts-nocheck
-import { GenerateContentResponse, LiveServerMessage } from "@google/genai";
 import { SYSTEM_INSTRUCTION, BOOKING_URL } from "../constants";
 
 let initialized = false;
 let chatContents: any[] = [];
 
-// --- Helpers ---
+/* =========================
+   Helpers
+========================= */
 
 export const dispatchToast = (
   message: string,
@@ -39,7 +40,7 @@ export const sendEmailData = async (data: any, subject: string): Promise<EmailRe
     return {
       success: false,
       message:
-        "RESTRICTED: You are running this file locally without a server. Use a hosted site or dev server for email features.",
+        "RESTRICTED: You are running locally without a server. Use a hosted site/dev server for email features.",
     };
   }
 
@@ -81,7 +82,8 @@ export const sendEmailData = async (data: any, subject: string): Promise<EmailRe
       ) {
         return {
           success: true,
-          message: "Email Sent! Check your inbox to ACTIVATE this endpoint (first time only).",
+          message:
+            "Email Sent! Please check your inbox to ACTIVATE this endpoint (first time only).",
         };
       }
       return { success: true, message: "Email transmitted successfully." };
@@ -108,47 +110,9 @@ export const sendTestEmail = async (): Promise<EmailResult> => {
   );
 };
 
-// --- Tool schema for Gemini REST function calling ---
-
-const tools = [
-  {
-    functionDeclarations: [
-      {
-        name: "scheduleMeeting",
-        description:
-          "Opens the booking calendar modal. Use when user wants to book. Can be used to re-open with no params.",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            name: { type: "STRING", description: "User's full name (optional)" },
-            email: { type: "STRING", description: "User's email address (optional)" },
-            date: { type: "STRING", description: "Preferred date in YYYY-MM-DD format (optional)" },
-          },
-          required: [],
-        },
-      },
-      {
-        name: "captureLead",
-        description:
-          "Captures user contact info + inquiry and sends to team via email (fallback if booking not desired).",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            name: { type: "STRING", description: "User's full name" },
-            email: { type: "STRING", description: "User's email address" },
-            phone: { type: "STRING", description: "User's phone number (optional)" },
-            inquiry: { type: "STRING", description: "Summary of user's needs/questions" },
-          },
-          required: ["name", "email"],
-        },
-      },
-    ],
-  },
-];
-
-const toolConfig = { functionCallingConfig: { mode: "AUTO" } };
-
-// --- Tool implementations ---
+/* =========================
+   Tools (local actions)
+========================= */
 
 const scheduleMeeting = (name?: string, email?: string, date?: string) => {
   const params = new URLSearchParams();
@@ -191,14 +155,9 @@ const captureLead = async (name: string, email: string, phone?: string, inquiry?
   return { success: false, message: "Network issue. Saved locally." };
 };
 
-const executeTool = async (name: string, args: any) => {
-  const safeArgs = args || {};
-  if (name === "scheduleMeeting") return scheduleMeeting(safeArgs.name, safeArgs.email, safeArgs.date);
-  if (name === "captureLead") return await captureLead(safeArgs.name, safeArgs.email, safeArgs.phone, safeArgs.inquiry);
-  return { error: "Function not found" };
-};
-
-// --- Context helper ---
+/* =========================
+   Context helper
+========================= */
 
 export const getSystemInstructionWithContext = () => {
   let timeZone = "UTC";
@@ -230,7 +189,9 @@ export const getSystemInstructionWithContext = () => {
 `;
 };
 
-// --- Server proxy call (Cloudflare Pages Function) ---
+/* =========================
+   Cloudflare proxy call
+========================= */
 
 async function callGemini(payload: any) {
   const res = await fetch("/api/gemini", {
@@ -253,7 +214,27 @@ async function callGemini(payload: any) {
   return json;
 }
 
-// --- Features ---
+function extractTextFromGeminiResponse(resp: any): string {
+  const parts = resp?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts.map((p: any) => p?.text).filter(Boolean).join("");
+}
+
+function extractFunctionCalls(resp: any) {
+  const parts = resp?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return [];
+  return parts.filter((p: any) => p?.functionCall).map((p: any) => p.functionCall);
+}
+
+/* =========================
+   Public API
+========================= */
+
+export const initializeChat = () => {
+  initialized = true;
+  chatContents = [];
+  return null;
+};
 
 export const sendTranscript = async (chatLog: string, voiceLog: string) => {
   if (!chatLog && !voiceLog) return { success: false, message: "No content" };
@@ -277,24 +258,59 @@ export const sendTranscript = async (chatLog: string, voiceLog: string) => {
   return { success: true, message: "Saved locally" };
 };
 
-// --- Text chat ---
-
-export const initializeChat = () => {
-  initialized = true;
-  chatContents = [];
-  return true;
-};
-
-export const sendMessageToGemini = async function* (message: string): AsyncGenerator<string, void, unknown> {
+// Main chat generator
+export const sendMessageToGemini = async function* (
+  message: string
+): AsyncGenerator<string, void, unknown> {
   try {
     if (!initialized) initializeChat();
 
+    // Push user message
     chatContents.push({ role: "user", parts: [{ text: message }] });
+
+    // Simple tool schema (REST format)
+    const tools = [
+      {
+        functionDeclarations: [
+          {
+            name: "scheduleMeeting",
+            description:
+              "Opens the booking calendar modal. Use when user wants to book. Can re-open with no params.",
+            parameters: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                email: { type: "STRING" },
+                date: { type: "STRING" },
+              },
+              required: [],
+            },
+          },
+          {
+            name: "captureLead",
+            description:
+              "Captures user contact info + inquiry and sends to team via email.",
+            parameters: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                email: { type: "STRING" },
+                phone: { type: "STRING" },
+                inquiry: { type: "STRING" },
+              },
+              required: ["name", "email"],
+            },
+          },
+        ],
+      },
+    ];
+
+    const toolConfig = { functionCallingConfig: { mode: "AUTO" } };
 
     while (true) {
       const systemText = getSystemInstructionWithContext();
 
-      const response = await callGemini({
+      const resp = await callGemini({
         model: "gemini-2.5-flash",
         systemInstruction: { parts: [{ text: systemText }] },
         tools,
@@ -302,79 +318,96 @@ export const sendMessageToGemini = async function* (message: string): AsyncGener
         contents: chatContents,
       });
 
-      const candidate = response?.candidates?.[0];
-      const modelContent = candidate?.content;
+      // Store model message
+      const modelContent = resp?.candidates?.[0]?.content;
+      if (modelContent) chatContents.push(modelContent);
 
-      if (!modelContent?.parts) {
-        yield "I'm in Demo Mode right now. (No model output received.)";
-        return;
+      // Yield text
+      const textOut = extractTextFromGeminiResponse(resp);
+      if (textOut) yield textOut;
+
+      // Tool calls?
+      const calls = extractFunctionCalls(resp);
+      if (!calls.length) break;
+
+      const functionResponses: any[] = [];
+
+      for (const call of calls) {
+        const args = call.args || {};
+        if (call.name === "scheduleMeeting") {
+          functionResponses.push({
+            functionResponse: {
+              name: "scheduleMeeting",
+              response: { result: scheduleMeeting(args.name, args.email, args.date) },
+            },
+          });
+        } else if (call.name === "captureLead") {
+          functionResponses.push({
+            functionResponse: {
+              name: "captureLead",
+              response: {
+                result: await captureLead(args.name, args.email, args.phone, args.inquiry),
+              },
+            },
+          });
+        } else {
+          functionResponses.push({
+            functionResponse: {
+              name: call.name,
+              response: { result: { error: "Function not found" } },
+            },
+          });
+        }
       }
 
-      chatContents.push(modelContent);
-
-      const textOut =
-        modelContent.parts
-          .filter((p: any) => typeof p?.text === "string" && p.text.length)
-          .map((p: any) => p.text)
-          .join("") || "";
-
-      if (textOut) {
-        yield textOut;
-      }
-
-      const toolCalls = modelContent.parts
-        .filter((p: any) => p?.functionCall)
-        .map((p: any) => p.functionCall);
-
-      if (!toolCalls.length) break;
-
-      const functionResponses = [];
-      for (const call of toolCalls) {
-        const toolResult = await executeTool(call.name, call.args || {});
-        functionResponses.push({
-          functionResponse: { name: call.name, response: { result: toolResult } },
-        });
-      }
-
+      // Send tool results back
       chatContents.push({ role: "user", parts: functionResponses });
     }
-  } catch (error) {
-    console.error("Gemini API Error:", error);
+  } catch (err) {
+    console.error("[GeminiService] Error:", err);
     yield "I’m hitting a temporary connection issue. Please try again.";
   }
 };
 
-// --- Live / Audio disabled for launch ---
-
-export const connectLiveSession = async (_callbacks: {
-  onopen?: () => void;
-  onmessage: (message: LiveServerMessage) => void;
-  onclose?: (e: CloseEvent) => void;
-  onerror?: (e: ErrorEvent) => void;
-}) => {
-  throw new Error("Voice mode is disabled for launch until it’s moved server-side.");
+// Voice: disabled for launch, but won't crash build
+export const connectLiveSession = async () => {
+  return Promise.reject(
+    new Error("Voice mode disabled for launch until moved fully server-side.")
+  );
 };
 
-// Keep helpers for compatibility
-export function createPcmBlob(data: Float32Array, sampleRate: number = 16000): { data: string; mimeType: string } {
+/* =========================
+   Audio helpers (kept)
+========================= */
+
+export function createPcmBlob(
+  data: Float32Array,
+  sampleRate: number = 16000
+): { data: string; mimeType: string } {
   const l = data.length;
   const int16 = new Int16Array(l);
   for (let i = 0; i < l; i++) {
     let s = Math.max(-1, Math.min(1, data[i]));
     int16[i] = s < 0 ? (s * 0x8000) : (s * 0x7fff);
   }
-  return { data: encode(new Uint8Array(int16.buffer)), mimeType: `audio/pcm;rate=${sampleRate}` };
+
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: `audio/pcm;rate=${sampleRate}`,
+  };
 }
 
 export function encode(bytes: Uint8Array) {
   let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
 export function decode(base64: string) {
   const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
   return bytes;
 }
