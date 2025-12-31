@@ -225,11 +225,7 @@ const Hero: React.FC = () => {
 
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
-  const scrollToDemo = () => {
-    const el = document.getElementById("demo");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
+  // NOTE: Interactive Demo section removed, so we scroll to blueprint instead
   const scrollToBlueprint = () => {
     const el = document.getElementById("blueprint");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -253,9 +249,7 @@ const Hero: React.FC = () => {
       <section className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden py-20 sm:py-24 lg:py-32">
         <ParticleBackground />
 
-        {/* Keep the breathing room you liked */}
         <div className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-14">
-          {/* Wider content so desktop can scale up */}
           <div className="w-full max-w-6xl mx-auto">
             <div className="text-center min-w-0">
               <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex mb-6 sm:mb-7">
@@ -265,7 +259,6 @@ const Hero: React.FC = () => {
                 </span>
               </div>
 
-              {/* Bigger on desktop, still safe + readable */}
               <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
                 <span className="block">We Build</span>
 
@@ -279,33 +272,32 @@ const Hero: React.FC = () => {
                 <span className="block">That Never Sleep</span>
               </h1>
 
-              {/* Removed: "No tech expertise required." */}
               <p className="max-w-4xl mx-auto text-xl sm:text-2xl lg:text-2xl text-slate-600 dark:text-slate-300 mb-10 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-                TRANSFORM AND UPGRADE YOUR BUSINESS TODAY!
+                Transform your business with AI voice agents, intelligent chatbots,
+                and automated revenue systems.
               </p>
 
-              {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
                 <button
                   type="button"
-                  onClick={scrollToDemo}
+                  onClick={scrollToBlueprint}
                   className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
                              bg-slate-900 text-white hover:bg-slate-800
                              dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
                              border border-slate-900/10 dark:border-white/10 backdrop-blur"
                 >
-                  Interactive Demo
+                  Get Blueprint
                 </button>
 
                 <button
                   type="button"
-                  onClick={scrollToBlueprint}
+                  onClick={() => nameInputRef.current?.focus()}
                   className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
                              bg-white/85 hover:bg-white text-slate-900
                              dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
                              border border-slate-200/70 dark:border-white/10 backdrop-blur"
                 >
-                  Get Blueprint
+                  Quick Start
                 </button>
               </div>
             </div>
@@ -313,124 +305,84 @@ const Hero: React.FC = () => {
         </div>
       </section>
 
-      {/* DEMO + BLUEPRINT FORM (aligned cards) */}
-      <section id="demo" className="relative z-20 w-full py-14 sm:py-16">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-10 items-stretch">
-            {/* LEFT: Demo card */}
-            <div className="lg:col-span-7 xl:col-span-8">
-              <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Interactive Demo
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      Place your embedded agent/video here. Keep it short and high impact.
-                    </p>
-                  </div>
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 dark:bg-white/5 dark:text-brand-300 border border-brand-100 dark:border-white/10">
-                    60 sec
-                  </span>
-                </div>
+      {/* BLUEPRINT FORM ONLY (Interactive Demo removed) */}
+      <section id="blueprint" className="relative z-20 w-full py-14 sm:py-16">
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              Get a Custom AI Blueprint
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+              Tell us who you are and what you’re trying to solve. We’ll follow
+              up with a tailored Sentient Partners plan.
+            </p>
 
-                <div className="mt-4 flex-1 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-black/90">
-                  <div className="h-full min-h-[240px] sm:min-h-[320px] w-full flex items-center justify-center text-white/80">
-                    <span className="text-sm font-semibold">Embed demo widget / video here</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-700 dark:text-slate-200/80">
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                    Answers 24/7
-                  </div>
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                    Qualifies leads
-                  </div>
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                    Books calls
-                  </div>
-                  <div className="rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/70 dark:bg-slate-950/40 px-3 py-2">
-                    Syncs to CRM
-                  </div>
-                </div>
+            <form
+              onSubmit={handleContactSubmit}
+              className="space-y-4 flex flex-col"
+            >
+              <div>
+                <label
+                  htmlFor="hero-name"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
+                >
+                  Name
+                </label>
+                <input
+                  ref={nameInputRef}
+                  id="hero-name"
+                  name="name"
+                  type="text"
+                  required
+                  className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
+                  placeholder="Jane Doe"
+                />
               </div>
-            </div>
 
-            {/* RIGHT: Blueprint card */}
-            <div id="blueprint" className="lg:col-span-5 xl:col-span-4 w-full">
-              <div className="h-full flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  Get a Custom AI Blueprint
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-                  Tell us who you are and what you’re trying to solve. We’ll follow up with a tailored Sentient Partners plan.
+              <div>
+                <label
+                  htmlFor="hero-email"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
+                >
+                  Email
+                </label>
+                <input
+                  id="hero-email"
+                  name="email"
+                  type="email"
+                  required
+                  className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
+                  placeholder="you@company.com"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="hero-message"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
+                >
+                  What are you looking to automate?
+                </label>
+                <textarea
+                  id="hero-message"
+                  name="message"
+                  rows={3}
+                  className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70 resize-none"
+                  placeholder="Inbound calls, lead follow-up, missed web leads, etc."
+                />
+              </div>
+
+              <div className="mt-2">
+                <Button type="submit" size="lg" className="w-full">
+                  Submit &amp; Connect
+                </Button>
+
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+                  No spam. We’ll review your note and respond with specific ideas
+                  for your business.
                 </p>
-
-                <form onSubmit={handleContactSubmit} className="space-y-4 flex-1 flex flex-col">
-                  <div>
-                    <label
-                      htmlFor="hero-name"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
-                    >
-                      Name
-                    </label>
-                    <input
-                      ref={nameInputRef}
-                      id="hero-name"
-                      name="name"
-                      type="text"
-                      required
-                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
-                      placeholder="Jane Doe"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="hero-email"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
-                    >
-                      Email
-                    </label>
-                    <input
-                      id="hero-email"
-                      name="email"
-                      type="email"
-                      required
-                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
-                      placeholder="you@company.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="hero-message"
-                      className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5"
-                    >
-                      What are you looking to automate?
-                    </label>
-                    <textarea
-                      id="hero-message"
-                      name="message"
-                      rows={3}
-                      className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70 resize-none"
-                      placeholder="Inbound calls, lead follow-up, missed web leads, etc."
-                    />
-                  </div>
-
-                  <div className="mt-auto">
-                    <Button type="submit" size="lg" className="w-full mt-2">
-                      Submit &amp; Connect
-                    </Button>
-
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                      No spam. We’ll review your note and respond with specific ideas for your business.
-                    </p>
-                  </div>
-                </form>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </section>
