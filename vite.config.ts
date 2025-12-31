@@ -1,16 +1,10 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, ".", "");
-
-  // Root base for Cloudflare Pages by default.
-  // If you still deploy to GitHub Pages, you can set VITE_BASE=./ in that workflow.
-  const base = env.VITE_BASE || "/";
-
+export default defineConfig(() => {
   return {
     plugins: [react()],
-    base,
+    base: "/",
     build: {
       outDir: "dist",
       assetsDir: "assets",
@@ -24,10 +18,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-    },
-    server: {
-      host: true,
-      port: 5173,
     },
   };
 });
