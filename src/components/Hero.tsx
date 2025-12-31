@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button } from './Button';
+import React, { useEffect, useRef, useState } from "react";
+import { Button } from "./Button";
 
-type Intensity = 'subtle' | 'medium' | 'strong';
+type Intensity = "subtle" | "medium" | "strong";
 
 interface Beam {
   x: number;
@@ -23,7 +23,7 @@ const ParticleBackground: React.FC = () => {
     const canvasInitial = canvasRef.current;
     if (!canvasInitial) return;
 
-    const ctxRaw = canvasInitial.getContext('2d', { alpha: true });
+    const ctxRaw = canvasInitial.getContext("2d", { alpha: true });
     if (!ctxRaw) return;
 
     const ctx: CanvasRenderingContext2D = ctxRaw;
@@ -35,7 +35,7 @@ const ParticleBackground: React.FC = () => {
       strong: 1.0,
     };
 
-    const intensity: Intensity = 'strong';
+    const intensity: Intensity = "strong";
 
     let beams: Beam[] = [];
     let rafId = 0;
@@ -88,8 +88,8 @@ const ParticleBackground: React.FC = () => {
       canvasEl.width = Math.floor(viewportWidth * dpr);
       canvasEl.height = Math.floor(viewportHeight * dpr);
 
-      canvasEl.style.width = '100%';
-      canvasEl.style.height = '100%';
+      canvasEl.style.width = "100%";
+      canvasEl.style.height = "100%";
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
@@ -142,7 +142,7 @@ const ParticleBackground: React.FC = () => {
 
     function animate() {
       ctx.clearRect(0, 0, viewportWidth, viewportHeight);
-      ctx.filter = 'blur(35px)';
+      ctx.filter = "blur(35px)";
 
       const total = beams.length;
       for (let i = 0; i < total; i++) {
@@ -167,12 +167,14 @@ const ParticleBackground: React.FC = () => {
     updateCanvasSize(canvasInitial);
     animate();
 
-    window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('orientationchange', handleResize, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("orientationchange", handleResize, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
       cancelAnimationFrame(rafId);
     };
   }, []);
@@ -201,21 +203,21 @@ const ParticleBackground: React.FC = () => {
 };
 
 const phrases = [
-  'AI Receptionists',
-  'AI Sales Agents',
-  'Smart Websites',
-  'AI SEO',
-  'AI Reviews',
-  'Automated Leads',
-  'Automated Workflows',
-  'Automated Calendars',
-  'AI Chatbots',
-  'Always-On Revenue',
+  "AI Receptionists",
+  "AI Sales Agents",
+  "Smart Websites",
+  "AI SEO",
+  "AI Reviews",
+  "Automated Leads",
+  "Automated Workflows",
+  "Automated Calendars",
+  "AI Chatbots",
+  "Always-On Revenue",
 ];
 
 const Hero: React.FC = () => {
   const openContact = () => {
-    window.dispatchEvent(new CustomEvent('open-contact-modal'));
+    window.dispatchEvent(new CustomEvent("open-contact-modal"));
   };
 
   const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -226,13 +228,13 @@ const Hero: React.FC = () => {
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   const scrollToDemo = () => {
-    const el = document.getElementById('demo');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById("demo");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const scrollToBlueprint = () => {
-    const el = document.getElementById('blueprint');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById("blueprint");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => nameInputRef.current?.focus(), 350);
   };
 
@@ -253,10 +255,11 @@ const Hero: React.FC = () => {
       <section className="relative w-full min-h-[80vh] flex items-center justify-center overflow-hidden pt-12 pb-10">
         <ParticleBackground />
 
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-center">
-            {/* LEFT */}
-            <div className="lg:col-span-7 xl:col-span-8 text-center lg:text-left min-w-0">
+        {/* Slightly wider container for a more "full-width" feel */}
+        <div className="relative z-20 w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10">
+          {/* Full-width single column (no right placeholder) */}
+          <div className="grid grid-cols-1 gap-10 items-center">
+            <div className="text-center lg:text-left min-w-0">
               <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex">
                 <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 mb-4 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
                   <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
@@ -264,13 +267,11 @@ const Hero: React.FC = () => {
                 </span>
               </div>
 
-              {/* Dynamic phrase now inherits SAME size as the rest of the H1 */}
               <h1 className="min-w-0 text-4xl sm:text-5xl md:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.12] overflow-visible">
                 <span className="block">We Build</span>
 
                 <span
-                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400
-                             truncate leading-[1.12] pb-[0.14em] pr-3"
+                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 truncate leading-[1.12] pb-[0.14em] pr-3"
                   title={currentPhrase}
                 >
                   {currentPhrase}
@@ -280,8 +281,9 @@ const Hero: React.FC = () => {
               </h1>
 
               <p className="max-w-2xl mx-auto lg:mx-0 text-xl text-slate-600 dark:text-slate-300 mb-8 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-                Transform your business with AI voice agents, intelligent chatbots,
-                and automated revenue systems.
+                Transform your business with AI voice agents, intelligent
+                chatbots, and automated revenue systems. No tech expertise
+                required.
               </p>
 
               {/* CTAs */}
@@ -289,10 +291,7 @@ const Hero: React.FC = () => {
                 <button
                   type="button"
                   onClick={scrollToDemo}
-                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
-                             bg-slate-900 text-white hover:bg-slate-800
-                             dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
-                             border border-slate-900/10 dark:border-white/10 backdrop-blur"
+                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white border border-slate-900/10 dark:border-white/10 backdrop-blur"
                 >
                   Interactive Demo
                 </button>
@@ -300,22 +299,10 @@ const Hero: React.FC = () => {
                 <button
                   type="button"
                   onClick={scrollToBlueprint}
-                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold
-                             bg-white/80 hover:bg-white text-slate-900
-                             dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
-                             border border-slate-200/70 dark:border-white/10 backdrop-blur"
+                  className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold bg-white/80 hover:bg-white text-slate-900 dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white border border-slate-200/70 dark:border-white/10 backdrop-blur"
                 >
                   Get Blueprint
                 </button>
-              </div>
-            </div>
-
-            {/* RIGHT: placeholder (you will replace later) */}
-            <div className="lg:col-span-5 xl:col-span-4 w-full">
-              <div className="hidden lg:block">
-                <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/40 dark:bg-slate-950/35 backdrop-blur-xl p-8">
-                  {/* Intentionally blank placeholder */}
-                </div>
               </div>
             </div>
           </div>
@@ -335,7 +322,8 @@ const Hero: React.FC = () => {
                       Interactive Demo
                     </h2>
                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      Place your embedded agent/video here. Keep it short and high impact.
+                      Place your embedded agent/video here. Keep it short and
+                      high impact.
                     </p>
                   </div>
                   <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 dark:bg-white/5 dark:text-brand-300 border border-brand-100 dark:border-white/10">
@@ -345,7 +333,9 @@ const Hero: React.FC = () => {
 
                 <div className="mt-4 flex-1 rounded-2xl border border-slate-200/70 dark:border-white/10 overflow-hidden bg-black/90">
                   <div className="h-full min-h-[240px] sm:min-h-[320px] w-full flex items-center justify-center text-white/80">
-                    <span className="text-sm font-semibold">Embed demo widget / video here</span>
+                    <span className="text-sm font-semibold">
+                      Embed demo widget / video here
+                    </span>
                   </div>
                 </div>
 
@@ -373,10 +363,14 @@ const Hero: React.FC = () => {
                   Get a Custom AI Blueprint
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-                  Tell us who you are and what you’re trying to solve. We’ll follow up with a tailored Sentient Partners plan.
+                  Tell us who you are and what you’re trying to solve. We’ll
+                  follow up with a tailored Sentient Partners plan.
                 </p>
 
-                <form onSubmit={handleContactSubmit} className="space-y-4 flex-1 flex flex-col">
+                <form
+                  onSubmit={handleContactSubmit}
+                  className="space-y-4 flex-1 flex flex-col"
+                >
                   <div>
                     <label
                       htmlFor="hero-name"
@@ -434,7 +428,8 @@ const Hero: React.FC = () => {
                     </Button>
 
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                      No spam. We’ll review your note and respond with specific ideas for your business.
+                      No spam. We’ll review your note and respond with specific
+                      ideas for your business.
                     </p>
                   </div>
                 </form>
