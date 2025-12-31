@@ -276,22 +276,15 @@ const Hero: React.FC = () => {
                 and automated revenue systems.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
+              {/* CTA: remove Get Blueprint, center Quick Start */}
+              <div className="flex justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
                 <button
                   type="button"
-                  onClick={scrollToBlueprint}
-                  className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
-                             bg-slate-900 text-white hover:bg-slate-800
-                             dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
-                             border border-slate-900/10 dark:border-white/10 backdrop-blur"
-                >
-                  Get Blueprint
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => nameInputRef.current?.focus()}
-                  className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
+                  onClick={() => {
+                    scrollToBlueprint();
+                    window.setTimeout(() => nameInputRef.current?.focus(), 450);
+                  }}
+                  className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-sm sm:text-base font-semibold
                              bg-white/85 hover:bg-white text-slate-900
                              dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
                              border border-slate-200/70 dark:border-white/10 backdrop-blur"
@@ -373,7 +366,6 @@ const Hero: React.FC = () => {
                   Submit &amp; Connect
                 </Button>
 
-                {/* CENTERED helper text */}
                 <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
                   No spam. We’ll review your note and respond with specific ideas for your business.
                 </p>
