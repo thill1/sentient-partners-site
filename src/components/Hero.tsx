@@ -252,27 +252,27 @@ const Hero: React.FC = () => {
   return (
     <>
       {/* HERO */}
-      <section className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden py-20 sm:py-24 lg:py-32">
+      <section className="relative w-full min-h-[90vh] flex items-center justify-center overflow-hidden py-20 sm:py-24 lg:py-32">
         <ParticleBackground />
 
-        {/* Wider outer container + more horizontal padding */}
-        <div className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-14">
-          {/* Centered content wrapper so it doesn't hug the left side */}
-          <div className="w-full max-w-5xl mx-auto">
+        {/* Wider container + generous horizontal padding */}
+        <div className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-16">
+          {/* Allow more width so the headline can scale up on desktop */}
+          <div className="w-full max-w-6xl mx-auto">
             <div className="text-center min-w-0">
-              <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex mb-6 sm:mb-7">
+              <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex mb-7 sm:mb-8">
                 <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
                   <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
                   Accepting New Partners
                 </span>
               </div>
 
-              {/* Looser line-height + extra bottom spacing */}
-              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-7xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.08] overflow-visible">
+              {/* Bigger desktop headline */}
+              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-9 sm:mb-11 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
                 <span className="block">We Build</span>
 
                 <span
-                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 leading-[1.08] pb-[0.16em]"
+                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 leading-[1.03] pb-[0.14em]"
                   title={currentPhrase}
                 >
                   {currentPhrase}
@@ -281,19 +281,18 @@ const Hero: React.FC = () => {
                 <span className="block">That Never Sleep</span>
               </h1>
 
-              {/* Slightly narrower paragraph for nicer rhythm */}
-              <p className="max-w-3xl mx-auto text-xl sm:text-[1.35rem] text-slate-600 dark:text-slate-300 mb-10 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+              {/* Removed "No tech expertise required." */}
+              <p className="max-w-4xl mx-auto text-xl sm:text-[1.35rem] lg:text-2xl text-slate-600 dark:text-slate-300 mb-11 sm:mb-14 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
                 Transform your business with AI voice agents, intelligent
-                chatbots, and automated revenue systems. No tech expertise
-                required.
+                chatbots, and automated revenue systems.
               </p>
 
-              {/* CTAs with more spacing */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
                 <button
                   type="button"
                   onClick={scrollToDemo}
-                  className="inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold
+                  className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
                              bg-slate-900 text-white hover:bg-slate-800
                              dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
                              border border-slate-900/10 dark:border-white/10 backdrop-blur"
@@ -304,7 +303,7 @@ const Hero: React.FC = () => {
                 <button
                   type="button"
                   onClick={scrollToBlueprint}
-                  className="inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold
+                  className="inline-flex items-center justify-center rounded-2xl px-7 py-4 text-sm sm:text-base font-semibold
                              bg-white/85 hover:bg-white text-slate-900
                              dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
                              border border-slate-200/70 dark:border-white/10 backdrop-blur"
