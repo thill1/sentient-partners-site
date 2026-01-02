@@ -15,27 +15,19 @@
       })();
     </script>
 
-    <!-- Mobile viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Primary SEO -->
     <title>Sentient Partners | AI Implementation Agency</title>
     <meta
       name="description"
       content="Sentient Partners is an AI implementation agency that deploys AI voice agents, chatbots, and automation systems for SMBs to capture more leads and book more appointments 24/7."
     />
     <meta name="robots" content="index, follow" />
-
-    <!-- Helps browsers render form controls correctly in dark/light -->
     <meta name="color-scheme" content="dark light" />
-
-    <!-- Themed address bar color -->
     <meta name="theme-color" content="#0F172A" />
 
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://sentientpartners.ai/" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Sentient Partners | AI Implementation Agency" />
     <meta
@@ -43,30 +35,21 @@
       content="AI voice agents, chatbots, and automation systems for SMBs — built and implemented by Sentient Partners to drive always-on revenue."
     />
     <meta property="og:url" content="https://sentientpartners.ai/" />
-    <meta
-      property="og:image"
-      content="https://sentientpartners.ai/og-image.jpg"
-    />
+    <meta property="og:image" content="https://sentientpartners.ai/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Sentient Partners | AI Implementation Agency" />
     <meta
       name="twitter:description"
       content="Deploy AI voice, chat, and automation systems that book more appointments and capture more leads — without adding headcount."
     />
-    <meta
-      name="twitter:image"
-      content="https://sentientpartners.ai/og-image.jpg"
-    />
+    <meta name="twitter:image" content="https://sentientpartners.ai/og-image.jpg" />
 
-    <!-- Preconnect for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Web fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -76,7 +59,6 @@
       rel="stylesheet"
     />
 
-    <!-- System font stack -->
     <style>
       :root {
         --font-display: "Space Grotesk", system-ui, -apple-system,
@@ -95,13 +77,12 @@
       }
     </style>
 
-    <!-- Favicon & App Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- ✅ Manifest route (we will serve JSON from /manifest) -->
-    <link rel="manifest" href="/manifest" />
+    <!-- ✅ Manifest served by Pages Function we KNOW will run: /api/manifest -->
+    <link rel="manifest" href="/api/manifest" />
   </head>
 
   <body
@@ -114,7 +95,6 @@
 
     <div id="root"></div>
 
-    <!-- Vite entry (React/TypeScript app) -->
     <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
