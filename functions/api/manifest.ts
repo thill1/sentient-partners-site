@@ -1,0 +1,25 @@
+export const onRequestGet = async () => {
+  const manifest = {
+    name: "Sentient Partners",
+    short_name: "Sentient",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#0F172A",
+    theme_color: "#0F172A",
+    description:
+      "Sentient Partners is an AI implementation agency that deploys AI voice agents, chatbots, and automation systems for SMBs.",
+    icons: [
+      { src: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { src: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
+    ]
+  };
+
+  return new Response(JSON.stringify(manifest, null, 2), {
+    status: 200,
+    headers: {
+      "content-type": "application/manifest+json; charset=utf-8",
+      "cache-control": "no-store"
+    }
+  });
+};
