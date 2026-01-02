@@ -1,101 +1,127 @@
 // functions/api/gemini.ts
-// Cloudflare Pages Function:
-// - GET  /api/gemini => health check (so you can open it in browser)
-// - POST /api/gemini => Gemini call (API key stays in Cloudflare env)
+import { GoogleGenAI } from "@google/genai";
 
-function json(data: any, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+// Cloudflare Pages Function: /api/gemini
+// - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
+// - POST -> calls Gemini via server-side API_KEY (never exposed to client)
+// - Properly forwards Gemini rate limits as 429 with Retry-After (instead of hiding as 500)
+
+function json(data: any, init: ResponseInit = {}) {
+  const headers = new Headers(init.headers || {});
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  headers.set("Cache-Control", "no-store");
+  return new Response(JSON.stringify(data), { ...init, headers });
 }
 
-export async function onRequestGet(context: any) {
-  const hasKey = Boolean(context?.env?.API_KEY || context?.env?.GEMINI_API_KEY);
+function parseRetryAfterSeconds(err: any): number | null {
+  // Gemini errors often include RetryInfo.retryDelay like "34s" somewhere inside details
+  const raw = JSON.stringify(err ?? {});
+  const m = raw.match(/"retryDelay"\s*:\s*"(\d+)s"/i);
+  if (m?.[1]) return Number(m[1]);
+  return null;
+}
+
+export const onRequestGet = async () => {
   return json({
     ok: true,
-    endpoint: "/api/gemini",
-    hasApiKeyConfigured: hasKey,
-    note: "POST to this endpoint from the app to chat.",
+    route: "/api/gemini",
+    note: "POST JSON { message, history?, model? } to use Gemini.",
+    time: new Date().toISOString(),
   });
-}
+};
 
-export async function onRequestOptions() {
-  return json({ ok: true }, 204);
-}
+export const onRequestPost = async (context: any) => {
+  const { request, env } = context;
 
-export async function onRequestPost(context: any) {
-  const apiKey = context?.env?.API_KEY || context?.env?.GEMINI_API_KEY;
+  const apiKey = env?.API_KEY;
   if (!apiKey) {
     return json(
       {
-        error:
-          "Missing API key. Add API_KEY (or GEMINI_API_KEY) in Cloudflare Pages → Settings → Variables and Secrets (Production), then redeploy.",
+        error: "Missing API_KEY in Cloudflare Pages (Production) environment variables.",
       },
-      500,
+      { status: 500 },
     );
   }
 
   let body: any = {};
   try {
-    body = await context.request.json();
+    body = await request.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, 400);
+    return json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const message = String(body?.message || "");
-  const history = Array.isArray(body?.history) ? body.history : [];
+  const message = String(body?.message || "").trim();
+  if (!message) {
+    return json({ error: "Missing `message`." }, { status: 400 });
+  }
+
   const model = String(body?.model || "gemini-2.5-flash");
 
-  if (!message) return json({ error: "Missing `message`." }, 400);
+  // OPTIONAL: history format: [{ role: "user"|"model", text: "..." }]
+  const history = Array.isArray(body?.history) ? body.history : [];
 
-  const contents = [
-    ...history
-      .filter((h: any) => h && typeof h.text === "string")
-      .map((h: any) => ({
-        role: h.role === "model" ? "model" : "user",
-        parts: [{ text: h.text }],
-      })),
-    { role: "user", parts: [{ text: message }] },
-  ];
+  const ai = new GoogleGenAI({ apiKey });
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model,
-  )}:generateContent`;
+  try {
+    // Build contents (history + latest user message)
+    const contents = [
+      ...history
+        .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
+        .slice(-12)
+        .map((h: any) => ({
+          role: h.role,
+          parts: [{ text: h.text }],
+        })),
+      { role: "user", parts: [{ text: message }] },
+    ];
 
-  // Gives “real-time” style answers (Tokyo time, driving time, etc) via Google Search grounding.
-  // If your key/model doesn’t allow this tool, remove the "tools" line and redeploy.
-  const payload = {
-    contents,
-    tools: [{ google_search: {} }],
-    generationConfig: { temperature: 0.4, topP: 0.9, maxOutputTokens: 1024 },
-  };
+    // If you want the model to be able to pull fresh info, you can enable googleSearch tool here.
+    // Note: this can increase usage and make rate limits more likely. Turn it on only if needed.
+    const tools = body?.googleSearch === true ? [{ googleSearch: {} }] : undefined;
 
-  const upstream = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify(payload),
-  });
+    const result = await ai.models.generateContent({
+      model,
+      contents,
+      ...(tools ? { config: { tools } } : {}),
+    });
 
-  const data = await upstream.json().catch(() => ({} as any));
+    // The SDK provides `result.text` in examples. :contentReference[oaicite:0]{index=0}
+    const text = String((result as any)?.text || "").trim();
 
-  if (!upstream.ok) {
-    return json({ error: "Gemini error", status: upstream.status, details: data }, 500);
+    return json({
+      ok: true,
+      text,
+      model,
+    });
+  } catch (err: any) {
+    const status =
+      Number(err?.status) ||
+      Number(err?.code) ||
+      500;
+
+    // If Gemini throttles you, forward 429 so your UI can show “retry in X seconds”
+    if (status === 429) {
+      const retryAfter = parseRetryAfterSeconds(err) ?? 30;
+      return json(
+        {
+          error: "Rate limited by Gemini (429).",
+          retryAfterSeconds: retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+          },
+        },
+      );
+    }
+
+    return json(
+      {
+        error: "Gemini error",
+        status,
+      },
+      { status: status >= 400 && status <= 599 ? status : 500 },
+    );
   }
-
-  const parts = data?.candidates?.[0]?.content?.parts || [];
-  const text = parts.map((p: any) => (typeof p?.text === "string" ? p.text : "")).join("");
-
-  return json({
-    text: text || "",
-    groundingMetadata: data?.candidates?.[0]?.groundingMetadata || null,
-  });
-}
+};
