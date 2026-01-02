@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- DEFAULT THEME: respect saved preference; otherwise start in DARK -->
+    <!-- Default theme: respect saved preference; otherwise start DARK -->
     <script>
       (function () {
         try {
@@ -61,36 +61,26 @@
 
     <style>
       :root {
-        --font-display: "Space Grotesk", system-ui, -apple-system,
-          BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI",
-          sans-serif;
+        --font-display: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
         --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
           "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
       }
-
-      body {
-        font-family: var(--font-body);
-      }
-
-      .font-display {
-        font-family: var(--font-display);
-      }
+      body { font-family: var(--font-body); }
+      .font-display { font-family: var(--font-display); }
     </style>
 
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- ✅ Manifest served by Pages Function we KNOW will run: /api/manifest -->
+    <!-- ✅ Use the working Pages Function manifest -->
     <link rel="manifest" href="/api/manifest" />
   </head>
 
-  <body
-    class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300"
-  >
+  <body class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300">
     <noscript>
-      This experience works best with JavaScript enabled. Please enable
-      JavaScript to explore the Sentient Partners AI demos and interface.
+      This experience works best with JavaScript enabled. Please enable JavaScript to explore the Sentient Partners AI demos and interface.
     </noscript>
 
     <div id="root"></div>
