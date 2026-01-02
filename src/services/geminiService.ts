@@ -1,46 +1,19 @@
 // @ts-nocheck
-import {
-  GoogleGenAI,
-  Chat,
-  GenerateContentResponse,
-  LiveServerMessage,
-  Modality,
-  FunctionDeclaration,
-  Type,
-} from "@google/genai";
-import { SYSTEM_INSTRUCTION, BOOKING_URL } from "../constants";
+// Server-backed Gemini service (Cloudflare Pages Function).
+// ✅ No browser API keys. Calls /api/gemini.
+// ✅ Keeps exports used by ChatInterface (decodeAudioData, etc).
 
-let chatSession: Chat | null = null;
-let aiClient: GoogleGenAI | null = null;
+let memory: { role: "user" | "model"; text: string }[] = [];
 
-const getClient = () => {
-  if (aiClient) return aiClient;
-
-  // Client-side key baked at build time (your current architecture)
-  const apiKey = process.env.API_KEY;
-
-  if (!apiKey) {
-    console.error(
-      "[GeminiService] API key is missing in client bundle. " +
-        "Check Vite define() and Cloudflare/GitHub env var `API_KEY`."
-    );
-    return null;
-  }
-
-  console.log("[GeminiService] Initializing Gemini client. Key present:", !!apiKey);
-  aiClient = new GoogleGenAI({ apiKey });
-  return aiClient;
-};
-
-// --- Helpers ---
+// --- Toast + File helpers (keep as-is for your UI) ---
 
 export const dispatchToast = (
   message: string,
-  type: "success" | "error" | "info" = "info"
+  type: "success" | "error" | "info" = "info",
 ) => {
   if (typeof window !== "undefined") {
     window.dispatchEvent(
-      new CustomEvent("show-toast", { detail: { message, type } })
+      new CustomEvent("show-toast", { detail: { message, type } }),
     );
   }
 };
@@ -60,23 +33,18 @@ interface EmailResult {
   message: string;
 }
 
-export const sendEmailData = async (
-  data: any,
-  subject: string
-): Promise<EmailResult> => {
-  // FAST FAIL: Check Protocol
+export const sendEmailData = async (data: any, subject: string): Promise<EmailResult> => {
   if (typeof window !== "undefined" && window.location.protocol === "file:") {
     return {
       success: false,
       message:
-        "RESTRICTED: You are running this file locally without a server. Please use 'npm run dev' or a local web server to enable Email & Mic features.",
+        "RESTRICTED: You are running this file locally without a server. Use a hosted environment to enable Email & Mic features.",
     };
   }
 
   const targetEmail = "troyhill@sentientpartners.ai";
   const endpoint = `https://formsubmit.co/ajax/${targetEmail}`;
   const timestamp = new Date();
-
   const uniqueSubject = `${subject} - ${timestamp.toLocaleString()}`;
 
   console.log(`[Email Service] Preparing to send to ${targetEmail}...`);
@@ -84,10 +52,7 @@ export const sendEmailData = async (
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         _subject: uniqueSubject,
         _template: "table",
@@ -104,8 +69,7 @@ export const sendEmailData = async (
     let responseData: any = {};
     try {
       responseData = JSON.parse(responseText);
-    } catch (e) {
-      console.warn("[Email Service] Could not parse JSON response");
+    } catch {
       return { success: false, message: "Invalid response from email server." };
     }
 
@@ -113,23 +77,20 @@ export const sendEmailData = async (
     const message = responseData.message || "";
 
     if (response.ok && isSuccess) {
-      if (
-        message.toLowerCase().includes("activate") ||
-        message.toLowerCase().includes("check your email")
-      ) {
+      if (String(message).toLowerCase().includes("activate")) {
         return {
           success: true,
           message:
-            "Email Sent! Please check your inbox to ACTIVATE this endpoint (First time only).",
+            "Email Sent! Please check your inbox to ACTIVATE this endpoint (first time only).",
         };
       }
       console.log("[Email Service] Email sent successfully.");
       return { success: true, message: "Email transmitted successfully." };
-    } else {
-      const errorMsg = message || "Email server rejected the request.";
-      console.warn(`[Email Service] API Error: ${errorMsg}`);
-      return { success: false, message: errorMsg };
     }
+
+    const errorMsg = message || "Email server rejected the request.";
+    console.warn(`[Email Service] API Error: ${errorMsg}`);
+    return { success: false, message: errorMsg };
   } catch (error: any) {
     console.error("[Email Service] Network Error:", error);
     return { success: false, message: "Network connection failed." };
@@ -143,183 +104,12 @@ export const sendTestEmail = async (): Promise<EmailResult> => {
       Status: "Connection Verified",
       Timestamp: timestamp,
       Test_ID: Date.now(),
-      Note:
-        "If you received this email, your transcript system is fully functional. If this is the first email, please click the 'Activate' button in the FormSubmit confirmation if received.",
+      Note: "If you received this email, your transcript system is functional. If this is the first email, click Activate in the FormSubmit email.",
       System: "Sentient Partners AI Web Agent",
     },
-    "Connection Test Verification"
+    "Connection Test Verification",
   );
 };
-
-// --- Tools ---
-
-// NEW: Real-time world time tool (uses the user's browser clock)
-const getTimeInTimezone = (timeZone?: string) => {
-  const tz = (timeZone || "").trim() || "UTC";
-  const now = new Date();
-
-  try {
-    // Validate TZ by attempting to format with it
-    const time = now.toLocaleTimeString("en-US", {
-      timeZone: tz,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-    const date = now.toLocaleDateString("en-US", {
-      timeZone: tz,
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    return {
-      success: true,
-      timeZone: tz,
-      localDate: date,
-      localTime: time,
-      iso: now.toISOString(),
-      note: "Time is computed from the user's device clock using Intl.DateTimeFormat.",
-    };
-  } catch (e: any) {
-    return {
-      success: false,
-      timeZone: tz,
-      error:
-        "Invalid or unsupported IANA timezone. Example: 'Asia/Tokyo', 'America/Los_Angeles', 'Europe/London'.",
-    };
-  }
-};
-
-const tools: { functionDeclarations: FunctionDeclaration[] }[] = [
-  {
-    functionDeclarations: [
-      {
-        name: "scheduleMeeting",
-        description:
-          "Opens the real-time booking calendar modal on the user's screen. Use this when the user wants to book a call. You can also use this to re-open the calendar if the user asks (no parameters needed for re-opening).",
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING, description: "User's full name (optional)" },
-            email: { type: Type.STRING, description: "User's email address (optional)" },
-            date: { type: Type.STRING, description: "Preferred date in YYYY-MM-DD format (optional)" },
-          },
-          required: [],
-        },
-      },
-      {
-        name: "captureLead",
-        description:
-          "Captures user contact information and inquiry details to send to the Sentient Partners team via email. Use this as a fallback if booking fails, or if the user prefers to be contacted via email/phone instead of booking a meeting.",
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            name: { type: Type.STRING, description: "User's full name" },
-            email: { type: Type.STRING, description: "User's email address" },
-            phone: { type: Type.STRING, description: "User's phone number (optional)" },
-            inquiry: { type: Type.STRING, description: "Summary of user's needs or questions" },
-          },
-          required: ["name", "email"],
-        },
-      },
-      {
-        name: "getTimeInTimezone",
-        description:
-          "Returns the current date/time for an IANA timezone (e.g., 'Asia/Tokyo'). Use this whenever the user asks for current time in a location/timezone.",
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            timeZone: {
-              type: Type.STRING,
-              description: "IANA timezone name, e.g. 'Asia/Tokyo', 'Europe/London'.",
-            },
-          },
-          required: [],
-        },
-      },
-    ],
-  },
-];
-
-// --- Tool Implementations ---
-
-const scheduleMeeting = (name?: string, email?: string, date?: string) => {
-  const params = new URLSearchParams();
-
-  if (name && name !== "null" && name !== "undefined") params.append("name", name);
-  if (email && email !== "null" && email !== "undefined") params.append("email", email);
-  if (date && date !== "null" && date !== "undefined") params.append("date", date);
-
-  const fullUrl = `${BOOKING_URL}?${params.toString()}`;
-
-  console.log("[GeminiService] Opening Calendar with URL:", fullUrl);
-
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("open-booking-modal", { detail: { url: fullUrl } }));
-    document.dispatchEvent(new CustomEvent("open-booking-modal", { detail: { url: fullUrl } }));
-    dispatchToast("Opening Calendar...", "success");
-  }
-
-  return {
-    success: true,
-    message: "Calendar interface opened successfully.",
-  };
-};
-
-const captureLead = async (name: string, email: string, phone?: string, inquiry?: string) => {
-  dispatchToast("Sending information...", "info");
-
-  const result = await sendEmailData(
-    {
-      Lead_Name: name,
-      Lead_Email: email,
-      Lead_Phone: phone || "Not provided",
-      Lead_Inquiry: inquiry || "General Inquiry",
-    },
-    "New Lead Capture"
-  );
-
-  if (result.success) {
-    dispatchToast("Information sent to team.", "success");
-    return { success: true, message: "Lead information securely transmitted to the team." };
-  } else {
-    console.warn("Lead email failed, saving locally.");
-
-    const leadData = `LEAD CAPTURE\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nInquiry: ${inquiry}\nDate: ${new Date().toLocaleString()}`;
-    downloadAsFile(`lead-${name.replace(/\s+/g, "-")}.txt`, leadData);
-
-    dispatchToast("Saved to your device.", "info");
-    return { success: false, message: "Network issue. Information saved to user's device." };
-  }
-};
-
-const executeTool = async (name: string, args: any) => {
-  console.log(`[GeminiService] Executing tool: ${name}`, args);
-  const safeArgs = args || {};
-
-  try {
-    if (name === "scheduleMeeting") {
-      return scheduleMeeting(safeArgs.name, safeArgs.email, safeArgs.date);
-    }
-
-    if (name === "captureLead") {
-      return await captureLead(safeArgs.name, safeArgs.email, safeArgs.phone, safeArgs.inquiry);
-    }
-
-    if (name === "getTimeInTimezone") {
-      return getTimeInTimezone(safeArgs.timeZone);
-    }
-
-    return { error: "Function not found" };
-  } catch (error: any) {
-    console.error(`[GeminiService] Error executing ${name}:`, error);
-    return { error: `Tool execution failed: ${error.message || "Unknown error"}` };
-  }
-};
-
-// --- Features ---
 
 export const sendTranscript = async (chatLog: string, voiceLog: string) => {
   if (!chatLog && !voiceLog) return { success: false, message: "No content" };
@@ -329,164 +119,27 @@ export const sendTranscript = async (chatLog: string, voiceLog: string) => {
       chat_history: chatLog || "No text chat recorded.",
       voice_transcript: voiceLog || "No voice interaction recorded.",
     },
-    "New Client Transcript"
+    "New Client Transcript",
   );
 
   if (result.success) {
     dispatchToast("Transcript sent successfully.", "success");
     return { success: true, message: "Sent" };
-  } else {
-    console.warn("Transcript email failed, initiating fallback download.");
-
-    const fullLog = `SENTIENT PARTNERS TRANSCRIPT\nDate: ${new Date().toLocaleString()}\n\n--- CHAT LOG ---\n${chatLog}\n\n--- VOICE LOG ---\n${voiceLog}`;
-    downloadAsFile(`transcript-${Date.now()}.txt`, fullLog);
-
-    dispatchToast("Transcript saved to your device.", "info");
-
-    return { success: true, message: "Saved locally" };
   }
+
+  console.warn("Transcript email failed, initiating fallback download.");
+  const fullLog =
+    `SENTIENT PARTNERS TRANSCRIPT\nDate: ${new Date().toLocaleString()}\n\n--- CHAT LOG ---\n${chatLog}\n\n--- VOICE LOG ---\n${voiceLog}`;
+  downloadAsFile(`transcript-${Date.now()}.txt`, fullLog);
+  dispatchToast("Transcript saved to your device.", "info");
+  return { success: true, message: "Saved locally" };
 };
 
-// --- Context Helper ---
-
-export const getSystemInstructionWithContext = () => {
-  let timeZone = "UTC";
-  try {
-    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  } catch (e) {
-    console.warn("Could not determine timezone", e);
-  }
-
-  const now = new Date();
-  const localTime = now.toLocaleTimeString("en-US", { timeZone });
-  const localDate = now.toLocaleDateString("en-US", {
-    timeZone,
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  return `${SYSTEM_INSTRUCTION}
-
-[REAL-TIME USER CONTEXT]
-- User Timezone: ${timeZone}
-- Current Date: ${localDate}
-- Current Time: ${localTime}
-
-[REAL-TIME CAPABILITIES]
-- If the user asks for "current time" in any city/timezone (e.g., Tokyo), you MUST call \`getTimeInTimezone\` using an IANA timezone like "Asia/Tokyo".
-- Do NOT claim you cannot access real-time time information; use the tool.
-
-[EVENT HANDLING INSTRUCTIONS]
-- START UP: You must ALWAYS introduce yourself immediately when the session starts. Do not wait for the user to speak. Say "Hello, I'm the Sentient AI Assistant. How can I help you today?"
-- BOOKING: If the user indicates they want to book a time, call \`scheduleMeeting\` immediately. Do not ask for permission if the intent is clear.
-- RE-OPENING CALENDAR: If the user says they closed the calendar or wants to see it, call \`scheduleMeeting\` again.
-`;
-};
-
-// --- Text Chat Service ---
-
-export const initializeChat = (): Chat | null => {
-  const ai = getClient();
-  if (ai) {
-    try {
-      chatSession = ai.chats.create({
-        model: "gemini-2.5-flash",
-        config: {
-          systemInstruction: getSystemInstructionWithContext(),
-          tools, // custom tools only
-        },
-      });
-    } catch (error) {
-      console.error("Failed to initialize Gemini client:", error);
-    }
-  } else {
-    console.warn("API Key is missing. Running in fallback mode.");
-  }
-
-  return chatSession;
-};
-
-export const sendMessageToGemini = async function* (
-  message: string
-): AsyncGenerator<string, void, unknown> {
-  if (!chatSession) {
-    initializeChat();
-  }
-
-  if (!chatSession) {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    yield "I'm operating in Demo Mode. Please configure your API Key to enable the full Sentient experience.";
-    return;
-  }
-
-  try {
-    let result = await chatSession.sendMessageStream({ message });
-
-    while (true) {
-      let toolCalls: any[] = [];
-
-      for await (const chunk of result) {
-        const responseChunk = chunk as GenerateContentResponse;
-
-        if (responseChunk.text) {
-          yield responseChunk.text;
-        }
-
-        const candidates = responseChunk.candidates;
-        if (candidates && candidates[0]?.content?.parts) {
-          for (const part of candidates[0].content.parts) {
-            if (part.functionCall) {
-              toolCalls.push(part.functionCall);
-            }
-          }
-        }
-      }
-
-      if (toolCalls.length === 0) {
-        break;
-      }
-
-      const functionResponses = [];
-      for (const call of toolCalls) {
-        const toolResult = await executeTool(call.name, call.args);
-        functionResponses.push({
-          functionResponse: {
-            name: call.name,
-            response: { result: toolResult },
-          },
-        });
-      }
-
-      result = await chatSession.sendMessageStream({ message: functionResponses });
-    }
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    yield "I apologize, but I'm encountering a temporary connection issue. Please try again.";
-  }
-};
-
-// --- Live API / Audio Helpers ---
-// NOTE: Voice is still disabled in your current build strategy.
-// If you want voice back, we can re-enable it later safely.
-
-export const connectLiveSession = async (_callbacks: {
-  onopen?: () => void;
-  onmessage: (message: LiveServerMessage) => void;
-  onclose?: (e: CloseEvent) => void;
-  onerror?: (e: ErrorEvent) => void;
-}) => {
-  return Promise.reject(
-    new Error(
-      "Voice mode disabled in this build. (Enable server-side proxy or re-enable Live API wiring.)"
-    )
-  );
-};
+// --- Audio helpers (ChatInterface imports these) ---
 
 export function createPcmBlob(
   data: Float32Array,
-  sampleRate: number = 16000
+  sampleRate: number = 16000,
 ): { data: string; mimeType: string } {
   const l = data.length;
   const int16 = new Int16Array(l);
@@ -504,9 +157,7 @@ export function createPcmBlob(
 export function encode(bytes: Uint8Array) {
   let binary = "";
   const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
+  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
@@ -514,9 +165,7 @@ export function decode(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
+  for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
   return bytes;
 }
 
@@ -524,7 +173,7 @@ export async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,
   sampleRate: number,
-  numChannels: number
+  numChannels: number,
 ): Promise<AudioBuffer> {
   const dataInt16 = new Int16Array(data.buffer);
   const frameCount = dataInt16.length / numChannels;
@@ -538,3 +187,56 @@ export async function decodeAudioData(
   }
   return buffer;
 }
+
+// --- Chat API (server-backed) ---
+
+export const initializeChat = () => null;
+
+// Generator to match your existing UI pattern
+export const sendMessageToGemini = async function* (
+  message: string,
+): AsyncGenerator<string, void, unknown> {
+  try {
+    const historyToSend = memory.slice(-12);
+
+    const resp = await fetch("/api/gemini", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        history: historyToSend,
+        model: "gemini-2.5-flash",
+      }),
+    });
+
+    const data = await resp.json().catch(() => ({} as any));
+
+    if (!resp.ok) {
+      console.error("[GeminiService] /api/gemini failed:", data);
+      yield "Server is online but Gemini is not configured yet. Check Cloudflare Pages Production API_KEY and redeploy.";
+      return;
+    }
+
+    const text = String(data?.text || "");
+    if (!text) {
+      yield "I received an empty response. Try again.";
+      return;
+    }
+
+    memory.push({ role: "user", text: String(message || "") });
+    memory.push({ role: "model", text });
+
+    // yield once (simple)
+    yield text;
+  } catch (err) {
+    console.error("[GeminiService] Exception:", err);
+    yield "I hit a connection problem. Please refresh and try again.";
+  }
+};
+
+// Voice mode is NOT wired server-side yet (prevents confusing client-key failures)
+export const connectLiveSession = async () => {
+  throw new Error(
+    "Voice is not configured on the server yet. Chat is fixed first, then we enable voice via a server endpoint.",
+  );
+};
