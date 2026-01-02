@@ -1,2 +1,0 @@
-# No SPA catch-all rewrite.
-# This site is a single-page scroll site, so allow real static files (like /site.webmanifest) to load normally.
