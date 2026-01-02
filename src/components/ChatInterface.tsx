@@ -31,6 +31,8 @@ const SUGGESTED_ACTIONS = [
   { label: 'Sky Color?', prompt: 'Why is the sky blue? Explain simply.' },
 ];
 
+const TTS_VOICE_STORAGE_KEY = 'sentient_tts_voice_name';
+
 export const ChatInterface: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
@@ -56,7 +58,7 @@ export const ChatInterface: React.FC = () => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
 
-  // Transcript capture for saving
+  // Transcript capture
   const [transcriptHistory, setTranscriptHistory] = useState<
     { role: 'user' | 'model'; text: string }[]
   >([]);
@@ -68,11 +70,127 @@ export const ChatInterface: React.FC = () => {
   const recognitionRef = useRef<any>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
 
+  // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
+  const finalBufferRef = useRef<string>('');
+  const finalTimerRef = useRef<any>(null);
+
   // Visualizer
   const inputContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const visualizerCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Voices cache
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const preferredVoiceNameRef = useRef<string>(
+    (() => {
+      try {
+        return localStorage.getItem(TTS_VOICE_STORAGE_KEY) || '';
+      } catch {
+        return '';
+      }
+    })(),
+  );
+
+  // --- Load voices (some browsers load async) ---
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    const loadVoices = () => {
+      try {
+        const v = window.speechSynthesis.getVoices?.() || [];
+        voicesRef.current = v;
+      } catch {}
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = () => loadVoices();
+
+    return () => {
+      try {
+        window.speechSynthesis.onvoiceschanged = null as any;
+      } catch {}
+    };
+  }, []);
+
+  const pickPreferredVoice = () => {
+    const voices = voicesRef.current || [];
+    if (!voices.length) return null;
+
+    // 1) If user previously saved a voice name, use it
+    const saved = preferredVoiceNameRef.current;
+    if (saved) {
+      const exact = voices.find((v) => v.name === saved);
+      if (exact) return exact;
+    }
+
+    // 2) Prefer “female-ish” common names (best effort; varies per OS)
+    const preferredNameHints = [
+      'Samantha',
+      'Victoria',
+      'Zira',
+      'Jenny',
+      'Aria',
+      'Serena',
+      'Google US English',
+      'Google UK English Female',
+      'English (United States)',
+    ];
+
+    const enVoices = voices.filter((v) => (v.lang || '').toLowerCase().startsWith('en'));
+
+    for (const hint of preferredNameHints) {
+      const match =
+        enVoices.find((v) => (v.name || '').toLowerCase().includes(hint.toLowerCase())) ||
+        voices.find((v) => (v.name || '').toLowerCase().includes(hint.toLowerCase()));
+      if (match) return match;
+    }
+
+    // 3) Fall back to default English voice
+    const defEn = enVoices.find((v) => v.default) || enVoices[0];
+    if (defEn) return defEn;
+
+    // 4) Last resort: any default
+    return voices.find((v) => v.default) || voices[0] || null;
+  };
+
+  const speakText = async (text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    const clean = String(text || '').trim();
+    if (!clean) return;
+
+    // IMPORTANT: never speak our internal error copy
+    if (clean.toLowerCase().includes('server error') && clean.toLowerCase().includes('cloudflare')) {
+      return;
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+    } catch {}
+
+    return new Promise<void>((resolve) => {
+      const utter = new SpeechSynthesisUtterance(clean);
+
+      const voice = pickPreferredVoice();
+      if (voice) utter.voice = voice;
+
+      utter.rate = 1;
+      utter.pitch = 1;
+
+      utter.onstart = () => setIsPlayingAudio(true);
+      utter.onend = () => {
+        setIsPlayingAudio(false);
+        resolve();
+      };
+      utter.onerror = () => {
+        setIsPlayingAudio(false);
+        resolve();
+      };
+
+      window.speechSynthesis.speak(utter);
+    });
+  };
 
   // --- Boot/open listeners ---
   useEffect(() => {
@@ -91,47 +209,6 @@ export const ChatInterface: React.FC = () => {
     return () => window.removeEventListener('open-sentient-chat', handleOpenEvent);
   }, []);
 
-  // Booking completed listener (kept)
-  useEffect(() => {
-    const handleBookingCompleted = async (e: CustomEvent) => {
-      const data = e.detail;
-
-      let timeInfo = 'the selected time';
-      if (data?.date) timeInfo = data.date;
-      if (data?.startTime) timeInfo = `${data.date || ''} at ${data.startTime}`;
-
-      let clientName = 'there';
-      if (data?.attendees && Array.isArray(data.attendees) && data.attendees.length > 0) {
-        clientName = data.attendees[0].name || clientName;
-      } else if (data?.responses?.name) {
-        clientName = data.responses.name;
-      } else if (data?.name) {
-        clientName = data.name;
-      } else if (data?.payload?.attendees?.[0]?.name) {
-        clientName = data.payload.attendees[0].name;
-      }
-
-      dispatchToast(`Booking Confirmed for ${clientName}!`, 'success');
-
-      const systemPrompt = `SYSTEM_ALERT: The user ${clientName} has successfully booked an appointment for ${timeInfo}.
-Task:
-1. Confirm the booking to the user by name (${clientName}).
-2. Repeat the date and time explicitly.
-3. Ask if they have any other questions before the call.`;
-
-      // If voice is active, speak it; otherwise inject into chat
-      if (activeTab === 'voice' && isLiveConnected) {
-        await respondToVoice(systemPrompt);
-      } else {
-        await handleSystemInjection(systemPrompt);
-      }
-    };
-
-    window.addEventListener('booking-completed', handleBookingCompleted as EventListener);
-    return () =>
-      window.removeEventListener('booking-completed', handleBookingCompleted as EventListener);
-  }, [activeTab, isLiveConnected]);
-
   // Scroll
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -144,77 +221,12 @@ Task:
     if (!isOpen || activeTab !== 'voice') {
       if (isLiveConnected || isVoiceLoading) stopLiveSession();
     }
-    // NOTE: we do NOT auto-start voice here (browsers often require a direct click)
-    // User starts voice via the Mic button.
   }, [activeTab, isOpen]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => stopLiveSession();
   }, []);
-
-  // --- Transcript helpers ---
-  const prepareTranscriptData = () => {
-    const pendingUser = currentInputTransRef.current.trim();
-    const pendingModel = currentOutputTransRef.current.trim();
-
-    const chatLog =
-      messages.length > 1
-        ? messages.map((m) => `[${m.role.toUpperCase()}]: ${m.text}`).join('\n')
-        : '';
-
-    let voiceLog = transcriptHistory
-      .map((t) => `[VOICE ${t.role.toUpperCase()}]: ${t.text}`)
-      .join('\n');
-    if (pendingUser) voiceLog += `\n[VOICE USER (Partial)]: ${pendingUser}`;
-    if (pendingModel) voiceLog += `\n[VOICE MODEL (Partial)]: ${pendingModel}`;
-
-    return { chatLog, voiceLog };
-  };
-
-  const handleManualSave = async () => {
-    if (isSaving) return;
-
-    const { chatLog, voiceLog } = prepareTranscriptData();
-    if (!chatLog && !voiceLog.trim()) {
-      dispatchToast('No content to save yet.', 'info');
-      return;
-    }
-
-    setIsSaving(true);
-    dispatchToast('Saving transcript...', 'info');
-    await sendTranscript(chatLog, voiceLog);
-    setIsSaving(false);
-  };
-
-  const handleTestConnection = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    dispatchToast('Sending test packet...', 'info');
-
-    const result = await sendTestEmail();
-    dispatchToast(result.success ? 'Success! Check your inbox.' : `Failed: ${result.message}`, result.success ? 'success' : 'error');
-
-    setIsSaving(false);
-  };
-
-  const handleClose = async () => {
-    if (isSaving) return;
-
-    const { chatLog, voiceLog } = prepareTranscriptData();
-    const hasChat = messages.length > 1;
-    const hasVoice = voiceLog.trim().length > 0;
-
-    if (hasChat || hasVoice) {
-      setIsSaving(true);
-      dispatchToast('Archiving session...', 'info');
-      sendTranscript(chatLog, voiceLog).catch(console.error);
-      setIsSaving(false);
-    }
-
-    stopLiveSession();
-    setIsOpen(false);
-  };
 
   // --- Visualizer (mic-based) ---
   useEffect(() => {
@@ -300,36 +312,70 @@ Task:
     };
   }, [isLiveConnected, isVoiceLoading, activeTab, isOpen]);
 
-  // --- Chat/system injection ---
-  const handleSystemInjection = async (systemText: string) => {
-    if (isLoading) return;
-    setIsLoading(true);
+  // --- Transcript helpers ---
+  const prepareTranscriptData = () => {
+    const pendingUser = currentInputTransRef.current.trim();
+    const pendingModel = currentOutputTransRef.current.trim();
 
-    const responseId = Date.now().toString();
-    setMessages((prev) => [
-      ...prev,
-      { id: responseId, role: 'model', text: '', isTyping: true, timestamp: new Date() },
-    ]);
+    const chatLog =
+      messages.length > 1
+        ? messages.map((m) => `[${m.role.toUpperCase()}]: ${m.text}`).join('\n')
+        : '';
 
-    try {
-      const stream = sendMessageToGemini(systemText);
-      let fullText = '';
+    let voiceLog = transcriptHistory
+      .map((t) => `[VOICE ${t.role.toUpperCase()}]: ${t.text}`)
+      .join('\n');
+    if (pendingUser) voiceLog += `\n[VOICE USER (Partial)]: ${pendingUser}`;
+    if (pendingModel) voiceLog += `\n[VOICE MODEL (Partial)]: ${pendingModel}`;
 
-      for await (const chunk of stream) {
-        fullText += chunk;
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === responseId ? { ...msg, text: fullText.trim(), isTyping: false } : msg,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error('System Injection Error:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    return { chatLog, voiceLog };
   };
 
+  const handleManualSave = async () => {
+    if (isSaving) return;
+
+    const { chatLog, voiceLog } = prepareTranscriptData();
+    if (!chatLog && !voiceLog.trim()) {
+      dispatchToast('No content to save yet.', 'info');
+      return;
+    }
+
+    setIsSaving(true);
+    dispatchToast('Saving transcript...', 'info');
+    await sendTranscript(chatLog, voiceLog);
+    setIsSaving(false);
+  };
+
+  const handleTestConnection = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    dispatchToast('Sending test packet...', 'info');
+
+    const result = await sendTestEmail();
+    dispatchToast(result.success ? 'Success! Check your inbox.' : `Failed: ${result.message}`, result.success ? 'success' : 'error');
+
+    setIsSaving(false);
+  };
+
+  const handleClose = async () => {
+    if (isSaving) return;
+
+    const { chatLog, voiceLog } = prepareTranscriptData();
+    const hasChat = messages.length > 1;
+    const hasVoice = voiceLog.trim().length > 0;
+
+    if (hasChat || hasVoice) {
+      setIsSaving(true);
+      dispatchToast('Archiving session...', 'info');
+      sendTranscript(chatLog, voiceLog).catch(console.error);
+      setIsSaving(false);
+    }
+
+    stopLiveSession();
+    setIsOpen(false);
+  };
+
+  // --- Chat ---
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || inputValue;
     if (!textToSend.trim() || isLoading) return;
@@ -393,33 +439,23 @@ Task:
     return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
   };
 
-  const speakText = async (text: string) => {
-    if (typeof window === 'undefined') return;
-
+  const askGeminiOnce = async (userText: string) => {
+    let fullText = '';
     try {
-      window.speechSynthesis?.cancel();
-    } catch {}
-
-    return new Promise<void>((resolve) => {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.rate = 1;
-      utter.pitch = 1;
-      utter.onstart = () => setIsPlayingAudio(true);
-      utter.onend = () => {
-        setIsPlayingAudio(false);
-        resolve();
-      };
-      utter.onerror = () => {
-        setIsPlayingAudio(false);
-        resolve();
-      };
-      window.speechSynthesis.speak(utter);
-    });
+      const stream = sendMessageToGemini(userText);
+      for await (const chunk of stream) fullText += chunk;
+    } catch {
+      fullText = '';
+    }
+    return String(fullText || '').trim();
   };
 
   const respondToVoice = async (userText: string) => {
     const clean = String(userText || '').trim();
     if (!clean) return;
+
+    // Ignore tiny/noise
+    if (clean.length < 3) return;
 
     // Log user voice transcript
     setTranscriptHistory((prev) => [...prev, { role: 'user', text: clean }]);
@@ -429,20 +465,42 @@ Task:
       recognitionRef.current?.stop?.();
     } catch {}
 
-    // Ask Gemini (same backend as chat)
-    let fullText = '';
-    try {
-      const stream = sendMessageToGemini(clean);
-      for await (const chunk of stream) fullText += chunk;
-    } catch {
-      fullText = 'I had a connection issue. Please try again.';
+    // Ask Gemini (retry once if first attempt returns error copy)
+    let reply = await askGeminiOnce(clean);
+
+    const looksLikeError =
+      !reply ||
+      reply.toLowerCase().includes('server error') ||
+      reply.toLowerCase().includes('check cloudflare') ||
+      reply.toLowerCase().includes('redeploy');
+
+    if (looksLikeError) {
+      // quick retry (Cloudflare cold start / transient)
+      await new Promise((r) => setTimeout(r, 250));
+      reply = await askGeminiOnce(clean);
     }
 
-    fullText = String(fullText || '').trim() || 'Empty response.';
-    setTranscriptHistory((prev) => [...prev, { role: 'model', text: fullText }]);
+    if (!reply) {
+      setVoiceError('Voice server returned an empty response.');
+      connectionActiveRef.current = false;
+      return;
+    }
+
+    // Never speak internal error copy
+    const speakable = reply
+      .replace(/Server error\.[\s\S]*$/i, '')
+      .trim();
+
+    // Save transcript
+    setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
 
     // Speak reply
-    await speakText(fullText);
+    if (speakable) {
+      await speakText(speakable);
+    } else {
+      // If it’s only error copy, show UI error instead of speaking it
+      setVoiceError('Voice server error (check Cloudflare logs).');
+    }
 
     // Restart recognition if session still active
     if (connectionActiveRef.current) {
@@ -467,7 +525,7 @@ Task:
 
     const SpeechRec = getSpeechRecognition();
     if (!SpeechRec) {
-      setVoiceError('Voice not supported in this browser. Use Chrome (desktop or Android).');
+      setVoiceError('Voice not supported in this browser. Use Chrome/Edge on desktop.');
       return;
     }
 
@@ -476,9 +534,11 @@ Task:
     setVoiceError(null);
 
     try {
-      // Mic stream for visualizer + permission gating
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Browser does not support microphone input.');
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Browser does not support microphone input.');
+      }
 
+      // Force a mic permission request (if not already granted)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       micStreamRef.current = stream;
 
@@ -495,7 +555,6 @@ Task:
       analyzer.fftSize = 256;
       analyzerRef.current = analyzer;
 
-      // Keep audio graph alive without echo
       const gain = ctx.createGain();
       gain.gain.value = 0;
 
@@ -525,7 +584,7 @@ Task:
             ? 'Microphone permission denied.'
             : e?.error === 'service-not-allowed'
             ? 'Speech service not available in this browser.'
-            : 'Voice connection failed.';
+            : `Voice error: ${e?.error || 'unknown'}`;
         setVoiceError(msg);
         setIsVoiceLoading(false);
         setIsLiveConnected(false);
@@ -545,27 +604,32 @@ Task:
           else interimText += t;
         }
 
-        // Keep “partial” buffers for transcript saves
         if (interimText.trim()) currentInputTransRef.current = interimText.trim();
 
         if (finalText.trim()) {
           currentInputTransRef.current = '';
-          await respondToVoice(finalText.trim());
+
+          // Debounce: buffer multiple finals into one request
+          finalBufferRef.current = `${finalBufferRef.current} ${finalText}`.trim();
+
+          if (finalTimerRef.current) clearTimeout(finalTimerRef.current);
+          finalTimerRef.current = setTimeout(async () => {
+            const combined = finalBufferRef.current.trim();
+            finalBufferRef.current = '';
+            finalTimerRef.current = null;
+            if (combined) await respondToVoice(combined);
+          }, 650);
         }
       };
 
       recognition.onend = () => {
-        // Auto-restart listening if user hasn’t stopped the session AND we’re not speaking
         if (connectionActiveRef.current && !isPlayingAudio) {
           try {
             recognition.start();
-          } catch {
-            // ignore (some browsers block auto restart)
-          }
+          } catch {}
         }
       };
 
-      // Start recognition (requires user gesture in some browsers — this is triggered by Mic click)
       recognition.start();
     } catch (error: any) {
       console.error('Voice Connection Error:', error);
@@ -580,7 +644,6 @@ Task:
       setVoiceError(msg);
       connectionActiveRef.current = false;
 
-      // Cleanup partial init
       try {
         micStreamRef.current?.getTracks?.().forEach((t) => t.stop());
       } catch {}
@@ -595,6 +658,12 @@ Task:
 
   const stopLiveSession = () => {
     connectionActiveRef.current = false;
+
+    if (finalTimerRef.current) {
+      clearTimeout(finalTimerRef.current);
+      finalTimerRef.current = null;
+    }
+    finalBufferRef.current = '';
 
     try {
       recognitionRef.current?.stop?.();
@@ -625,12 +694,17 @@ Task:
     } catch {}
     inputContextRef.current = null;
 
-    // flush partial buffers into transcript history
     if (currentInputTransRef.current.trim()) {
-      setTranscriptHistory((prev) => [...prev, { role: 'user', text: currentInputTransRef.current.trim() }]);
+      setTranscriptHistory((prev) => [
+        ...prev,
+        { role: 'user', text: currentInputTransRef.current.trim() },
+      ]);
     }
     if (currentOutputTransRef.current.trim()) {
-      setTranscriptHistory((prev) => [...prev, { role: 'model', text: currentOutputTransRef.current.trim() }]);
+      setTranscriptHistory((prev) => [
+        ...prev,
+        { role: 'model', text: currentOutputTransRef.current.trim() },
+      ]);
     }
     currentInputTransRef.current = '';
     currentOutputTransRef.current = '';
@@ -709,7 +783,18 @@ Task:
               <Wifi size={18} />
             </button>
             <button
-              onClick={handleManualSave}
+              onClick={async () => {
+                if (isSaving) return;
+                const { chatLog, voiceLog } = prepareTranscriptData();
+                if (!chatLog && !voiceLog.trim()) {
+                  dispatchToast('No content to save yet.', 'info');
+                  return;
+                }
+                setIsSaving(true);
+                dispatchToast('Saving transcript...', 'info');
+                await sendTranscript(chatLog, voiceLog);
+                setIsSaving(false);
+              }}
               disabled={isSaving}
               className="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
               title="Save Transcript"
