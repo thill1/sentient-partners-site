@@ -1,59 +1,58 @@
 // functions/api/gemini.ts
-// Cloudflare Pages Function: POST /api/gemini
-// Uses env.API_KEY (server-side) + enables Google Search grounding for real-time answers.
+// Cloudflare Pages Function:
+// - GET  /api/gemini => health check (so you can open it in browser)
+// - POST /api/gemini => Gemini call (API key stays in Cloudflare env)
 
-export async function onRequest(context: any): Promise<Response> {
-  const { request, env } = context;
+function json(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
 
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-  }
+export async function onRequestGet(context: any) {
+  const hasKey = Boolean(context?.env?.API_KEY || context?.env?.GEMINI_API_KEY);
+  return json({
+    ok: true,
+    endpoint: "/api/gemini",
+    hasApiKeyConfigured: hasKey,
+    note: "POST to this endpoint from the app to chat.",
+  });
+}
 
-  if (request.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+export async function onRequestOptions() {
+  return json({ ok: true }, 204);
+}
 
-  const apiKey = env?.API_KEY || env?.GEMINI_API_KEY;
+export async function onRequestPost(context: any) {
+  const apiKey = context?.env?.API_KEY || context?.env?.GEMINI_API_KEY;
   if (!apiKey) {
-    return new Response(
-      JSON.stringify({
+    return json(
+      {
         error:
-          "Missing API_KEY (or GEMINI_API_KEY) in Cloudflare Pages → Settings → Variables and Secrets (Production).",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
+          "Missing API key. Add API_KEY (or GEMINI_API_KEY) in Cloudflare Pages → Settings → Variables and Secrets (Production), then redeploy.",
+      },
+      500,
     );
   }
 
   let body: any = {};
   try {
-    body = await request.json();
+    body = await context.request.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: "Invalid JSON body" }, 400);
   }
 
   const message = String(body?.message || "");
   const history = Array.isArray(body?.history) ? body.history : [];
   const model = String(body?.model || "gemini-2.5-flash");
 
-  if (!message) {
-    return new Response(JSON.stringify({ error: "Missing `message`." }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  if (!message) return json({ error: "Missing `message`." }, 400);
 
   const contents = [
     ...history
@@ -69,14 +68,12 @@ export async function onRequest(context: any): Promise<Response> {
     model,
   )}:generateContent`;
 
+  // Gives “real-time” style answers (Tokyo time, driving time, etc) via Google Search grounding.
+  // If your key/model doesn’t allow this tool, remove the "tools" line and redeploy.
   const payload = {
     contents,
-    tools: [{ google_search: {} }], // ✅ real-time web grounding
-    generationConfig: {
-      temperature: 0.4,
-      topP: 0.9,
-      maxOutputTokens: 1024,
-    },
+    tools: [{ google_search: {} }],
+    generationConfig: { temperature: 0.4, topP: 0.9, maxOutputTokens: 1024 },
   };
 
   const upstream = await fetch(url, {
@@ -91,20 +88,14 @@ export async function onRequest(context: any): Promise<Response> {
   const data = await upstream.json().catch(() => ({} as any));
 
   if (!upstream.ok) {
-    return new Response(JSON.stringify({ error: "Gemini error", details: data }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: "Gemini error", status: upstream.status, details: data }, 500);
   }
 
   const parts = data?.candidates?.[0]?.content?.parts || [];
   const text = parts.map((p: any) => (typeof p?.text === "string" ? p.text : "")).join("");
 
-  return new Response(
-    JSON.stringify({
-      text: text || "",
-      groundingMetadata: data?.candidates?.[0]?.groundingMetadata || null,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
+  return json({
+    text: text || "",
+    groundingMetadata: data?.candidates?.[0]?.groundingMetadata || null,
+  });
 }
