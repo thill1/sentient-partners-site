@@ -1,4 +1,5 @@
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { SiteSettings } from './lib/siteSettingsSchema';
 
 export interface ServiceItem {
   id: string;
@@ -24,4 +25,23 @@ export interface Message {
 export enum Theme {
   LIGHT = 'light',
   DARK = 'dark',
+}
+
+export type AppRoute = 'home' | 'admin';
+
+export interface BannerDisplayState {
+  visible: boolean;
+  message: string;
+  ctaText: string;
+  ctaUrl: string;
+  variant: 'info' | 'success' | 'warning';
+}
+
+export interface SiteSettingsState {
+  settings: SiteSettings;
+  bannerState: BannerDisplayState;
+  error: string | null;
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+  applySettings: (settings: SiteSettings) => void;
 }

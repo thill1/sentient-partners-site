@@ -26,8 +26,8 @@ export const defaultSiteSettings: SiteSettings = {
   banner: {
     enabled: true,
     message: 'Free AI Opportunity Review',
-    ctaText: 'Book Now',
-    ctaUrl: '#contact',
+    ctaText: 'Get Review',
+    ctaUrl: '#blueprint',
     variant: 'info',
   },
   ai: {

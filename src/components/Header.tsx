@@ -4,8 +4,19 @@ import { Button } from './Button';
 import { Logo } from './Logo';
 import { HEADER_CONTENT, NAV_LINKS } from '../content/siteContent';
 import { openBookingModal, scrollToSection } from '../lib/siteActions';
+import type { BannerDisplayState } from '../types';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  banner: BannerDisplayState;
+}
+
+const bannerVariantClasses: Record<BannerDisplayState['variant'], string> = {
+  info: 'bg-slate-100 text-slate-700 dark:bg-slate-900/95 dark:text-slate-100/80',
+  success: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-200',
+  warning: 'bg-amber-50 text-amber-800 dark:bg-amber-950/70 dark:text-amber-200',
+};
+
+export const Header: React.FC<HeaderProps> = ({ banner }) => {
   const [dark, setDark] = useState<boolean>(() =>
     document.documentElement.classList.contains('dark'),
   );
@@ -46,6 +57,19 @@ export const Header: React.FC = () => {
     setMobileOpen(false);
   };
 
+  const openBannerCta = () => {
+    if (!banner.ctaUrl) {
+      return;
+    }
+
+    if (banner.ctaUrl.startsWith('#')) {
+      scrollToSection(banner.ctaUrl.slice(1));
+      return;
+    }
+
+    window.location.assign(banner.ctaUrl);
+  };
+
   const baseHeaderClasses =
     'fixed inset-x-0 top-0 z-40 transition-all duration-300';
 
@@ -59,10 +83,24 @@ export const Header: React.FC = () => {
 
   return (
     <header className={`${baseHeaderClasses} ${headerStateClasses}`}>
-      {/* Top promo banner */}
-      <div className="hidden sm:block text-center text-[11px] tracking-[0.16em] uppercase py-2 bg-slate-100 text-slate-700 dark:bg-slate-900/95 dark:text-slate-100/80">
-        {HEADER_CONTENT.promoBanner}
-      </div>
+      {banner.visible ? (
+        <div
+          className={`hidden sm:block border-b border-black/5 px-4 py-2 text-center text-[11px] uppercase tracking-[0.16em] ${bannerVariantClasses[banner.variant]}`}
+        >
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-3">
+            <span>{banner.message}</span>
+            {banner.ctaText ? (
+              <button
+                type="button"
+                onClick={openBannerCta}
+                className="rounded-full border border-current/20 px-3 py-1 text-[10px] font-semibold tracking-[0.16em] transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                {banner.ctaText}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main nav row */}
