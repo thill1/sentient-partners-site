@@ -1,5 +1,6 @@
 // Server-backed Gemini service for Cloudflare Pages.
 // ✅ No client API key. Calls /api/gemini.
+import { createVoiceRequestBody } from "../lib/voicePlayback";
 
 const MEMORY_STORAGE_KEY = "sentient_chat_memory_v1";
 const memory: { role: "user" | "model"; text: string }[] = [];
@@ -256,6 +257,20 @@ export const sendMessageToGemini = async function* (message: string) {
   } catch {
     yield "Connection problem. Refresh and try again.";
   }
+};
+
+export const requestVoiceAudio = async (text: string, voiceId: string): Promise<Blob> => {
+  const response = await fetch("/api/voice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(createVoiceRequestBody(text, { voiceId })),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Voice request failed with status ${response.status}`);
+  }
+
+  return response.blob();
 };
 
 // Voice will be wired next after chat is confirmed.

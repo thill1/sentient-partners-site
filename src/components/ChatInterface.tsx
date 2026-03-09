@@ -16,17 +16,18 @@ import {
 import { Message } from '../types';
 import {
   sendMessageToGemini,
+  requestVoiceAudio,
   sendTranscript,
   dispatchToast,
 } from '../services/geminiService';
 import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { CHAT_EVENT } from '../lib/siteActions';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
-const TTS_VOICE_STORAGE_KEY = 'sentient_tts_voice_name';
-
 export const ChatInterface: React.FC = () => {
+  const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -58,10 +59,12 @@ export const ChatInterface: React.FC = () => {
   const currentInputTransRef = useRef('');
   const currentOutputTransRef = useRef('');
 
-  // Voice engine refs (browser STT/TTS)
+  // Voice engine refs (browser STT + server-backed TTS playback)
   const connectionActiveRef = useRef<boolean>(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -73,121 +76,52 @@ export const ChatInterface: React.FC = () => {
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const visualizerCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Voices cache
-  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
-  const preferredVoiceNameRef = useRef<string>(
-    (() => {
-      try {
-        return localStorage.getItem(TTS_VOICE_STORAGE_KEY) || '';
-      } catch {
-        return '';
-      }
-    })(),
-  );
-
-  // --- Load voices (some browsers load async) ---
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-    const loadVoices = () => {
-      try {
-        const v = window.speechSynthesis.getVoices?.() || [];
-        voicesRef.current = v;
-      } catch {
-        // Voices may not be available yet
-      }
-    };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = () => loadVoices();
-
-    return () => {
-      try {
-        (window.speechSynthesis as SpeechSynthesis & { onvoiceschanged: (() => void) | null }).onvoiceschanged = null;
-      } catch {
-        // Ignore cleanup errors
-      }
-    };
-  }, []);
-
-  const pickPreferredVoice = () => {
-    const voices = voicesRef.current || [];
-    if (!voices.length) return null;
-
-    // 1) If user previously saved a voice name, use it
-    const saved = preferredVoiceNameRef.current;
-    if (saved) {
-      const exact = voices.find((v) => v.name === saved);
-      if (exact) return exact;
+  const stopAudioPlayback = () => {
+    try {
+      audioElementRef.current?.pause();
+    } catch {
+      void 0;
     }
 
-    // 2) Prefer “female-ish” common names (best effort; varies per OS)
-    const preferredNameHints = [
-      'Samantha',
-      'Victoria',
-      'Zira',
-      'Jenny',
-      'Aria',
-      'Serena',
-      'Google US English',
-      'Google UK English Female',
-      'English (United States)',
-    ];
+    audioElementRef.current = null;
 
-    const enVoices = voices.filter((v) => (v.lang || '').toLowerCase().startsWith('en'));
-
-    for (const hint of preferredNameHints) {
-      const match =
-        enVoices.find((v) => (v.name || '').toLowerCase().includes(hint.toLowerCase())) ||
-        voices.find((v) => (v.name || '').toLowerCase().includes(hint.toLowerCase()));
-      if (match) return match;
+    if (audioObjectUrlRef.current) {
+      URL.revokeObjectURL(audioObjectUrlRef.current);
+      audioObjectUrlRef.current = null;
     }
 
-    // 3) Fall back to default English voice
-    const defEn = enVoices.find((v) => v.default) || enVoices[0];
-    if (defEn) return defEn;
-
-    // 4) Last resort: any default
-    return voices.find((v) => v.default) || voices[0] || null;
+    setIsPlayingAudio(false);
   };
 
-  const speakText = async (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
+  const playVoiceResponse = async (text: string) => {
     const clean = String(text || '').trim();
-    if (!clean) return;
-
-    // IMPORTANT: never speak our internal error copy
-    if (clean.toLowerCase().includes('server error') && clean.toLowerCase().includes('cloudflare')) {
+    if (!clean || !siteSettings.ai.voiceEnabled) {
       return;
     }
 
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      // Ignore cancel errors
-    }
+    const audioBlob = await requestVoiceAudio(clean, siteSettings.ai.voiceId);
+    const objectUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(objectUrl);
+
+    stopAudioPlayback();
+    audioElementRef.current = audio;
+    audioObjectUrlRef.current = objectUrl;
 
     return new Promise<void>((resolve) => {
-      const utter = new SpeechSynthesisUtterance(clean);
-
-      const voice = pickPreferredVoice();
-      if (voice) utter.voice = voice;
-
-      utter.rate = 1;
-      utter.pitch = 1;
-
-      utter.onstart = () => setIsPlayingAudio(true);
-      utter.onend = () => {
-        setIsPlayingAudio(false);
+      audio.onplay = () => setIsPlayingAudio(true);
+      audio.onended = () => {
+        stopAudioPlayback();
         resolve();
       };
-      utter.onerror = () => {
-        setIsPlayingAudio(false);
+      audio.onerror = () => {
+        stopAudioPlayback();
         resolve();
       };
 
-      window.speechSynthesis.speak(utter);
+      void audio.play().catch(() => {
+        stopAudioPlayback();
+        resolve();
+      });
     });
   };
 
@@ -470,9 +404,13 @@ export const ChatInterface: React.FC = () => {
     // Save transcript
     setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
 
-    // Speak reply
+    // Speak reply through the server-backed voice proxy
     if (speakable) {
-      await speakText(speakable);
+      try {
+        await playVoiceResponse(speakable);
+      } catch {
+        setVoiceError('Voice playback failed.');
+      }
     } else {
       // If it’s only error copy, show UI error instead of speaking it
       setVoiceError('Voice server error (check Cloudflare logs).');
@@ -655,11 +593,7 @@ export const ChatInterface: React.FC = () => {
     }
     recognitionRef.current = null;
 
-    try {
-      window.speechSynthesis?.cancel?.();
-    } catch {
-      void 0;
-    }
+    stopAudioPlayback();
 
     try {
       micStreamRef.current?.getTracks?.().forEach((t) => t.stop());
@@ -706,7 +640,6 @@ export const ChatInterface: React.FC = () => {
 
     setIsLiveConnected(false);
     setIsVoiceLoading(false);
-    setIsPlayingAudio(false);
     setVoiceError(null);
   };
 
