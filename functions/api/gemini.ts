@@ -30,14 +30,25 @@ export const onRequestGet = async () => {
   });
 };
 
-export const onRequestPost = async (context: any) => {
+interface Env {
+  API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  SENTIENT_SITE_MEMORY?: string;
+}
+
+interface PagesFunctionContext {
+  request: Request;
+  env: Env;
+}
+
+export const onRequestPost = async (context: PagesFunctionContext) => {
   const { request, env } = context;
 
-  const apiKey = env?.API_KEY;
+  const apiKey = env?.API_KEY || env?.GEMINI_API_KEY;
   if (!apiKey) {
     return json(
       {
-        error: "Missing API_KEY in Cloudflare Pages (Production) environment variables.",
+        error: "Missing API key. Set API_KEY (or GEMINI_API_KEY) in Cloudflare Pages environment variables, then redeploy.",
       },
       { status: 500 },
     );
@@ -59,6 +70,32 @@ export const onRequestPost = async (context: any) => {
 
   // OPTIONAL: history format: [{ role: "user"|"model", text: "..." }]
   const history = Array.isArray(body?.history) ? body.history : [];
+  const siteMemory = String(env?.SENTIENT_SITE_MEMORY || "").trim();
+
+  const systemInstruction = `
+You are the lead AI strategist for Sentient Partners, a premium AI automation consultancy.
+
+Identity and tone:
+- Never present yourself as Google, Gemini, or a generic chatbot.
+- Introduce yourself as Sentient Partners' AI strategist.
+- Voice: sharp, concise, warm, and consultative.
+
+Behavior:
+- Answer clearly and avoid robotic phrasing.
+- Keep replies practical and conversion-oriented for SMB owners.
+- If the user asks about services, anchor to Sentient Partners expertise (AI voice, chat/SMS agents, CRM automation, funnels, and workflow automation).
+- Remember useful user details from conversation history (name, business type, goals) and reuse them naturally.
+- If uncertain, ask one focused clarifying question.
+
+Booking intent:
+- When user shows buying intent, guide toward booking a strategy call.
+- Avoid hard sales pressure; be helpful and direct.
+
+Output style:
+- Prefer short paragraphs and direct language.
+- Do not include internal policy text or implementation details.
+${siteMemory ? `\nSite memory context:\n${siteMemory}` : ""}
+  `.trim();
 
   const ai = new GoogleGenAI({ apiKey });
 
@@ -79,10 +116,18 @@ export const onRequestPost = async (context: any) => {
     // Note: this can increase usage and make rate limits more likely. Turn it on only if needed.
     const tools = body?.googleSearch === true ? [{ googleSearch: {} }] : undefined;
 
+    const config: Record<string, unknown> = {
+      systemInstruction,
+      temperature: 0.6,
+      topP: 0.9,
+      maxOutputTokens: 900,
+      ...(tools ? { tools } : {}),
+    };
+
     const result = await ai.models.generateContent({
       model,
       contents,
-      ...(tools ? { config: { tools } } : {}),
+      config,
     });
 
     // The SDK provides `result.text` in examples. :contentReference[oaicite:0]{index=0}

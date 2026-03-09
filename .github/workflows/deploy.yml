@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -7,19 +7,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
+  group: "cloudflare-pages-production"
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    env:
-      API_KEY: ${{ secrets.API_KEY }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,26 +22,41 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-         
+          node-version: 20.19.0
+          cache: npm
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Lint project
+        run: npm run lint
 
       - name: Build project
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
+      - name: Deploy production bundle
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 51136f294dbee98a79635101541f2903
+        run: npx wrangler pages deploy dist --project-name sentient-partners-site --branch main --commit-hash "${GITHUB_SHA}" --commit-message "GitHub Actions ${GITHUB_SHA}"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Wait for deployment propagation
+        run: sleep 15
+
+      - name: Smoke test deployed endpoints
+        run: |
+          set -euo pipefail
+
+          for url in \
+            "https://sentient-partners-site.pages.dev/api/health" \
+            "https://sentientpartners.ai/api/health"; do
+            echo "Checking ${url}"
+            curl --fail --silent --show-error --retry 6 --retry-delay 10 --retry-all-errors "${url}" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const data=JSON.parse(s); if (!data.ok) { console.error(data); process.exit(1); }})"
+          done
+
+          curl --fail --silent --show-error --retry 4 --retry-delay 10 --retry-all-errors \
+            -X POST "https://sentientpartners.ai/api/gemini" \
+            -H "Content-Type: application/json" \
+            --data '{"message":"Who are you and what company do you represent?","history":[],"model":"gemini-2.5-flash"}' \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const data=JSON.parse(s); if (!data.ok || typeof data.text !== 'string' || !data.text.includes('Sentient Partners')) { console.error(data); process.exit(1); }})"

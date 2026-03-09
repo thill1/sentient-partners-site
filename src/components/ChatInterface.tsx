@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Send,
@@ -67,12 +66,12 @@ export const ChatInterface: React.FC = () => {
 
   // Voice engine refs (browser STT/TTS)
   const connectionActiveRef = useRef<boolean>(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
-  const finalTimerRef = useRef<any>(null);
+  const finalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Visualizer
   const inputContextRef = useRef<AudioContext | null>(null);
@@ -100,7 +99,9 @@ export const ChatInterface: React.FC = () => {
       try {
         const v = window.speechSynthesis.getVoices?.() || [];
         voicesRef.current = v;
-      } catch {}
+      } catch {
+        // Voices may not be available yet
+      }
     };
 
     loadVoices();
@@ -108,8 +109,10 @@ export const ChatInterface: React.FC = () => {
 
     return () => {
       try {
-        window.speechSynthesis.onvoiceschanged = null as any;
-      } catch {}
+        (window.speechSynthesis as SpeechSynthesis & { onvoiceschanged: (() => void) | null }).onvoiceschanged = null;
+      } catch {
+        // Ignore cleanup errors
+      }
     };
   }, []);
 
@@ -167,7 +170,9 @@ export const ChatInterface: React.FC = () => {
 
     try {
       window.speechSynthesis.cancel();
-    } catch {}
+    } catch {
+      // Ignore cancel errors
+    }
 
     return new Promise<void>((resolve) => {
       const utter = new SpeechSynthesisUtterance(clean);
@@ -258,7 +263,7 @@ export const ChatInterface: React.FC = () => {
       const centerY = canvas.height / 2;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      let dataArray = new Uint8Array(bars);
+      const dataArray = new Uint8Array(bars);
 
       if (analyzerRef.current && isLiveConnected) {
         const bufferLength = analyzerRef.current.frequencyBinCount;
@@ -435,8 +440,9 @@ export const ChatInterface: React.FC = () => {
   };
 
   // --- Voice (Cloudflare-safe): STT -> /api/gemini -> TTS ---
-  const getSpeechRecognition = () => {
-    return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
+  const getSpeechRecognition = (): (new () => SpeechRecognition) | null => {
+    const w = window as Window & { SpeechRecognition?: new () => SpeechRecognition; webkitSpeechRecognition?: new () => SpeechRecognition };
+    return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
   };
 
   const askGeminiOnce = async (userText: string) => {
@@ -463,7 +469,9 @@ export const ChatInterface: React.FC = () => {
     // Stop recognition while we speak back (prevents feedback loop)
     try {
       recognitionRef.current?.stop?.();
-    } catch {}
+    } catch {
+      // Ignore stop errors
+    }
 
     // Ask Gemini (retry once if first attempt returns error copy)
     let reply = await askGeminiOnce(clean);
@@ -543,7 +551,8 @@ export const ChatInterface: React.FC = () => {
       micStreamRef.current = stream;
 
       // AudioContext + analyser for visuals
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) throw new Error('Browser does not support AudioContext.');
       const ctx = new AudioContextClass();
       await ctx.resume();
       inputContextRef.current = ctx;
@@ -578,7 +587,7 @@ export const ChatInterface: React.FC = () => {
         dispatchToast('Listening…', 'success');
       };
 
-      recognition.onerror = (e: any) => {
+      recognition.onerror = (e: Event & { error?: string }) => {
         const msg =
           e?.error === 'not-allowed'
             ? 'Microphone permission denied.'
@@ -591,7 +600,7 @@ export const ChatInterface: React.FC = () => {
         connectionActiveRef.current = false;
       };
 
-      recognition.onresult = async (event: any) => {
+      recognition.onresult = async (event: SpeechRecognitionEvent) => {
         if (!connectionActiveRef.current) return;
 
         let finalText = '';
@@ -626,18 +635,20 @@ export const ChatInterface: React.FC = () => {
         if (connectionActiveRef.current && !isPlayingAudio) {
           try {
             recognition.start();
-          } catch {}
+          } catch {
+            // Some browsers require a fresh user gesture to restart
+          }
         }
       };
 
       recognition.start();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Voice Connection Error:', error);
 
       const msg =
-        error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError'
+        (error instanceof Error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError'))
           ? 'Microphone permission denied.'
-          : error?.message || 'Connection failed.';
+          : (error instanceof Error ? error.message : 'Connection failed.');
 
       setIsVoiceLoading(false);
       setIsLiveConnected(false);
@@ -646,12 +657,16 @@ export const ChatInterface: React.FC = () => {
 
       try {
         micStreamRef.current?.getTracks?.().forEach((t) => t.stop());
-      } catch {}
+      } catch {
+        void 0;
+      }
       micStreamRef.current = null;
 
       try {
         inputContextRef.current?.close?.();
-      } catch {}
+      } catch {
+        void 0;
+      }
       inputContextRef.current = null;
     }
   };
@@ -667,31 +682,43 @@ export const ChatInterface: React.FC = () => {
 
     try {
       recognitionRef.current?.stop?.();
-    } catch {}
+    } catch {
+      void 0;
+    }
     recognitionRef.current = null;
 
     try {
       window.speechSynthesis?.cancel?.();
-    } catch {}
+    } catch {
+      void 0;
+    }
 
     try {
       micStreamRef.current?.getTracks?.().forEach((t) => t.stop());
-    } catch {}
+    } catch {
+      void 0;
+    }
     micStreamRef.current = null;
 
     try {
       sourceNodeRef.current?.disconnect?.();
-    } catch {}
+    } catch {
+      void 0;
+    }
     sourceNodeRef.current = null;
 
     try {
       analyzerRef.current?.disconnect?.();
-    } catch {}
+    } catch {
+      void 0;
+    }
     analyzerRef.current = null;
 
     try {
       inputContextRef.current?.close?.();
-    } catch {}
+    } catch {
+      void 0;
+    }
     inputContextRef.current = null;
 
     if (currentInputTransRef.current.trim()) {
@@ -783,18 +810,7 @@ export const ChatInterface: React.FC = () => {
               <Wifi size={18} />
             </button>
             <button
-              onClick={async () => {
-                if (isSaving) return;
-                const { chatLog, voiceLog } = prepareTranscriptData();
-                if (!chatLog && !voiceLog.trim()) {
-                  dispatchToast('No content to save yet.', 'info');
-                  return;
-                }
-                setIsSaving(true);
-                dispatchToast('Saving transcript...', 'info');
-                await sendTranscript(chatLog, voiceLog);
-                setIsSaving(false);
-              }}
+              onClick={handleManualSave}
               disabled={isSaving}
               className="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
               title="Save Transcript"

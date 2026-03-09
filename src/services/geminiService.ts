@@ -1,8 +1,35 @@
-// @ts-nocheck
 // Server-backed Gemini service for Cloudflare Pages.
 // ✅ No client API key. Calls /api/gemini.
 
-let memory: { role: "user" | "model"; text: string }[] = [];
+const MEMORY_STORAGE_KEY = "sentient_chat_memory_v1";
+const memory: { role: "user" | "model"; text: string }[] = [];
+
+function restoreMemoryFromStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    const safe = parsed
+      .filter((item) => item && (item.role === "user" || item.role === "model") && typeof item.text === "string")
+      .slice(-20);
+    if (safe.length) memory.push(...safe);
+  } catch {
+    // Ignore storage parse errors
+  }
+}
+
+function persistMemoryToStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(memory.slice(-20)));
+  } catch {
+    // Ignore quota/privacy-mode errors
+  }
+}
+
+restoreMemoryFromStorage();
 
 // --- Helpers kept for your existing UI ---
 
@@ -30,7 +57,7 @@ interface EmailResult {
   message: string;
 }
 
-export const sendEmailData = async (data: any, subject: string): Promise<EmailResult> => {
+export const sendEmailData = async (data: Record<string, unknown>, subject: string): Promise<EmailResult> => {
   const targetEmail = "troyhill@sentientpartners.ai";
   const endpoint = `https://formsubmit.co/ajax/${targetEmail}`;
   const timestamp = new Date();
@@ -52,7 +79,7 @@ export const sendEmailData = async (data: any, subject: string): Promise<EmailRe
 
     const responseText = await response.text();
 
-    let responseData: any = {};
+    let responseData: { success?: string | boolean; message?: string } = {};
     try {
       responseData = JSON.parse(responseText);
     } catch {
@@ -105,7 +132,7 @@ export function createPcmBlob(data: Float32Array, sampleRate: number = 16000) {
   const l = data.length;
   const int16 = new Int16Array(l);
   for (let i = 0; i < l; i++) {
-    let s = Math.max(-1, Math.min(1, data[i]));
+    const s = Math.max(-1, Math.min(1, data[i]));
     int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return { data: encode(new Uint8Array(int16.buffer)), mimeType: `audio/pcm;rate=${sampleRate}` };
@@ -152,7 +179,13 @@ export const sendMessageToGemini = async function* (message: string) {
       body: JSON.stringify({ message, history: historyToSend, model: "gemini-2.5-flash" }),
     });
 
-    const data = await resp.json().catch(() => ({} as any));
+    const contentType = resp.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      yield "AI endpoint is unreachable on this host. Deploy with Cloudflare Pages Functions so /api/gemini is live.";
+      return;
+    }
+
+    const data = await resp.json().catch(() => ({} as { text?: string }));
     if (!resp.ok) {
       yield "Server error. Check Cloudflare API_KEY (Production) and redeploy.";
       return;
@@ -161,6 +194,7 @@ export const sendMessageToGemini = async function* (message: string) {
     const text = String(data?.text || "");
     memory.push({ role: "user", text: String(message || "") });
     memory.push({ role: "model", text });
+    persistMemoryToStorage();
     yield text || "Empty response.";
   } catch {
     yield "Connection problem. Refresh and try again.";

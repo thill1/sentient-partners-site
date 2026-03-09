@@ -10,12 +10,38 @@ View your app in AI Studio: https://ai.studio/apps/drive/1aCTuvaSDcx8pwMRAVvzvOO
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-.
-.
+**Prerequisites:** Node.js 20.19+
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+2. Run the app:
+   ```bash
+   npm run dev
+   ```
+
+The chat and voice features call `/api/gemini`, which requires Cloudflare Pages Functions. For local development with the API, use a Cloudflare Pages dev server or deploy to Cloudflare Pages with `API_KEY` (or `GEMINI_API_KEY`) set in the environment.
+
+Important: static GitHub Pages does not run `functions/api/*`. If your custom domain points to a static host only, `/api/gemini` will fail. Use Cloudflare Pages for runtime API routes.
+
+## Deployment Pipeline
+
+Production deploys should go through GitHub Actions to Cloudflare Pages, not GitHub Pages.
+
+Required GitHub secrets:
+
+- `API_KEY` for the server-side Gemini function
+- `CLOUDFLARE_API_TOKEN` for the deploy workflow
+
+Current production target:
+
+- Cloudflare Pages project: `sentient-partners-site`
+- Cloudflare account ID: `51136f294dbee98a79635101541f2903`
+
+Useful commands:
+
+```bash
+npm run verify
+npm run deploy:cloudflare
+```

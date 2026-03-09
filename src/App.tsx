@@ -20,17 +20,17 @@ function App() {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Respect any saved theme; otherwise default to LIGHT
+    // Respect any saved theme; otherwise default to DARK (matches index.html)
     const saved =
       localStorage.getItem('theme') ||
       localStorage.getItem('color-theme') ||
       localStorage.getItem('sentient-theme');
 
-    if (saved === 'dark') {
+    if (saved === 'dark' || !saved) {
       root.classList.add('dark');
+      if (!saved) localStorage.setItem('theme', 'dark');
     } else {
       root.classList.remove('dark');
-      if (!saved) localStorage.setItem('theme', 'light');
     }
   }, []);
 

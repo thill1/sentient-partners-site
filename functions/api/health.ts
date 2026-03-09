@@ -1,5 +1,6 @@
 export const onRequestGet: PagesFunction = async (context) => {
-  const hasApiKey = !!context.env.API_KEY;
+  const key = context.env.API_KEY || context.env.GEMINI_API_KEY;
+  const hasApiKey = !!key;
 
   return new Response(
     JSON.stringify(
@@ -8,7 +9,7 @@ export const onRequestGet: PagesFunction = async (context) => {
         hasApiKey,
         // masked preview so we can confirm it's the right key without exposing it
         apiKeyPreview: hasApiKey
-          ? `${String(context.env.API_KEY).slice(0, 4)}...${String(context.env.API_KEY).slice(-4)}`
+          ? `${String(key).slice(0, 4)}...${String(key).slice(-4)}`
           : null,
       },
       null,

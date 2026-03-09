@@ -1,17 +1,16 @@
-name: Build Check
+name: Verify
 
 on:
-  # Build on every push to main, and allow manual runs
+  pull_request:
   push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    env:
-      # This pulls your Gemini key from the repo secret you just set
-      API_KEY: ${{ secrets.API_KEY }}
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -20,10 +19,14 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          
+          node-version: 20.19.0
+          cache: npm
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Lint project
+        run: npm run lint
 
       - name: Build project
         run: npm run build
