@@ -1,6 +1,7 @@
 // functions/api/gemini.ts
 import { GoogleGenAI } from "@google/genai";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
+import { formatTimeIntentResponse, resolveTimeIntent } from "../lib/timeIntent";
 
 // Cloudflare Pages Function: /api/gemini
 // - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
@@ -45,16 +46,6 @@ interface PagesFunctionContext {
 export const onRequestPost = async (context: PagesFunctionContext) => {
   const { request, env } = context;
 
-  const apiKey = env?.API_KEY || env?.GEMINI_API_KEY;
-  if (!apiKey) {
-    return json(
-      {
-        error: "Missing API key. Set API_KEY (or GEMINI_API_KEY) in Cloudflare Pages environment variables, then redeploy.",
-      },
-      { status: 500 },
-    );
-  }
-
   let body: any = {};
   try {
     body = await request.json();
@@ -65,6 +56,25 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
   const message = String(body?.message || "").trim();
   if (!message) {
     return json({ error: "Missing `message`." }, { status: 400 });
+  }
+
+  const timeIntent = resolveTimeIntent(message);
+  if (timeIntent) {
+    return json({
+      ok: true,
+      text: formatTimeIntentResponse(timeIntent),
+      model: "deterministic-time",
+    });
+  }
+
+  const apiKey = env?.API_KEY || env?.GEMINI_API_KEY;
+  if (!apiKey) {
+    return json(
+      {
+        error: "Missing API key. Set API_KEY (or GEMINI_API_KEY) in Cloudflare Pages environment variables, then redeploy.",
+      },
+      { status: 500 },
+    );
   }
 
   const model = String(body?.model || "gemini-2.5-flash");
