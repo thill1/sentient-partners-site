@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FAQS } from '../constants';
 import { Plus, Minus } from 'lucide-react';
+import { FAQ_SECTION_CONTENT } from '../content/siteContent';
 
 export const FAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -11,10 +12,10 @@ export const FAQ: React.FC = () => {
         {/* Heading */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-            Common Questions
+            {FAQ_SECTION_CONTENT.heading}
           </h2>
           <p className="text-slate-600 dark:text-slate-300">
-            Everything you need to know about automating your business.
+            {FAQ_SECTION_CONTENT.subheading}
           </p>
         </div>
 

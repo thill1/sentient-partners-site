@@ -2,15 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { Button } from './Button';
 import { Logo } from './Logo';
-
-const NAV_ITEMS = [
-  { id: 'services', label: 'Services' },
-  { id: 'process', label: 'Process' },
-  { id: 'demo', label: 'Demo' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'results', label: 'Results' }, // if you prefer "Testimonials", change id to "testimonials"
-  { id: 'faq', label: 'FAQ' },
-];
+import { HEADER_CONTENT, NAV_LINKS } from '../content/siteContent';
+import { openBookingModal, scrollToSection } from '../lib/siteActions';
 
 export const Header: React.FC = () => {
   const [dark, setDark] = useState<boolean>(() =>
@@ -44,15 +37,12 @@ export const Header: React.FC = () => {
   };
 
   const scrollToId = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setMobileOpen(false);
-    }
+    scrollToSection(id);
+    setMobileOpen(false);
   };
 
   const openBooking = () => {
-    window.dispatchEvent(new CustomEvent('open-booking-modal'));
+    openBookingModal({ source: 'Header', ctaLabel: 'Book Strategy Call' });
     setMobileOpen(false);
   };
 
@@ -71,7 +61,7 @@ export const Header: React.FC = () => {
     <header className={`${baseHeaderClasses} ${headerStateClasses}`}>
       {/* Top promo banner */}
       <div className="hidden sm:block text-center text-[11px] tracking-[0.16em] uppercase py-2 bg-slate-100 text-slate-700 dark:bg-slate-900/95 dark:text-slate-100/80">
-        LIMITED TIME OFFER · FREE 2ND MONTH · ENDS 12/31/25
+        {HEADER_CONTENT.promoBanner}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,9 +79,9 @@ export const Header: React.FC = () => {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm">
-            {NAV_ITEMS.map((item) => (
+            {NAV_LINKS.map((item) => (
               <button
-                key={item.id}
+                key={item.href}
                 type="button"
                 onClick={() => scrollToId(item.id)}
                 className="text-slate-900 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white transition-colors"
@@ -116,7 +106,7 @@ export const Header: React.FC = () => {
             {/* Desktop CTA */}
             <div className="hidden md:block">
               <Button size="md" onClick={openBooking}>
-                Book Strategy Call
+                {HEADER_CONTENT.bookingCtaLabel}
               </Button>
             </div>
 
@@ -137,9 +127,9 @@ export const Header: React.FC = () => {
       {mobileOpen && (
         <div className="md:hidden border-t bg-white/95 border-slate-200/80 backdrop-blur-2xl dark:bg-slate-950/95 dark:border-white/10">
           <div className="max-w-7xl mx-auto px-4 pb-4 space-y-1">
-            {NAV_ITEMS.map((item) => (
+            {NAV_LINKS.map((item) => (
               <button
-                key={item.id}
+                key={item.href}
                 type="button"
                 onClick={() => scrollToId(item.id)}
                 className="block w-full text-left px-2 py-2 text-sm text-slate-900 hover:bg-slate-100 rounded-lg dark:text-slate-100 dark:hover:bg-white/5"
@@ -152,7 +142,7 @@ export const Header: React.FC = () => {
               className="w-full mt-2"
               onClick={openBooking}
             >
-              Book Strategy Call
+              {HEADER_CONTENT.bookingCtaLabel}
             </Button>
           </div>
         </div>

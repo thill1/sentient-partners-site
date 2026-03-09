@@ -57,6 +57,63 @@ interface EmailResult {
   message: string;
 }
 
+export interface LeadSubmission {
+  name: string;
+  email: string;
+  inquiry: string;
+  intent: "contact" | "blueprint";
+  source: string;
+  ctaLabel?: string;
+}
+
+interface LeadSubmissionResult {
+  success: boolean;
+  message: string;
+  leadId?: string;
+}
+
+export const submitLead = async (
+  payload: LeadSubmission,
+): Promise<LeadSubmissionResult> => {
+  try {
+    const response = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return {
+        success: false,
+        message: "Lead capture endpoint is unavailable on this host.",
+      };
+    }
+
+    const data = (await response.json().catch(() => ({}))) as {
+      ok?: boolean;
+      error?: string;
+      message?: string;
+      leadId?: string;
+    };
+
+    if (!response.ok || !data.ok) {
+      return {
+        success: false,
+        message: data.error || data.message || "Lead capture failed.",
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || "Lead captured successfully.",
+      leadId: data.leadId,
+    };
+  } catch {
+    return { success: false, message: "Network connection failed." };
+  }
+};
+
 export const sendEmailData = async (data: Record<string, unknown>, subject: string): Promise<EmailResult> => {
   const targetEmail = "troyhill@sentientpartners.ai";
   const endpoint = `https://formsubmit.co/ajax/${targetEmail}`;

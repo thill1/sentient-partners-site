@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Loader2 } from 'lucide-react';
 import { BOOKING_URL } from '../constants';
+import { BOOKING_MODAL_EVENT, openContactModal } from '../lib/siteActions';
 
 export const BookingModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState(BOOKING_URL);
+  const [bookingAvailable, setBookingAvailable] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -16,7 +18,6 @@ export const BookingModal: React.FC = () => {
 
   useEffect(() => {
     const handleOpen = (event: Event) => {
-      console.log("[BookingModal] Open event received");
       const customEvent = event as CustomEvent;
       
       if (customEvent && customEvent.detail && customEvent.detail.url) {
@@ -26,15 +27,14 @@ export const BookingModal: React.FC = () => {
       }
       
       setIsLoading(true);
+      setBookingAvailable(true);
       setIsOpen(true);
     };
 
-    window.addEventListener('open-booking-modal', handleOpen);
-    document.addEventListener('open-booking-modal', handleOpen);
+    window.addEventListener(BOOKING_MODAL_EVENT, handleOpen);
 
     return () => {
-      window.removeEventListener('open-booking-modal', handleOpen);
-      document.removeEventListener('open-booking-modal', handleOpen);
+      window.removeEventListener(BOOKING_MODAL_EVENT, handleOpen);
     };
   }, []);
 
@@ -47,6 +47,31 @@ export const BookingModal: React.FC = () => {
     return () => {
       document.body.style.overflow = '';
     };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const checkBookingUrl = async () => {
+      if (!isOpen) return;
+
+      try {
+        const response = await fetch('/api/booking');
+        const data = (await response.json()) as {
+          bookingAvailable?: boolean;
+          bookingUrl?: string;
+        };
+
+        setBookingAvailable(Boolean(data.bookingAvailable));
+        if (data.bookingUrl) {
+          setCurrentUrl(data.bookingUrl);
+        }
+      } catch {
+        setBookingAvailable(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void checkBookingUrl();
   }, [isOpen]);
 
   if (!mounted || !isOpen) return null;
@@ -88,17 +113,48 @@ export const BookingModal: React.FC = () => {
               </div>
             </div>
           )}
-          <iframe
-            src={currentUrl}
-            className="w-full h-full border-0 block"
-            title="Cal.com Booking"
-            allow="camera; microphone; autoplay; fullscreen"
-            onLoad={() => setIsLoading(false)}
-            style={{ 
-               opacity: isLoading ? 0 : 1,
-               transition: 'opacity 0.4s ease-in'
-            }}
-          />
+
+          {!isLoading && !bookingAvailable ? (
+            <div className="flex h-full items-center justify-center bg-slate-50 dark:bg-dark-card px-8">
+              <div className="max-w-lg text-center">
+                <h4 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Request a strategy call instead
+                </h4>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                  The live calendar is temporarily unavailable. Leave your details and
+                  we will reach out directly to schedule your strategy call.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    openContactModal({
+                      intent: 'contact',
+                      source: 'Booking Modal Fallback',
+                      ctaLabel: 'Request Strategy Call',
+                      inquiry:
+                        'I would like to schedule a Sentient Partners strategy call.',
+                    });
+                  }}
+                  className="mt-6 inline-flex items-center justify-center rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-500"
+                >
+                  Request Strategy Call
+                </button>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              src={currentUrl}
+              className="w-full h-full border-0 block"
+              title="Cal.com Booking"
+              allow="camera; microphone; autoplay; fullscreen"
+              onLoad={() => setIsLoading(false)}
+              style={{
+                opacity: isLoading ? 0 : 1,
+                transition: 'opacity 0.4s ease-in',
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
   FileText,
   CheckCircle,
 } from 'lucide-react';
+import { PROCESS_CONTENT } from '../content/siteContent';
 
 const BlueprintGrid = () => (
   <div
@@ -220,29 +221,7 @@ const GrowthDiagram = () => (
 export const Process: React.FC = () => {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
 
-  const steps = [
-    {
-      id: 1,
-      icon: Search,
-      title: 'Discovery & Readiness',
-      desc: 'We audit your current workflows to identify high-impact automation opportunities. We tell you what to automate first and why.',
-      asset: 'Blueprint',
-    },
-    {
-      id: 2,
-      icon: Map,
-      title: 'Strategic Roadmap',
-      desc: 'We build a 30-90 day implementation plan. No guesswork. Just a clear path to integrating Voice, Chat, and CRM systems.',
-      asset: 'Timeline',
-    },
-    {
-      id: 3,
-      icon: BarChart3,
-      title: 'Optimization & Growth',
-      desc: 'We don’t just launch and leave. We split-test, monitor performance, and optimize your agents for maximum conversion.',
-      asset: 'Projections',
-    },
-  ];
+  const stepIcons = [Search, Map, BarChart3] as const;
 
   return (
     <section
@@ -262,10 +241,10 @@ export const Process: React.FC = () => {
           <div className="rounded-3xl overflow-hidden bg-white/6 dark:bg-slate-950/75 border border-white/10 backdrop-blur-xl shadow-[0_24px_70px_rgba(15,23,42,0.85)] p-8 sm:p-10">
             <div className="text-center mb-16">
               <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
-                Our Process
+                {PROCESS_CONTENT.eyebrow}
               </h2>
               <h3 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-                From Discovery to <span className="text-brand-600">Domination</span>
+                {PROCESS_CONTENT.heading}
               </h3>
             </div>
 
@@ -273,49 +252,49 @@ export const Process: React.FC = () => {
               <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-slate-200 via-brand-200 to-slate-200 dark:from-slate-800 dark:via-brand-900 dark:to-slate-800 z-0" />
 
               <div className="grid md:grid-cols-3 gap-12 relative z-10">
-                {steps.map((step, idx) => (
-                  <div
-                    key={step.id}
-                    className="relative flex flex-col items-center text-center"
-                  >
-                    {/* Icon button opens modal */}
-                    <button
-                      onClick={() => setSelectedStep(step.id)}
-                      className="w-24 h-24 bg-white/90 dark:bg-slate-950 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300 hover:border-brand-500 hover:scale-110 cursor-pointer outline-none focus:ring-4 focus:ring-brand-500/20"
-                      type="button"
+                {PROCESS_CONTENT.steps.map((step, idx) => {
+                  const StepIcon = stepIcons[idx];
+                  return (
+                    <div
+                      key={step.id}
+                      className="relative flex flex-col items-center text-center"
                     >
-                      <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/20 rounded-full flex items-center justify-center">
-                        <step.icon className="w-8 h-8 text-brand-600 dark:text-brand-400" />
+                      <button
+                        onClick={() => setSelectedStep(step.id)}
+                        className="w-24 h-24 bg-white/90 dark:bg-slate-950 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300 hover:border-brand-500 hover:scale-110 cursor-pointer outline-none focus:ring-4 focus:ring-brand-500/20"
+                        type="button"
+                      >
+                        <div className="w-16 h-16 bg-brand-50 dark:bg-brand-900/20 rounded-full flex items-center justify-center">
+                          <StepIcon className="w-8 h-8 text-brand-600 dark:text-brand-400" />
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStep(step.id)}
+                        className="inline-flex items-center text-xs font-semibold tracking-wide uppercase text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 mb-4"
+                      >
+                        <span className="mr-1">{step.asset}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+
+                      <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full mt-2">
+                        <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+                          {step.title}
+                        </h4>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+                          {step.desc}
+                        </p>
                       </div>
-                    </button>
 
-                    {/* Always-visible asset link row (Blueprint / Timeline / Projections) */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStep(step.id)}
-                      className="inline-flex items-center text-xs font-semibold tracking-wide uppercase text-brand-600 dark:text-brand-400 hover:text-brand-500 dark:hover:text-brand-300 mb-4"
-                    >
-                      <span className="mr-1">{step.asset}</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-
-                    {/* Card content */}
-                    <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full mt-2">
-                      <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-                        {step.title}
-                      </h4>
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                        {step.desc}
-                      </p>
+                      {idx !== PROCESS_CONTENT.steps.length - 1 && (
+                        <div className="md:hidden mt-12 mb-4 text-slate-300 dark:text-slate-700">
+                          <ArrowRight className="w-6 h-6 rotate-90" />
+                        </div>
+                      )}
                     </div>
-
-                    {idx !== steps.length - 1 && (
-                      <div className="md:hidden mt-12 mb-4 text-slate-300 dark:text-slate-700">
-                        <ArrowRight className="w-6 h-6 rotate-90" />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

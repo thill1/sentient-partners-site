@@ -1,10 +1,15 @@
 import React from 'react';
 import { Button } from './Button';
 import { MessageSquare, Zap } from 'lucide-react';
+import { DEMO_CONTENT } from '../content/siteContent';
+import { openSentientChat } from '../lib/siteActions';
 
 export const DemoSection: React.FC = () => {
   const openChat = () => {
-    window.dispatchEvent(new CustomEvent('open-sentient-chat'));
+    openSentientChat({
+      source: 'Demo Section',
+      ctaLabel: 'Launch Interactive Demo',
+    });
   };
 
   return (
@@ -23,17 +28,15 @@ export const DemoSection: React.FC = () => {
           <div className="relative z-10 max-w-2xl mx-auto">
             <div className="inline-flex items-center space-x-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-300 px-4 py-1.5 rounded-full text-sm font-medium mb-8">
               <Zap size={16} />
-              <span>Interactive Live Demo</span>
+              <span>{DEMO_CONTENT.eyebrow}</span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              See the Agent in Action
+              {DEMO_CONTENT.heading}
             </h2>
 
             <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
-              We've deployed a live version of our Sentient Agent on this page.
-              Click the button below to open the floating interface and experience
-              real-time voice and text automation.
+              {DEMO_CONTENT.body}
             </p>
 
             <Button
@@ -42,11 +45,11 @@ export const DemoSection: React.FC = () => {
               className="px-10 py-4 text-lg shadow-xl shadow-brand-500/30 hover:scale-105 transition-transform"
             >
               <MessageSquare className="mr-2 h-5 w-5" />
-              Launch Interactive Demo
+              {DEMO_CONTENT.ctaLabel}
             </Button>
 
             <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
-              Try asking: "What time is it in Tokyo?" or "Book an appointment."
+              {DEMO_CONTENT.helperText}
             </p>
           </div>
         </div>

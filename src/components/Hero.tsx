@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
+import { HERO_CONTENT } from "../content/siteContent";
+import { dispatchToast, submitLead } from "../services/geminiService";
 
 type Intensity = "subtle" | "medium" | "strong";
 
@@ -200,27 +202,47 @@ const ParticleBackground: React.FC = () => {
   );
 };
 
-const phrases = [
-  "AI Receptionists",
-  "AI Sales Agents",
-  "Smart Websites",
-  "AI SEO",
-  "AI Reviews",
-  "Automated Leads",
-  "Automated Workflows",
-  "Automated Calendars",
-  "AI Chatbots",
-  "Always-On Revenue",
-];
-
 const Hero: React.FC = () => {
-  const openContact = () => {
-    window.dispatchEvent(new CustomEvent("open-contact-modal"));
-  };
+  const [blueprintForm, setBlueprintForm] = useState({
+    name: "",
+    email: "",
+    inquiry: "",
+  });
+  const [isSubmittingBlueprint, setIsSubmittingBlueprint] = useState(false);
+  const [blueprintSubmitted, setBlueprintSubmitted] = useState(false);
 
-  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    openContact();
+    if (
+      isSubmittingBlueprint ||
+      !blueprintForm.name.trim() ||
+      !blueprintForm.email.trim() ||
+      !blueprintForm.inquiry.trim()
+    ) {
+      return;
+    }
+
+    setIsSubmittingBlueprint(true);
+
+    const result = await submitLead({
+      name: blueprintForm.name.trim(),
+      email: blueprintForm.email.trim(),
+      inquiry: blueprintForm.inquiry.trim(),
+      intent: "blueprint",
+      source: "Hero Blueprint Form",
+      ctaLabel: "Submit & Connect",
+    });
+
+    setIsSubmittingBlueprint(false);
+
+    if (result.success) {
+      setBlueprintSubmitted(true);
+      setBlueprintForm({ name: "", email: "", inquiry: "" });
+      dispatchToast(result.message, "success");
+      return;
+    }
+
+    dispatchToast(result.message || "Failed to send blueprint request.", "error");
   };
 
   const nameInputRef = useRef<HTMLInputElement | null>(null);
@@ -235,12 +257,12 @@ const Hero: React.FC = () => {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setIndex((prev) => (prev + 1) % phrases.length);
+      setIndex((prev) => (prev + 1) % HERO_CONTENT.rotatingPhrases.length);
     }, 2500);
     return () => window.clearInterval(interval);
   }, []);
 
-  const currentPhrase = phrases[index];
+  const currentPhrase = HERO_CONTENT.rotatingPhrases[index];
 
   return (
     <>
@@ -254,12 +276,12 @@ const Hero: React.FC = () => {
               <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex mb-6 sm:mb-7">
                 <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
                   <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
-                  Accepting New Partners
+                  {HERO_CONTENT.badge}
                 </span>
               </div>
 
               <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
-                <span className="block">We Build</span>
+                <span className="block">{HERO_CONTENT.headingPrefix}</span>
 
                 <span
                   className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 leading-[1.03] pb-[0.14em]"
@@ -268,12 +290,11 @@ const Hero: React.FC = () => {
                   {currentPhrase}
                 </span>
 
-                <span className="block">That Never Sleep</span>
+                <span className="block">{HERO_CONTENT.headingSuffix}</span>
               </h1>
 
-              {/* UPDATED H2 COPY */}
               <p className="max-w-4xl mx-auto text-xl sm:text-2xl lg:text-2xl text-slate-600 dark:text-slate-300 mb-10 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
-                TRANSFORM AND UPGRADE YOUR BUSINESS TODAY!
+                {HERO_CONTENT.subtitle}
               </p>
 
               <div className="flex justify-center animate-slide-up opacity-0 [animation-delay:750ms]">
@@ -288,7 +309,7 @@ const Hero: React.FC = () => {
                              dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
                              border border-slate-200/70 dark:border-white/10 backdrop-blur"
                 >
-                  Quick Start
+                  {HERO_CONTENT.quickStartLabel}
                 </button>
               </div>
             </div>
@@ -301,14 +322,18 @@ const Hero: React.FC = () => {
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-950/75 shadow-xl backdrop-blur-xl p-6 sm:p-8">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              Get a Custom AI Blueprint
+              {HERO_CONTENT.blueprintTitle}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-              Tell us who you are and what you’re trying to solve. We’ll follow
-              up with a tailored Sentient Partners plan.
+              {HERO_CONTENT.blueprintDescription}
             </p>
 
             <form onSubmit={handleContactSubmit} className="space-y-4 flex flex-col">
+              {blueprintSubmitted && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+                  {HERO_CONTENT.blueprintSuccess}
+                </div>
+              )}
               <div>
                 <label
                   htmlFor="hero-name"
@@ -322,6 +347,11 @@ const Hero: React.FC = () => {
                   name="name"
                   type="text"
                   required
+                  value={blueprintForm.name}
+                  onChange={(e) => {
+                    setBlueprintSubmitted(false);
+                    setBlueprintForm((prev) => ({ ...prev, name: e.target.value }));
+                  }}
                   className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
                   placeholder="Jane Doe"
                 />
@@ -339,6 +369,11 @@ const Hero: React.FC = () => {
                   name="email"
                   type="email"
                   required
+                  value={blueprintForm.email}
+                  onChange={(e) => {
+                    setBlueprintSubmitted(false);
+                    setBlueprintForm((prev) => ({ ...prev, email: e.target.value }));
+                  }}
                   className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70"
                   placeholder="you@company.com"
                 />
@@ -355,18 +390,29 @@ const Hero: React.FC = () => {
                   id="hero-message"
                   name="message"
                   rows={3}
+                  required
+                  value={blueprintForm.inquiry}
+                  onChange={(e) => {
+                    setBlueprintSubmitted(false);
+                    setBlueprintForm((prev) => ({ ...prev, inquiry: e.target.value }));
+                  }}
                   className="block w-full rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 px-3 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/70 focus:border-brand-500/70 resize-none"
                   placeholder="Inbound calls, lead follow-up, missed web leads, etc."
                 />
               </div>
 
               <div className="mt-2">
-                <Button type="submit" size="lg" className="w-full">
-                  Submit &amp; Connect
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={isSubmittingBlueprint}
+                >
+                  {isSubmittingBlueprint ? "Submitting..." : "Submit & Connect"}
                 </Button>
 
                 <p className="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                  No spam. We’ll review your note and respond with specific ideas for your business.
+                  {HERO_CONTENT.blueprintDisclaimer}
                 </p>
               </div>
             </form>

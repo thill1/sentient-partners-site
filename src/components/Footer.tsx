@@ -1,5 +1,11 @@
 import React from 'react';
 import { Logo } from './Logo';
+import { FOOTER_CONTENT } from '../content/siteContent';
+import {
+  openBookingModal,
+  openContactModal,
+  scrollToSection,
+} from '../lib/siteActions';
 
 const Footer: React.FC = () => {
   const year = new Date().getFullYear();
@@ -12,8 +18,7 @@ const Footer: React.FC = () => {
           <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
             <Logo />
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
-              Sentient Partners helps small and mid-sized businesses deploy AI voice,
-              chat, and automation systems that actually move the revenue needle.
+              {FOOTER_CONTENT.tagline}
             </p>
           </div>
 
@@ -25,33 +30,21 @@ const Footer: React.FC = () => {
               </p>
               <button
                 type="button"
-                onClick={() =>
-                  document
-                    .getElementById('services')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={() => scrollToSection('services')}
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
                 Services
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  document
-                    .getElementById('process')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={() => scrollToSection('process')}
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
                 Process
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  document
-                    .getElementById('pricing')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={() => scrollToSection('pricing')}
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
                 Pricing
@@ -65,7 +58,10 @@ const Footer: React.FC = () => {
               <button
                 type="button"
                 onClick={() =>
-                  window.dispatchEvent(new CustomEvent('open-booking-modal'))
+                  openBookingModal({
+                    source: 'Footer',
+                    ctaLabel: 'Book Strategy Call',
+                  })
                 }
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
@@ -74,7 +70,11 @@ const Footer: React.FC = () => {
               <button
                 type="button"
                 onClick={() =>
-                  window.dispatchEvent(new CustomEvent('open-contact-modal'))
+                  openContactModal({
+                    intent: 'contact',
+                    source: 'Footer',
+                    ctaLabel: 'Contact Sentient Partners',
+                  })
                 }
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
@@ -91,7 +91,7 @@ const Footer: React.FC = () => {
           </p>
           <div className="flex items-center gap-4">
             <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-default">
-              AI · Automations · Always-On Revenue
+              {FOOTER_CONTENT.footerLabel}
             </span>
           </div>
         </div>

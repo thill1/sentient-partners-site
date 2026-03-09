@@ -11,13 +11,18 @@ import {
 } from 'lucide-react';
 import { Button } from './Button';
 import { ServiceItem } from '../types';
+import { SERVICES_SECTION_CONTENT } from '../content/siteContent';
+import { openBookingModal } from '../lib/siteActions';
 
 const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
   service,
   onClose,
 }) => {
   const handleBook = () => {
-    window.dispatchEvent(new CustomEvent('open-booking-modal'));
+    openBookingModal({
+      source: `Service Modal - ${service.title}`,
+      ctaLabel: 'Book Strategy Call',
+    });
   };
 
   useEffect(() => {
@@ -194,17 +199,13 @@ export const Services: React.FC = () => {
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
-            Core Services
+            {SERVICES_SECTION_CONTENT.eyebrow}
           </h2>
           <h3 className="text-3xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
-            Everything You Need to <br />
-            <span className="text-slate-400 dark:text-slate-500">
-              Scale Automatically
-            </span>
+            {SERVICES_SECTION_CONTENT.heading}
           </h3>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            We integrate cutting-edge AI directly into your existing workflow,
-            replacing manual grunt work with instant, 24/7 performance.
+            {SERVICES_SECTION_CONTENT.subheading}
           </p>
         </div>
 

@@ -14,6 +14,7 @@ import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
 import { WhySentient } from './components/WhySentient';
+import { HOME_SECTION_ORDER } from './content/siteContent';
 
 
 function App() {
@@ -34,20 +35,24 @@ function App() {
     }
   }, []);
 
+  const sectionComponents: Record<(typeof HOME_SECTION_ORDER)[number], React.ReactNode> = {
+    hero: <Hero key="hero" />,
+    why: <WhySentient key="why" />,
+    services: <Services key="services" />,
+    demo: <DemoSection key="demo" />,
+    testimonials: <Testimonials key="testimonials" />,
+    process: <Process key="process" />,
+    pricing: <Pricing key="pricing" />,
+    faq: <FAQ key="faq" />,
+    cta: <CTASection key="cta" />,
+  };
+
   return (
     <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
       <Header />
 
       <main id="main-content" className="pt-20 md:pt-24">
-        <Hero />
-        <DemoSection />
-        <Services />
-        <Process />
-        <WhySentient />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <CTASection />
+        {HOME_SECTION_ORDER.map((section) => sectionComponents[section])}
       </main>
 
       <Footer />

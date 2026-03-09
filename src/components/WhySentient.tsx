@@ -1,5 +1,8 @@
 import React from 'react';
 import { Target, LineChart, Workflow, ShieldCheck } from 'lucide-react';
+import { WHY_SENTIENT_CONTENT } from '../content/siteContent';
+
+const CARD_ICONS = [Target, Workflow, LineChart, ShieldCheck] as const;
 
 export const WhySentient: React.FC = () => {
   return (
@@ -20,73 +23,37 @@ export const WhySentient: React.FC = () => {
           {/* Centered heading block */}
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-300">
-              Why Sentient Partners
+              {WHY_SENTIENT_CONTENT.eyebrow}
             </p>
             <h2
               id="why-heading"
               className="mt-3 font-display text-2xl sm:text-1xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
             >
-              Sentient Partners helps SMBs win more customers with enterprise-grade AI voice, chat, funnels, and automated follow-up. 
+              {WHY_SENTIENT_CONTENT.heading}
             </h2>
-            <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-              
-            </p>
           </div>
 
           {/* Cards row */}
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/50 p-5">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
-                <Target className="h-4 w-4" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-                Strategy tied to revenue
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                We start from your pipeline and profit targets, then design AI
-                systems to support those—never automation for its own sake.
-              </p>
-            </div>
-
-            <div className="flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/50 p-5">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
-                <Workflow className="h-4 w-4" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-                Full implementation, not just ideas
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                We plug into your phones, calendars, and CRM, then handle the build,
-                testing, and tuning so your team isn&apos;t left stitching tools
-                together.
-              </p>
-            </div>
-
-            <div className="flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/50 p-5">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
-                <LineChart className="h-4 w-4" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-                Enterprise-grade thinking
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                Experience across complex, high-volume environments—applied to give
-                SMBs simple, reliable systems that scale without extra headcount.
-              </p>
-            </div>
-
-            <div className="flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/50 p-5">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
-                <ShieldCheck className="h-4 w-4" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-                Ongoing tuning &amp; support
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                Your systems don&apos;t get dumped and forgotten—we review, refine,
-                and expand them as your offers and volume evolve.
-              </p>
-            </div>
+            {WHY_SENTIENT_CONTENT.cards.map((card, index) => {
+              const Icon = CARD_ICONS[index];
+              return (
+                <div
+                  key={card.title}
+                  className="flex flex-col rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/50 p-5"
+                >
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                    {card.title}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                    {card.body}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

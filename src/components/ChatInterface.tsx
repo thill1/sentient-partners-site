@@ -12,23 +12,17 @@ import {
   AlertCircle,
   X,
   MessageSquare,
-  Download,
-  Wifi,
 } from 'lucide-react';
 import { Message } from '../types';
 import {
   sendMessageToGemini,
   sendTranscript,
-  sendTestEmail,
   dispatchToast,
 } from '../services/geminiService';
+import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
+import { CHAT_EVENT } from '../lib/siteActions';
 
-const SUGGESTED_ACTIONS = [
-  { label: 'Book Appointment', prompt: "I'd like to book a strategy call." },
-  { label: 'Pricing Info', prompt: 'How much does it cost to set up an AI receptionist?' },
-  { label: 'Tokyo Time?', prompt: 'What time is it in Tokyo right now?' },
-  { label: 'Sky Color?', prompt: 'Why is the sky blue? Explain simply.' },
-];
+const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
 const TTS_VOICE_STORAGE_KEY = 'sentient_tts_voice_name';
 
@@ -42,7 +36,7 @@ export const ChatInterface: React.FC = () => {
     {
       id: 'init',
       role: 'model',
-      text: 'Hello. I am the Sentient AI interface. I can demonstrate how our systems automate your revenue growth. How may I assist you today?',
+      text: CHAT_WIDGET_CONTENT.introMessage,
       timestamp: new Date(),
     },
   ]);
@@ -200,7 +194,7 @@ export const ChatInterface: React.FC = () => {
   // --- Boot/open listeners ---
   useEffect(() => {
     const handleOpenEvent = () => setIsOpen(true);
-    window.addEventListener('open-sentient-chat', handleOpenEvent);
+    window.addEventListener(CHAT_EVENT, handleOpenEvent);
 
     if (window.location.protocol === 'file:') {
       setTimeout(() => {
@@ -211,7 +205,7 @@ export const ChatInterface: React.FC = () => {
       }, 1500);
     }
 
-    return () => window.removeEventListener('open-sentient-chat', handleOpenEvent);
+    return () => window.removeEventListener(CHAT_EVENT, handleOpenEvent);
   }, []);
 
   // Scroll
@@ -334,32 +328,6 @@ export const ChatInterface: React.FC = () => {
     if (pendingModel) voiceLog += `\n[VOICE MODEL (Partial)]: ${pendingModel}`;
 
     return { chatLog, voiceLog };
-  };
-
-  const handleManualSave = async () => {
-    if (isSaving) return;
-
-    const { chatLog, voiceLog } = prepareTranscriptData();
-    if (!chatLog && !voiceLog.trim()) {
-      dispatchToast('No content to save yet.', 'info');
-      return;
-    }
-
-    setIsSaving(true);
-    dispatchToast('Saving transcript...', 'info');
-    await sendTranscript(chatLog, voiceLog);
-    setIsSaving(false);
-  };
-
-  const handleTestConnection = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    dispatchToast('Sending test packet...', 'info');
-
-    const result = await sendTestEmail();
-    dispatchToast(result.success ? 'Success! Check your inbox.' : `Failed: ${result.message}`, result.success ? 'success' : 'error');
-
-    setIsSaving(false);
   };
 
   const handleClose = async () => {
@@ -760,9 +728,11 @@ export const ChatInterface: React.FC = () => {
         </div>
         <div className="text-left">
           <p className="text-[10px] font-bold text-brand-300 uppercase tracking-widest leading-none mb-1">
-            Sentient AI
+            {CHAT_WIDGET_CONTENT.launcherEyebrow}
           </p>
-          <p className="text-sm font-semibold text-white/90 leading-none">Try the Demo</p>
+          <p className="text-sm font-semibold text-white/90 leading-none">
+            {CHAT_WIDGET_CONTENT.launcherLabel}
+          </p>
         </div>
       </button>
     );
@@ -791,32 +761,16 @@ export const ChatInterface: React.FC = () => {
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
-                Sentient <span className="text-brand-600 dark:text-brand-400">Intelligence</span>
+                {CHAT_WIDGET_CONTENT.title}
               </h3>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                System Online
+                {CHAT_WIDGET_CONTENT.status}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={handleTestConnection}
-              disabled={isSaving}
-              className="p-2 text-slate-400 hover:text-green-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
-              title="Test Email Connection"
-            >
-              <Wifi size={18} />
-            </button>
-            <button
-              onClick={handleManualSave}
-              disabled={isSaving}
-              className="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
-              title="Save Transcript"
-            >
-              {isSaving ? <Loader2 size={18} className="animate-spin text-brand-500" /> : <Download size={18} />}
-            </button>
             <button
               onClick={() => setIsFullScreen(!isFullScreen)}
               className="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
@@ -905,7 +859,7 @@ export const ChatInterface: React.FC = () => {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Ask me anything..."
+                  placeholder={CHAT_WIDGET_CONTENT.chatPlaceholder}
                   disabled={isLoading}
                   className="flex-1 px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:bg-white dark:focus:bg-black/40 focus:border-brand-500 rounded-xl outline-none text-sm text-slate-900 dark:text-white transition-all shadow-inner"
                 />
@@ -960,7 +914,7 @@ export const ChatInterface: React.FC = () => {
             {isVoiceLoading && (
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-20">
                 <p className="text-brand-400 text-sm font-medium animate-pulse">
-                  Initializing Neural Uplink...
+                  {CHAT_WIDGET_CONTENT.voiceLoadingLabel}
                 </p>
               </div>
             )}

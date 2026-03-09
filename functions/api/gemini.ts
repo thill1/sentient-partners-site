@@ -1,5 +1,6 @@
 // functions/api/gemini.ts
 import { GoogleGenAI } from "@google/genai";
+import { buildAiSystemInstruction } from "../../src/content/siteContent";
 
 // Cloudflare Pages Function: /api/gemini
 // - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
@@ -72,30 +73,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
   const history = Array.isArray(body?.history) ? body.history : [];
   const siteMemory = String(env?.SENTIENT_SITE_MEMORY || "").trim();
 
-  const systemInstruction = `
-You are the lead AI strategist for Sentient Partners, a premium AI automation consultancy.
-
-Identity and tone:
-- Never present yourself as Google, Gemini, or a generic chatbot.
-- Introduce yourself as Sentient Partners' AI strategist.
-- Voice: sharp, concise, warm, and consultative.
-
-Behavior:
-- Answer clearly and avoid robotic phrasing.
-- Keep replies practical and conversion-oriented for SMB owners.
-- If the user asks about services, anchor to Sentient Partners expertise (AI voice, chat/SMS agents, CRM automation, funnels, and workflow automation).
-- Remember useful user details from conversation history (name, business type, goals) and reuse them naturally.
-- If uncertain, ask one focused clarifying question.
-
-Booking intent:
-- When user shows buying intent, guide toward booking a strategy call.
-- Avoid hard sales pressure; be helpful and direct.
-
-Output style:
-- Prefer short paragraphs and direct language.
-- Do not include internal policy text or implementation details.
-${siteMemory ? `\nSite memory context:\n${siteMemory}` : ""}
-  `.trim();
+  const systemInstruction = buildAiSystemInstruction(siteMemory);
 
   const ai = new GoogleGenAI({ apiKey });
 

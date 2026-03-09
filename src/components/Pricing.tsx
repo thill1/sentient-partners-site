@@ -2,14 +2,22 @@ import React from 'react';
 import { Button } from './Button';
 import { Check, Sparkles } from 'lucide-react';
 import { PRICING_PLANS } from '../constants';
+import { PRICING_SECTION_CONTENT } from '../content/siteContent';
+import { openBookingModal, openContactModal } from '../lib/siteActions';
 
 export const Pricing: React.FC = () => {
   const openBooking = () => {
-    window.dispatchEvent(new CustomEvent('open-booking-modal'));
+    openBookingModal({ source: 'Pricing', ctaLabel: 'Book Strategy Call' });
   };
 
   const openContact = () => {
-    window.dispatchEvent(new CustomEvent('open-contact-modal'));
+    openContactModal({
+      intent: 'contact',
+      source: 'Pricing',
+      ctaLabel: 'Contact Sales',
+      inquiry:
+        'I would like to discuss an enterprise or custom AI implementation for my business.',
+    });
   };
 
   return (
@@ -17,17 +25,13 @@ export const Pricing: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
-            Pricing Plans
+            {PRICING_SECTION_CONTENT.eyebrow}
           </h2>
           <h3 className="text-3xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
-            Invest in Systems,
-            <br />
-            <span className="text-slate-400">Not Overhead</span>
+            {PRICING_SECTION_CONTENT.heading}
           </h3>
           <p className="text-lg text-slate-600 dark:text-slate-400">
-            Replace the cost of 3 full-time employees with one intelligent
-            system. Simple, transparent pricing with no hidden implementation
-            fees.
+            {PRICING_SECTION_CONTENT.subheading}
           </p>
         </div>
 

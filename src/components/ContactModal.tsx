@@ -1,28 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Loader2, CheckCircle, Mail } from 'lucide-react';
-import { sendEmailData, dispatchToast } from '../services/geminiService';
+import { dispatchToast, submitLead } from '../services/geminiService';
 import { Button } from './Button';
+import {
+  CONTACT_MODAL_EVENT,
+  type ContactModalPrefill,
+} from '../lib/siteActions';
 
 export const ContactModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+  const [meta, setMeta] = useState<ContactModalPrefill>({
+    intent: 'contact',
+    source: 'Contact Modal',
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    inquiry: ''
+    inquiry: '',
   });
 
   useEffect(() => {
-    const handleOpen = () => {
+    const handleOpen = (event: Event) => {
+      const detail = (event as CustomEvent<ContactModalPrefill>).detail || {};
       setIsOpen(true);
       setIsSuccess(false);
-      setFormData({ name: '', email: '', inquiry: '' });
+      setMeta({
+        intent: detail.intent || 'contact',
+        source: detail.source || 'Contact Modal',
+        ctaLabel: detail.ctaLabel,
+      });
+      setFormData({
+        name: detail.name || '',
+        email: detail.email || '',
+        inquiry: detail.inquiry || '',
+      });
     };
 
-    window.addEventListener('open-contact-modal', handleOpen);
-    return () => window.removeEventListener('open-contact-modal', handleOpen);
+    window.addEventListener(CONTACT_MODAL_EVENT, handleOpen);
+    return () => window.removeEventListener(CONTACT_MODAL_EVENT, handleOpen);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,18 +48,20 @@ export const ContactModal: React.FC = () => {
 
     setIsLoading(true);
 
-    const result = await sendEmailData({
-      Name: formData.name,
-      Email: formData.email,
-      Message: formData.inquiry,
-      Source: "Web Contact Modal"
-    }, "New Website Inquiry");
+    const result = await submitLead({
+      name: formData.name,
+      email: formData.email,
+      inquiry: formData.inquiry,
+      intent: meta.intent || 'contact',
+      source: meta.source || 'Contact Modal',
+      ctaLabel: meta.ctaLabel,
+    });
 
     setIsLoading(false);
 
     if (result.success) {
       setIsSuccess(true);
-      dispatchToast("Message sent successfully!", "success");
+      dispatchToast(result.message || 'Message sent successfully!', 'success');
       setTimeout(() => {
         setIsOpen(false);
       }, 2500);
@@ -91,6 +110,11 @@ export const ContactModal: React.FC = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="rounded-xl bg-brand-50 text-brand-700 border border-brand-100 px-4 py-3 text-sm dark:bg-brand-950/30 dark:text-brand-200 dark:border-brand-900/50">
+                {meta.intent === 'blueprint'
+                  ? 'We will review your goals and follow up with a tailored AI blueprint.'
+                  : 'Tell us what you need help with and we will respond with next steps.'}
+              </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
                 <input 
