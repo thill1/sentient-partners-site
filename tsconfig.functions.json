@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2020", "WebWorker"],
+    "jsx": "react-jsx"
+  },
+  "include": ["functions/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
