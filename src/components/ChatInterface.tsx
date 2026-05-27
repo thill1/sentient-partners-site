@@ -108,8 +108,16 @@ export const ChatInterface: React.FC = () => {
 
     stopAudioPlayback();
 
-    const voiceUrl = `/api/voice?text=${encodeURIComponent(clean)}&voiceId=${encodeURIComponent(siteSettings.ai.voiceId)}`;
-    const response = await fetch(voiceUrl);
+    const response = await fetch('/api/voice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: clean,
+        voiceId: siteSettings.ai.voiceId,
+      }),
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch voice: ${response.status}`);
     }
