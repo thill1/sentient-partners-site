@@ -138,6 +138,8 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
       return json(
         {
           error: "Rate limited by Gemini (429).",
+          message: String(err?.message || err || ""),
+          details: err?.details || null,
           retryAfterSeconds: retryAfter,
         },
         {
@@ -152,6 +154,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     return json(
       {
         error: "Gemini error",
+        message: String(err?.message || err || ""),
         status,
       },
       { status: status >= 400 && status <= 599 ? status : 500 },

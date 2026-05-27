@@ -243,9 +243,23 @@ export const sendMessageToGemini = async function* (message: string) {
       return;
     }
 
-    const data = await resp.json().catch(() => ({} as { text?: string }));
+    const data = await resp.json().catch(() => ({} as { text?: string; error?: string; message?: string }));
     if (!resp.ok) {
-      yield "Server error. Check Cloudflare API_KEY (Production) and redeploy.";
+      if (resp.status === 429) {
+        let cleanMsg = data.message || data.error || "You exceeded your current daily/minute quota.";
+        // Clean up internal JSON if present
+        try {
+          const parsed = JSON.parse(cleanMsg);
+          if (parsed?.error?.message) {
+            cleanMsg = parsed.error.message;
+          }
+        } catch {
+          // Keep original string if not JSON
+        }
+        yield `Rate Limit Exceeded (429): ${cleanMsg}`;
+      } else {
+        yield `API Error (${resp.status}): ${data.message || data.error || "Check Cloudflare API_KEY (Production) and redeploy."}`;
+      }
       return;
     }
 
@@ -254,8 +268,9 @@ export const sendMessageToGemini = async function* (message: string) {
     memory.push({ role: "model", text });
     persistMemoryToStorage();
     yield text || "Empty response.";
-  } catch {
-    yield "Connection problem. Refresh and try again.";
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error || "");
+    yield `Connection problem: ${errMsg || "Refresh and try again."}`;
   }
 };
 

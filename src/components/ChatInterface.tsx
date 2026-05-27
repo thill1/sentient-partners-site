@@ -376,18 +376,18 @@ export const ChatInterface: React.FC = () => {
       }
 
       // Ask Gemini (retry once if first attempt returns error copy)
-      let reply = await askGeminiOnce(clean);
+      const reply = await askGeminiOnce(clean);
 
-      const looksLikeError =
-        !reply ||
+      const isErrorString =
+        reply.toLowerCase().includes('rate limit exceeded') ||
+        reply.toLowerCase().includes('api error') ||
+        reply.toLowerCase().includes('connection problem') ||
         reply.toLowerCase().includes('server error') ||
-        reply.toLowerCase().includes('check cloudflare') ||
         reply.toLowerCase().includes('redeploy');
 
-      if (looksLikeError) {
-        // quick retry (Cloudflare cold start / transient)
-        await new Promise((r) => setTimeout(r, 250));
-        reply = await askGeminiOnce(clean);
+      if (isErrorString) {
+        setVoiceError(reply);
+        return;
       }
 
       if (!reply) {
@@ -395,24 +395,14 @@ export const ChatInterface: React.FC = () => {
         return;
       }
 
-      // Never speak internal error copy
-      const speakable = reply
-        .replace(/Server error\.[\s\S]*$/i, '')
-        .trim();
-
       // Save transcript
       setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
 
       // Speak reply through the server-backed voice proxy
-      if (speakable) {
-        try {
-          await playVoiceResponse(speakable);
-        } catch {
-          setVoiceError('Voice playback failed.');
-        }
-      } else {
-        // If it’s only error copy, show UI error instead of speaking it
-        setVoiceError('Voice server error (check Cloudflare logs).');
+      try {
+        await playVoiceResponse(reply);
+      } catch {
+        setVoiceError('Voice playback failed.');
       }
     } catch (err) {
       console.error('Voice response error:', err);
