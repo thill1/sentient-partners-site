@@ -55,7 +55,8 @@ export const ChatInterface: React.FC = () => {
   const [transcriptHistory, setTranscriptHistory] = useState<
     { role: 'user' | 'model'; text: string }[]
   >([]);
-  const currentInputTransRef = useRef('');
+  const [interimInput, setInterimInput] = useState('');
+  const [isThinkingOrSpeaking, setIsThinkingOrSpeaking] = useState(false);
   const currentOutputTransRef = useRef('');
 
   // Voice engine refs (browser STT + server-backed TTS playback)
@@ -244,7 +245,7 @@ export const ChatInterface: React.FC = () => {
 
   // --- Transcript helpers ---
   const prepareTranscriptData = () => {
-    const pendingUser = currentInputTransRef.current.trim();
+    const pendingUser = interimInput.trim();
     const pendingModel = currentOutputTransRef.current.trim();
 
     const chatLog =
@@ -363,6 +364,7 @@ export const ChatInterface: React.FC = () => {
     if (clean.length < 3) return;
 
     isSpeakingOrFetchingRef.current = true;
+    setIsThinkingOrSpeaking(true);
 
     try {
       // Log user voice transcript
@@ -409,6 +411,7 @@ export const ChatInterface: React.FC = () => {
       setVoiceError('An error occurred during voice communication.');
     } finally {
       isSpeakingOrFetchingRef.current = false;
+      setIsThinkingOrSpeaking(false);
 
       // Restart recognition if session still active
       if (connectionActiveRef.current) {
@@ -523,10 +526,10 @@ export const ChatInterface: React.FC = () => {
           else interimText += t;
         }
 
-        if (interimText.trim()) currentInputTransRef.current = interimText.trim();
+        if (interimText.trim()) setInterimInput(interimText.trim());
 
         if (finalText.trim()) {
-          currentInputTransRef.current = '';
+          setInterimInput('');
 
           // Debounce: buffer multiple finals into one request
           finalBufferRef.current = `${finalBufferRef.current} ${finalText}`.trim();
@@ -584,6 +587,7 @@ export const ChatInterface: React.FC = () => {
   const stopLiveSession = () => {
     connectionActiveRef.current = false;
     isSpeakingOrFetchingRef.current = false;
+    setIsThinkingOrSpeaking(false);
 
     if (finalTimerRef.current) {
       clearTimeout(finalTimerRef.current);
@@ -628,10 +632,10 @@ export const ChatInterface: React.FC = () => {
     }
     inputContextRef.current = null;
 
-    if (currentInputTransRef.current.trim()) {
+    if (interimInput.trim()) {
       setTranscriptHistory((prev) => [
         ...prev,
-        { role: 'user', text: currentInputTransRef.current.trim() },
+        { role: 'user', text: interimInput.trim() },
       ]);
     }
     if (currentOutputTransRef.current.trim()) {
@@ -640,7 +644,7 @@ export const ChatInterface: React.FC = () => {
         { role: 'model', text: currentOutputTransRef.current.trim() },
       ]);
     }
-    currentInputTransRef.current = '';
+    setInterimInput('');
     currentOutputTransRef.current = '';
 
     setIsLiveConnected(false);
@@ -856,6 +860,34 @@ export const ChatInterface: React.FC = () => {
                 </p>
               </div>
             )}
+
+            {/* Real-time Subtitles / Transcript Overlay */}
+            <div className="absolute bottom-6 left-6 right-6 z-10 max-h-[160px] overflow-y-auto rounded-2xl bg-black/40 border border-white/10 p-4 backdrop-blur-md flex flex-col gap-2.5 text-left scrollbar-hide">
+              {transcriptHistory.length === 0 && !interimInput && !isThinkingOrSpeaking && (
+                <div className="text-slate-400 text-xs text-center py-4 italic">
+                  Click the mic to speak. Ask: "How do you help SMBs?"
+                </div>
+              )}
+              {transcriptHistory.slice(-3).map((t, idx) => (
+                <div key={idx} className="text-xs leading-relaxed">
+                  <span className={`font-semibold mr-1.5 ${t.role === 'user' ? 'text-brand-300' : 'text-purple-300'}`}>
+                    {t.role === 'user' ? 'You' : 'Sentient AI'}:
+                  </span>
+                  <span className="text-slate-200">{t.text}</span>
+                </div>
+              ))}
+              {interimInput && (
+                <div className="text-xs leading-relaxed text-slate-300 animate-pulse">
+                  <span className="font-semibold text-brand-300 mr-1.5">You:</span>
+                  <span className="italic">{interimInput}...</span>
+                </div>
+              )}
+              {isThinkingOrSpeaking && !interimInput && (
+                <div className="flex items-center gap-2 text-xs text-purple-300 italic animate-pulse">
+                  <Loader2 size={12} className="animate-spin" /> Sentient AI is thinking...
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
