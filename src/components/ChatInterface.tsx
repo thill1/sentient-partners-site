@@ -16,7 +16,6 @@ import {
 import { Message } from '../types';
 import {
   sendMessageToGemini,
-  requestVoiceAudio,
   sendTranscript,
   dispatchToast,
 } from '../services/geminiService';
@@ -65,7 +64,6 @@ export const ChatInterface: React.FC = () => {
   const micStreamRef = useRef<MediaStream | null>(null);
   const isSpeakingOrFetchingRef = useRef<boolean>(false);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  const audioObjectUrlRef = useRef<string | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -86,11 +84,6 @@ export const ChatInterface: React.FC = () => {
     } catch {
       void 0;
     }
-
-    if (audioObjectUrlRef.current) {
-      URL.revokeObjectURL(audioObjectUrlRef.current);
-      audioObjectUrlRef.current = null;
-    }
   };
 
   const playVoiceResponse = async (text: string) => {
@@ -99,21 +92,15 @@ export const ChatInterface: React.FC = () => {
       return;
     }
 
-    const audioBlob = await requestVoiceAudio(clean, siteSettings.ai.voiceId);
-    const objectUrl = URL.createObjectURL(audioBlob);
-
     let audio = audioElementRef.current;
     if (!audio) {
       audio = new Audio();
       audioElementRef.current = audio;
     }
 
-    if (audioObjectUrlRef.current) {
-      URL.revokeObjectURL(audioObjectUrlRef.current);
-    }
-    audioObjectUrlRef.current = objectUrl;
+    const voiceUrl = `/api/voice?text=${encodeURIComponent(clean)}&voiceId=${encodeURIComponent(siteSettings.ai.voiceId)}`;
 
-    audio.src = objectUrl;
+    audio.src = voiceUrl;
     audio.load();
 
     return new Promise<void>((resolve) => {
