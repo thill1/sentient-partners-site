@@ -79,12 +79,13 @@ export const ChatInterface: React.FC = () => {
 
   const stopAudioPlayback = () => {
     try {
-      audioElementRef.current?.pause();
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current.src = '';
+      }
     } catch {
       void 0;
     }
-
-    audioElementRef.current = null;
 
     if (audioObjectUrlRef.current) {
       URL.revokeObjectURL(audioObjectUrlRef.current);
@@ -100,11 +101,20 @@ export const ChatInterface: React.FC = () => {
 
     const audioBlob = await requestVoiceAudio(clean, siteSettings.ai.voiceId);
     const objectUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(objectUrl);
 
-    stopAudioPlayback();
-    audioElementRef.current = audio;
+    let audio = audioElementRef.current;
+    if (!audio) {
+      audio = new Audio();
+      audioElementRef.current = audio;
+    }
+
+    if (audioObjectUrlRef.current) {
+      URL.revokeObjectURL(audioObjectUrlRef.current);
+    }
     audioObjectUrlRef.current = objectUrl;
+
+    audio.src = objectUrl;
+    audio.load();
 
     return new Promise<void>((resolve) => {
       audio.onended = () => {
@@ -116,7 +126,8 @@ export const ChatInterface: React.FC = () => {
         resolve();
       };
 
-      void audio.play().catch(() => {
+      void audio.play().catch((playErr) => {
+        console.error('Playback failed:', playErr);
         stopAudioPlayback();
         resolve();
       });
@@ -431,6 +442,18 @@ export const ChatInterface: React.FC = () => {
         'error',
       );
       return;
+    }
+
+    // Warm up / unlock browser HTML5 Audio autoplay directly in this click gesture thread
+    try {
+      if (!audioElementRef.current) {
+        const audio = new Audio();
+        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        void audio.play().catch(() => {});
+        audioElementRef.current = audio;
+      }
+    } catch {
+      // Ignore errors
     }
 
     if (connectionActiveRef.current || isLiveConnected) return;
