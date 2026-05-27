@@ -48,7 +48,6 @@ export const ChatInterface: React.FC = () => {
   // Voice state
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [isVoiceLoading, setIsVoiceLoading] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
 
   // Transcript capture
@@ -62,6 +61,8 @@ export const ChatInterface: React.FC = () => {
   const connectionActiveRef = useRef<boolean>(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  const isSpeakingOrFetchingRef = useRef<boolean>(false);
+  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -170,6 +171,7 @@ export const ChatInterface: React.FC = () => {
 
     return new Promise<void>((resolve) => {
       const utter = new SpeechSynthesisUtterance(clean);
+      activeUtteranceRef.current = utter;
 
       const voice = pickPreferredVoice();
       if (voice) utter.voice = voice;
@@ -177,13 +179,12 @@ export const ChatInterface: React.FC = () => {
       utter.rate = 1;
       utter.pitch = 1;
 
-      utter.onstart = () => setIsPlayingAudio(true);
       utter.onend = () => {
-        setIsPlayingAudio(false);
+        activeUtteranceRef.current = null;
         resolve();
       };
       utter.onerror = () => {
-        setIsPlayingAudio(false);
+        activeUtteranceRef.current = null;
         resolve();
       };
 
@@ -431,59 +432,67 @@ export const ChatInterface: React.FC = () => {
     // Ignore tiny/noise
     if (clean.length < 3) return;
 
-    // Log user voice transcript
-    setTranscriptHistory((prev) => [...prev, { role: 'user', text: clean }]);
+    isSpeakingOrFetchingRef.current = true;
 
-    // Stop recognition while we speak back (prevents feedback loop)
     try {
-      recognitionRef.current?.stop?.();
-    } catch {
-      // Ignore stop errors
-    }
+      // Log user voice transcript
+      setTranscriptHistory((prev) => [...prev, { role: 'user', text: clean }]);
 
-    // Ask Gemini (retry once if first attempt returns error copy)
-    let reply = await askGeminiOnce(clean);
-
-    const looksLikeError =
-      !reply ||
-      reply.toLowerCase().includes('server error') ||
-      reply.toLowerCase().includes('check cloudflare') ||
-      reply.toLowerCase().includes('redeploy');
-
-    if (looksLikeError) {
-      // quick retry (Cloudflare cold start / transient)
-      await new Promise((r) => setTimeout(r, 250));
-      reply = await askGeminiOnce(clean);
-    }
-
-    if (!reply) {
-      setVoiceError('Voice server returned an empty response.');
-      connectionActiveRef.current = false;
-      return;
-    }
-
-    // Never speak internal error copy
-    const speakable = reply
-      .replace(/Server error\.[\s\S]*$/i, '')
-      .trim();
-
-    // Save transcript
-    setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
-
-    // Speak reply
-    if (speakable) {
-      await speakText(speakable);
-    } else {
-      // If it’s only error copy, show UI error instead of speaking it
-      setVoiceError('Voice server error (check Cloudflare logs).');
-    }
-
-    // Restart recognition if session still active
-    if (connectionActiveRef.current) {
+      // Stop recognition while we speak back (prevents feedback loop)
       try {
-        recognitionRef.current?.start?.();
+        recognitionRef.current?.stop?.();
       } catch {
-        // Some browsers require a fresh user gesture to restart
+        // Ignore stop errors
+      }
+
+      // Ask Gemini (retry once if first attempt returns error copy)
+      let reply = await askGeminiOnce(clean);
+
+      const looksLikeError =
+        !reply ||
+        reply.toLowerCase().includes('server error') ||
+        reply.toLowerCase().includes('check cloudflare') ||
+        reply.toLowerCase().includes('redeploy');
+
+      if (looksLikeError) {
+        // quick retry (Cloudflare cold start / transient)
+        await new Promise((r) => setTimeout(r, 250));
+        reply = await askGeminiOnce(clean);
+      }
+
+      if (!reply) {
+        setVoiceError('Voice server returned an empty response.');
+        return;
+      }
+
+      // Never speak internal error copy
+      const speakable = reply
+        .replace(/Server error\.[\s\S]*$/i, '')
+        .trim();
+
+      // Save transcript
+      setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
+
+      // Speak reply
+      if (speakable) {
+        await speakText(speakable);
+      } else {
+        // If it’s only error copy, show UI error instead of speaking it
+        setVoiceError('Voice server error (check Cloudflare logs).');
+      }
+    } catch (err) {
+      console.error('Voice response error:', err);
+      setVoiceError('An error occurred during voice communication.');
+    } finally {
+      isSpeakingOrFetchingRef.current = false;
+
+      // Restart recognition if session still active
+      if (connectionActiveRef.current) {
+        try {
+          recognitionRef.current?.start?.();
+        } catch {
+          // Some browsers require a fresh user gesture to restart
+        }
       }
     }
   };
@@ -600,7 +609,7 @@ export const ChatInterface: React.FC = () => {
       };
 
       recognition.onend = () => {
-        if (connectionActiveRef.current && !isPlayingAudio) {
+        if (connectionActiveRef.current && !isSpeakingOrFetchingRef.current) {
           try {
             recognition.start();
           } catch {
@@ -641,6 +650,7 @@ export const ChatInterface: React.FC = () => {
 
   const stopLiveSession = () => {
     connectionActiveRef.current = false;
+    isSpeakingOrFetchingRef.current = false;
 
     if (finalTimerRef.current) {
       clearTimeout(finalTimerRef.current);
@@ -706,7 +716,6 @@ export const ChatInterface: React.FC = () => {
 
     setIsLiveConnected(false);
     setIsVoiceLoading(false);
-    setIsPlayingAudio(false);
     setVoiceError(null);
   };
 
