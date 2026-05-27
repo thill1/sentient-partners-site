@@ -1,10 +1,5 @@
 {
   "name": "sentient-partners-site",
   "compatibility_date": "2026-03-08",
-  "kv_namespaces": [
-    {
-      "binding": "SITE_SETTINGS",
-      "id": "YOUR_KV_NAMESPACE_ID"
-    }
-  ]
+  "pages_build_output_dir": "dist"
 }
