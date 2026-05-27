@@ -63,7 +63,8 @@ export const ChatInterface: React.FC = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const isSpeakingOrFetchingRef = useRef<boolean>(false);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const playbackContextRef = useRef<AudioContext | null>(null);
+  const activeSourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -77,9 +78,9 @@ export const ChatInterface: React.FC = () => {
 
   const stopAudioPlayback = () => {
     try {
-      if (audioElementRef.current) {
-        audioElementRef.current.pause();
-        audioElementRef.current.src = '';
+      if (activeSourceNodeRef.current) {
+        activeSourceNodeRef.current.stop();
+        activeSourceNodeRef.current = null;
       }
     } catch {
       void 0;
@@ -92,32 +93,48 @@ export const ChatInterface: React.FC = () => {
       return;
     }
 
-    let audio = audioElementRef.current;
-    if (!audio) {
-      audio = new Audio();
-      audioElementRef.current = audio;
+    let ctx = playbackContextRef.current || inputContextRef.current;
+    if (!ctx) {
+      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        ctx = new AudioContextClass();
+        playbackContextRef.current = ctx;
+      }
     }
 
-    const voiceUrl = `/api/voice?text=${encodeURIComponent(clean)}&voiceId=${encodeURIComponent(siteSettings.ai.voiceId)}`;
+    if (ctx && ctx.state === 'suspended') {
+      await ctx.resume().catch(() => {});
+    }
 
-    audio.src = voiceUrl;
-    audio.load();
+    stopAudioPlayback();
+
+    const voiceUrl = `/api/voice?text=${encodeURIComponent(clean)}&voiceId=${encodeURIComponent(siteSettings.ai.voiceId)}`;
+    const response = await fetch(voiceUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch voice: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+
+    const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) => {
+      ctx!.decodeAudioData(
+        arrayBuffer,
+        (buf) => resolve(buf),
+        (err) => reject(err)
+      );
+    });
 
     return new Promise<void>((resolve) => {
-      audio.onended = () => {
-        stopAudioPlayback();
-        resolve();
-      };
-      audio.onerror = () => {
-        stopAudioPlayback();
+      const source = ctx!.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx!.destination);
+
+      source.onended = () => {
         resolve();
       };
 
-      void audio.play().catch((playErr) => {
-        console.error('Playback failed:', playErr);
-        stopAudioPlayback();
-        resolve();
-      });
+      activeSourceNodeRef.current = source;
+      source.start(0);
     });
   };
 
@@ -431,13 +448,13 @@ export const ChatInterface: React.FC = () => {
       return;
     }
 
-    // Warm up / unlock browser HTML5 Audio autoplay directly in this click gesture thread
+    // Warm up / unlock browser Web Audio API context directly in this click gesture thread
     try {
-      if (!audioElementRef.current) {
-        const audio = new Audio();
-        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-        void audio.play().catch(() => {});
-        audioElementRef.current = audio;
+      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        const pCtx = new AudioContextClass();
+        await pCtx.resume().catch(() => {});
+        playbackContextRef.current = pCtx;
       }
     } catch {
       // Ignore errors
