@@ -89,8 +89,6 @@ export const ChatInterface: React.FC = () => {
       URL.revokeObjectURL(audioObjectUrlRef.current);
       audioObjectUrlRef.current = null;
     }
-
-    setIsPlayingAudio(false);
   };
 
   const playVoiceResponse = async (text: string) => {
