@@ -20,7 +20,24 @@ function decodeBase64Audio(base64: string): Uint8Array {
 export async function proxyVoiceRequest(env: Env, payload: VoiceProxyPayload): Promise<Response> {
   const baseUrl = String(env.TTS_BASE_URL || '').trim();
   if (!baseUrl) {
-    return json({ error: 'Missing TTS_BASE_URL configuration.' }, { status: 500 });
+    // 100% Free, unlimited, zero-configuration Google TTS fallback!
+    const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(payload.text)}`;
+    try {
+      const response = await fetch(fallbackUrl);
+      if (response.ok) {
+        const audioBuffer = await response.arrayBuffer();
+        return new Response(audioBuffer, {
+          status: 200,
+          headers: {
+            'content-type': 'audio/mpeg',
+            'cache-control': 'no-store',
+          },
+        });
+      }
+    } catch {
+      // Proceed to error fallback
+    }
+    return json({ error: 'Missing TTS_BASE_URL configuration and free fallback failed.' }, { status: 500 });
   }
 
   const headers = new Headers({
