@@ -489,12 +489,21 @@ export const ChatInterface: React.FC = () => {
       };
 
       recognition.onerror = (e: Event & { error?: string }) => {
+        const errType = String(e?.error || '');
+
+        // Silently ignore 'no-speech' (triggered naturally by silence)
+        // and 'aborted' (triggered when we programmatically pause to speak back)
+        if (errType === 'no-speech' || errType === 'aborted') {
+          return;
+        }
+
         const msg =
-          e?.error === 'not-allowed'
+          errType === 'not-allowed'
             ? 'Microphone permission denied.'
-            : e?.error === 'service-not-allowed'
+            : errType === 'service-not-allowed'
             ? 'Speech service not available in this browser.'
-            : `Voice error: ${e?.error || 'unknown'}`;
+            : `Voice error: ${errType || 'unknown'}`;
+
         setVoiceError(msg);
         setIsVoiceLoading(false);
         setIsLiveConnected(false);
