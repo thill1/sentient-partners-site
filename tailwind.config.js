@@ -9,26 +9,31 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['SF Pro Display', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
       },
       colors: {
         brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#F5F7FB',
+          100: '#E9EDF6',
+          200: '#CDD7EA',
+          300: '#A8B9D9',
+          400: '#7B92C2',
+          500: '#5470AB',
+          600: '#3B5590',
+          700: '#294074',
+          800: '#1A2E5F',
+          900: '#0D1F4E',
+          950: '#071331',
         },
+        ivory: '#F7F5F0',
         dark: {
-          bg: '#0a0a0a',
-          card: '#171717',
-          border: '#262626',
+          bg: '#060B1D',
+          card: '#0B142E',
+          border: '#1A2E5F',
         }
+      },
+      letterSpacing: {
+        'brand': '0.22em',
       },
       animation: {
         'blob': 'blob 7s infinite',

@@ -8,24 +8,16 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  /* Reduce sideways + rubber-band scroll behavior */
   overscroll-behavior-x: none;
 }
 
-/* React root fills the viewport and cannot scroll sideways */
 #root {
   min-height: 100%;
   overflow-x: hidden;
 }
 
-/* Keep the old top bar color class transparent so beams show through */
-.bg-\[\#0C4A6E\] {
-  background-color: transparent !important;
-  border-bottom-color: transparent !important;
-}
-
-/* Ensure header itself never draws a dividing line or background band */
-header {
-  border-bottom: 0 !important;
-  background-color: transparent !important;
+/* Premium serif display rendering */
+.font-display {
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
 }

@@ -234,7 +234,7 @@ export const Process: React.FC = () => {
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-900/50 to-transparent dark:from-slate-900/70" />
             <div className="absolute -right-32 top-1/3 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
-            <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/25 blur-3xl" />
+            <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
           </div>
 
           {/* Floating glass card */}

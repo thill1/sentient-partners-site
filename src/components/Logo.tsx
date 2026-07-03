@@ -1,77 +1,58 @@
 import React from 'react';
-import spLogo from '../assets/sp-logo-teal.png';
+import spMonogramNavy from '../assets/sp-monogram-navy.png';
+import spMonogramWhite from '../assets/sp-monogram-white.png';
 
 type LogoProps = {
   className?: string;
+  /** Hide the wordmark and show the monogram alone (e.g. tight mobile headers) */
+  markOnly?: boolean;
 };
 
-export const Logo: React.FC<LogoProps> = ({ className = '' }) => {
-  // HARD SIZE: adjust these two numbers to taste
-  const SIZE = 90; // logo diameter (px)
-  const GAP = 6; // how far outside the logo the orbit sits (px)
-  const DOT = 6; // dot diameter (px)
-  const SPEED = '2.8s'; // orbit speed
-
+/**
+ * Official Sentient Partners lockup:
+ * interlocked SP serif monogram | hairline divider | serif wordmark
+ * with the "AI First Agency" tagline in letterspaced caps.
+ * Brand navy: #0D1F4E
+ */
+export const Logo: React.FC<LogoProps> = ({ className = '', markOnly = false }) => {
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      {/* Logo + Orbit */}
-      <div
-        className="relative inline-block"
-        style={{ width: `${SIZE}px`, height: `${SIZE}px` }}
-      >
+    <div className={`flex items-center gap-3.5 ${className}`}>
+      {/* SP monogram — navy on light, white on dark */}
+      <div className="relative h-12 w-12 md:h-14 md:w-14 shrink-0">
         <img
-          src={spLogo}
+          src={spMonogramNavy}
           alt="Sentient Partners"
-          style={{ width: `${SIZE}px`, height: `${SIZE}px` }}
-          className="rounded-full object-contain shadow-md shadow-cyan-500/30"
+          className="h-full w-full object-contain dark:hidden"
         />
-
-        {/* Orbit overlay */}
-        <div
+        <img
+          src={spMonogramWhite}
+          alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute rounded-full motion-reduce:animate-none animate-spin"
-          style={{
-            inset: `-${GAP}px`,
-            animationDuration: SPEED,
-          }}
-        >
-          {/* 1px ring */}
-          <div
-            className="absolute inset-0 rounded-full border"
-            style={{
-              borderWidth: '1px',
-              borderColor: 'rgba(56, 189, 248, 0.35)',
-              boxShadow: '0 0 0 1px rgba(56, 189, 248, 0.08)',
-            }}
-          />
-
-          {/* Blue dot riding the ring */}
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{
-              width: `${DOT}px`,
-              height: `${DOT}px`,
-              background: 'rgb(56, 189, 248)',
-              boxShadow:
-                '0 0 10px rgba(56, 189, 248, 0.95), 0 0 22px rgba(56, 189, 248, 0.45)',
-            }}
-          />
-        </div>
+          className="hidden h-full w-full object-contain dark:block"
+        />
       </div>
 
-      {/* Text */}
-      <div className="flex flex-col leading-tight">
-        {/* Main brand text */}
-        <span
-          className="font-medium tracking-tight text-slate-900 dark:text-slate-50 text-[18px] md:text-[20px]"
-          style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif' }}
-        >
-          Sentient Partners
-        </span>
-        <span className="hidden md:inline text-[11px] tracking-[0.16em] uppercase text-slate-400">
-          AI · Automations · Always-On Revenue
-        </span>
-      </div>
+      {!markOnly && (
+        <>
+          {/* Hairline divider */}
+          <span
+            aria-hidden="true"
+            className="hidden sm:block h-9 md:h-10 w-px bg-brand-900/30 dark:bg-white/30"
+          />
+
+          {/* Wordmark + tagline */}
+          <div className="hidden sm:flex flex-col leading-none">
+            <span className="font-display font-semibold text-brand-900 dark:text-white text-[19px] md:text-[22px] tracking-tight">
+              Sentient Partners
+            </span>
+            <span className="mt-1.5 flex items-center gap-2 text-[9px] md:text-[10px] tracking-brand uppercase text-brand-900/60 dark:text-white/55">
+              <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
+              AI First Agency
+              <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 };

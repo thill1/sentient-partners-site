@@ -365,7 +365,7 @@ export const CTA_SECTION_CONTENT = {
 export const FOOTER_CONTENT = {
   tagline:
     "Sentient Partners helps service businesses deploy AI voice, chat, websites, and automation systems that increase speed-to-lead and reduce missed revenue.",
-  footerLabel: "AI · Automations · Always-On Revenue",
+  footerLabel: "AI First Agency · Strategy. Implementation. Results.",
 };
 
 export const CHAT_WIDGET_CONTENT = {

@@ -6,20 +6,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  variant = 'primary', 
-  size = 'md', 
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  size = 'md',
   className = '',
-  ...props 
+  ...props
 }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-full font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  
+  const baseStyles = "inline-flex items-center justify-center rounded-full font-medium tracking-wide transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+
   const variants = {
-    primary: "bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-500/30 border border-transparent",
-    secondary: "bg-white text-slate-900 hover:bg-gray-50 border border-gray-200 shadow-sm dark:bg-white dark:text-slate-900",
-    outline: "bg-transparent border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800",
-    ghost: "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800"
+    primary: "bg-brand-900 hover:bg-brand-800 text-white shadow-lg shadow-brand-900/25 border border-transparent dark:bg-white dark:text-brand-900 dark:hover:bg-brand-50 dark:shadow-black/40",
+    secondary: "bg-ivory text-brand-900 hover:bg-white border border-brand-900/15 shadow-sm dark:bg-white/95 dark:text-brand-900",
+    outline: "bg-transparent border border-brand-900/30 text-brand-900 hover:bg-brand-50 dark:border-white/30 dark:text-white dark:hover:bg-white/10",
+    ghost: "bg-transparent text-brand-800 hover:text-brand-900 hover:bg-brand-50 dark:text-brand-200 dark:hover:text-white dark:hover:bg-white/5"
   };
 
   const sizes = {
@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <button 
+    <button
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >

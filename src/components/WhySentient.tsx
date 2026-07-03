@@ -14,7 +14,7 @@ export const WhySentient: React.FC = () => {
       {/* Soft ambient glows – no solid band */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -right-32 top-1/4 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="absolute -left-32 bottom-0 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="absolute -left-32 bottom-0 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

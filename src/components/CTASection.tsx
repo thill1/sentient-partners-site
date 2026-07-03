@@ -20,7 +20,7 @@ export const CTASection: React.FC = () => {
       {/* Local background glows only (no solid section background) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 top-0 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">

@@ -54,7 +54,7 @@ const ParticleBackground: React.FC = () => {
         angle,
         speed: 0.6 + Math.random() * 1.2,
         opacity: 0.12 + Math.random() * 0.16,
-        hue: 190 + Math.random() * 70,
+        hue: 222 + Math.random() * 16,
         pulse: Math.random() * Math.PI * 2,
         pulseSpeed: 0.02 + Math.random() * 0.03,
       };
@@ -76,7 +76,7 @@ const ParticleBackground: React.FC = () => {
         (Math.random() - 0.5) * spacing * 0.5;
       beam.width = 100 + Math.random() * 100;
       beam.speed = 0.5 + Math.random() * 0.4;
-      beam.hue = 190 + (index * 70) / totalBeams;
+      beam.hue = 222 + (index * 16) / totalBeams;
       beam.opacity = 0.2 + Math.random() * 0.1;
       return beam;
     }
