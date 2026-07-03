@@ -63,8 +63,9 @@ export const ChatInterface: React.FC = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const isSpeakingOrFetchingRef = useRef<boolean>(false);
-  const playbackContextRef = useRef<AudioContext | null>(null);
   const activeSourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeAudioResolveRef = useRef<(() => void) | null>(null);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -77,6 +78,22 @@ export const ChatInterface: React.FC = () => {
   const visualizerCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const stopAudioPlayback = () => {
+    if (activeAudioResolveRef.current) {
+      try {
+        activeAudioResolveRef.current();
+      } catch {
+        void 0;
+      }
+      activeAudioResolveRef.current = null;
+    }
+    try {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause();
+        activeAudioRef.current = null;
+      }
+    } catch {
+      void 0;
+    }
     try {
       if (activeSourceNodeRef.current) {
         activeSourceNodeRef.current.stop();
@@ -91,19 +108,6 @@ export const ChatInterface: React.FC = () => {
     const clean = String(text || '').trim();
     if (!clean || !siteSettings.ai.voiceEnabled) {
       return;
-    }
-
-    let ctx = playbackContextRef.current || inputContextRef.current;
-    if (!ctx) {
-      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) {
-        ctx = new AudioContextClass();
-        playbackContextRef.current = ctx;
-      }
-    }
-
-    if (ctx && ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {});
     }
 
     stopAudioPlayback();
@@ -122,27 +126,69 @@ export const ChatInterface: React.FC = () => {
       throw new Error(`Failed to fetch voice: ${response.status}`);
     }
 
-    const arrayBuffer = await response.arrayBuffer();
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
 
-    const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) => {
-      ctx!.decodeAudioData(
-        arrayBuffer,
-        (buf) => resolve(buf),
-        (err) => reject(err)
-      );
-    });
+    return new Promise<void>((resolve, reject) => {
+      let isSettled = false;
 
-    return new Promise<void>((resolve) => {
-      const source = ctx!.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx!.destination);
-
-      source.onended = () => {
+      const cleanupAndResolve = () => {
+        if (isSettled) return;
+        isSettled = true;
+        try {
+          audio.pause();
+        } catch {
+          void 0;
+        }
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          void 0;
+        }
+        activeAudioResolveRef.current = null;
         resolve();
       };
 
-      activeSourceNodeRef.current = source;
-      source.start(0);
+      activeAudioResolveRef.current = cleanupAndResolve;
+
+      audio.onended = () => {
+        if (isSettled) return;
+        isSettled = true;
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          void 0;
+        }
+        activeAudioResolveRef.current = null;
+        resolve();
+      };
+      
+      audio.onerror = (e) => {
+        if (isSettled) return;
+        isSettled = true;
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          void 0;
+        }
+        activeAudioResolveRef.current = null;
+        reject(e);
+      };
+
+      activeAudioRef.current = audio;
+
+      audio.play().catch((err: unknown) => {
+        if (isSettled) return;
+        isSettled = true;
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          void 0;
+        }
+        activeAudioResolveRef.current = null;
+        reject(err);
+      });
     });
   };
 
@@ -379,106 +425,12 @@ export const ChatInterface: React.FC = () => {
     return String(fullText || '').trim();
   };
 
-  const respondToVoice = async (userText: string) => {
-    const clean = String(userText || '').trim();
-    if (!clean) return;
-
-    // Ignore tiny/noise
-    if (clean.length < 3) return;
-
-    isSpeakingOrFetchingRef.current = true;
-    setIsThinkingOrSpeaking(true);
-
-    try {
-      // Log user voice transcript
-      setTranscriptHistory((prev) => [...prev, { role: 'user', text: clean }]);
-
-      // Stop recognition while we speak back (prevents feedback loop)
-      try {
-        recognitionRef.current?.stop?.();
-      } catch {
-        // Ignore stop errors
-      }
-
-      // Ask Gemini (retry once if first attempt returns error copy)
-      const reply = await askGeminiOnce(clean);
-
-      const isErrorString =
-        reply.toLowerCase().includes('rate limit exceeded') ||
-        reply.toLowerCase().includes('api error') ||
-        reply.toLowerCase().includes('connection problem') ||
-        reply.toLowerCase().includes('server error') ||
-        reply.toLowerCase().includes('redeploy');
-
-      if (isErrorString) {
-        setVoiceError(reply);
-        return;
-      }
-
-      if (!reply) {
-        setVoiceError('Voice server returned an empty response.');
-        return;
-      }
-
-      // Save transcript
-      setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
-
-      // Speak reply through the server-backed voice proxy
-      try {
-        await playVoiceResponse(reply);
-      } catch {
-        setVoiceError('Voice playback failed.');
-      }
-    } catch (err) {
-      console.error('Voice response error:', err);
-      setVoiceError('An error occurred during voice communication.');
-    } finally {
-      isSpeakingOrFetchingRef.current = false;
-      setIsThinkingOrSpeaking(false);
-
-      // Restart recognition if session still active
-      if (connectionActiveRef.current) {
-        try {
-          recognitionRef.current?.start?.();
-        } catch {
-          // Some browsers require a fresh user gesture to restart
-        }
-      }
-    }
-  };
-
-  const startLiveSession = async () => {
-    if (window.location.protocol === 'file:') {
-      dispatchToast(
-        'Microphone access blocked by browser on file:// protocol. Please use a local server.',
-        'error',
-      );
-      return;
-    }
-
-    // Warm up / unlock browser Web Audio API context directly in this click gesture thread
-    try {
-      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) {
-        const pCtx = new AudioContextClass();
-        await pCtx.resume().catch(() => {});
-        playbackContextRef.current = pCtx;
-      }
-    } catch {
-      // Ignore errors
-    }
-
-    if (connectionActiveRef.current || isLiveConnected) return;
-
+  const acquireMicAndListen = async () => {
     const SpeechRec = getSpeechRecognition();
     if (!SpeechRec) {
       setVoiceError('Voice not supported in this browser. Use Chrome/Edge on desktop.');
       return;
     }
-
-    connectionActiveRef.current = true;
-    setIsVoiceLoading(true);
-    setVoiceError(null);
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -489,12 +441,18 @@ export const ChatInterface: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       micStreamRef.current = stream;
 
-      // AudioContext + analyser for visuals
+      // AudioContext + analyser for visuals - reuse our warmed up context
       const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) throw new Error('Browser does not support AudioContext.');
-      const ctx = new AudioContextClass();
-      await ctx.resume();
-      inputContextRef.current = ctx;
+      
+      let ctx = inputContextRef.current;
+      if (!ctx) {
+        ctx = new AudioContextClass();
+        inputContextRef.current = ctx;
+      }
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {});
+      }
 
       const source = ctx.createMediaStreamSource(stream);
       sourceNodeRef.current = source;
@@ -522,7 +480,6 @@ export const ChatInterface: React.FC = () => {
         if (!connectionActiveRef.current) return;
         setIsLiveConnected(true);
         setIsVoiceLoading(false);
-        setVoiceError(null);
         dispatchToast('Listening…', 'success');
       };
 
@@ -550,6 +507,7 @@ export const ChatInterface: React.FC = () => {
 
       recognition.onresult = async (event: SpeechRecognitionEvent) => {
         if (!connectionActiveRef.current) return;
+        if (isSpeakingOrFetchingRef.current) return;
 
         let finalText = '';
         let interimText = '';
@@ -575,7 +533,7 @@ export const ChatInterface: React.FC = () => {
             finalBufferRef.current = '';
             finalTimerRef.current = null;
             if (combined) await respondToVoice(combined);
-          }, 650);
+          }, 1300);
         }
       };
 
@@ -619,7 +577,145 @@ export const ChatInterface: React.FC = () => {
     }
   };
 
-  const stopLiveSession = () => {
+  const respondToVoice = async (userText: string) => {
+    const clean = String(userText || '').trim();
+    if (!clean) return;
+
+    // Ignore tiny/noise
+    if (clean.length < 3) return;
+
+    isSpeakingOrFetchingRef.current = true;
+    setIsThinkingOrSpeaking(true);
+
+    try {
+      // Log user voice transcript
+      setTranscriptHistory((prev) => [...prev, { role: 'user', text: clean }]);
+
+      // 1. COMPLETELY release the microphone capture before playing the audio (crucial for iOS Safari speaker routing!)
+      try {
+        const rec = recognitionRef.current as unknown as { abort?: () => void };
+        rec?.abort?.();
+      } catch {
+        void 0;
+      }
+      recognitionRef.current = null;
+
+      try {
+        micStreamRef.current?.getTracks?.().forEach((t) => t.stop());
+      } catch {
+        void 0;
+      }
+      micStreamRef.current = null;
+
+      try {
+        sourceNodeRef.current?.disconnect?.();
+      } catch {
+        void 0;
+      }
+      sourceNodeRef.current = null;
+
+      try {
+        analyzerRef.current?.disconnect?.();
+      } catch {
+        void 0;
+      }
+      analyzerRef.current = null;
+
+      // Ask Gemini (retry once if first attempt returns error copy)
+      const reply = await askGeminiOnce(clean);
+
+      const isErrorString =
+        reply.toLowerCase().includes('rate limit exceeded') ||
+        reply.toLowerCase().includes('api error') ||
+        reply.toLowerCase().includes('connection problem') ||
+        reply.toLowerCase().includes('server error') ||
+        reply.toLowerCase().includes('redeploy');
+
+      if (isErrorString) {
+        setVoiceError(reply);
+        stopLiveSession(true);
+        return;
+      }
+
+      if (!reply) {
+        setVoiceError('Voice server returned an empty response.');
+        stopLiveSession(true);
+        return;
+      }
+
+      // Save transcript
+      setTranscriptHistory((prev) => [...prev, { role: 'model', text: reply }]);
+
+      // Speak reply through the server-backed voice proxy
+      try {
+        await playVoiceResponse(reply);
+      } catch {
+        setVoiceError('Voice playback failed.');
+        stopLiveSession(true);
+      }
+    } catch (err) {
+      console.error('Voice response error:', err);
+      setVoiceError('An error occurred during voice communication.');
+      stopLiveSession(true);
+    } finally {
+      isSpeakingOrFetchingRef.current = false;
+      setIsThinkingOrSpeaking(false);
+
+      // 2. Re-acquire the microphone and restart listening if the session is still active
+      if (connectionActiveRef.current) {
+        await acquireMicAndListen();
+      }
+    }
+  };
+
+  const handleInterrupt = () => {
+    stopAudioPlayback();
+  };
+
+  const startLiveSession = async () => {
+    if (window.location.protocol === 'file:') {
+      dispatchToast(
+        'Microphone access blocked by browser on file:// protocol. Please use a local server.',
+        'error',
+      );
+      return;
+    }
+
+    if (connectionActiveRef.current || isLiveConnected) return;
+
+    // 1. Warm up / unlock browser Web Audio API context directly in this click gesture thread (BEFORE any awaits!)
+    let ctxInstance = inputContextRef.current;
+    try {
+      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        if (!ctxInstance) {
+          ctxInstance = new AudioContextClass();
+          inputContextRef.current = ctxInstance;
+        }
+        if (ctxInstance.state === 'suspended') {
+          await ctxInstance.resume().catch(() => {});
+        }
+        // Force Safari hardware activation using a 10ms silent oscillator tone inside the click thread
+        const osc = ctxInstance.createOscillator();
+        const silenceGain = ctxInstance.createGain();
+        silenceGain.gain.setValueAtTime(0.0001, ctxInstance.currentTime);
+        osc.connect(silenceGain);
+        silenceGain.connect(ctxInstance.destination);
+        osc.start(0);
+        osc.stop(ctxInstance.currentTime + 0.01);
+      }
+    } catch (e) {
+      console.warn('Silent oscillator warm-up failed:', e);
+    }
+
+    connectionActiveRef.current = true;
+    setIsVoiceLoading(true);
+    setVoiceError(null);
+
+    await acquireMicAndListen();
+  };
+
+  const stopLiveSession = (keepError = false) => {
     connectionActiveRef.current = false;
     isSpeakingOrFetchingRef.current = false;
     setIsThinkingOrSpeaking(false);
@@ -684,7 +780,9 @@ export const ChatInterface: React.FC = () => {
 
     setIsLiveConnected(false);
     setIsVoiceLoading(false);
-    setVoiceError(null);
+    if (!keepError) {
+      setVoiceError(null);
+    }
   };
 
   // --- UI ---
@@ -857,9 +955,22 @@ export const ChatInterface: React.FC = () => {
               className="absolute inset-0 w-full h-full opacity-60 pointer-events-none mix-blend-screen"
             />
 
+            {isThinkingOrSpeaking && !isVoiceLoading && (
+              <button
+                onClick={handleInterrupt}
+                className="relative z-20 px-5 py-3 rounded-full bg-slate-950/70 border border-brand-500/50 hover:border-brand-400/80 text-white font-semibold text-xs tracking-wider uppercase flex items-center gap-2.5 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300 animate-pulse active:scale-95 mb-12"
+              >
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                </span>
+                Tap to Interrupt
+              </button>
+            )}
+
             <div className="absolute top-6 right-6 z-30">
               <button
-                onClick={isLiveConnected ? stopLiveSession : startLiveSession}
+                onClick={isLiveConnected ? () => stopLiveSession() : startLiveSession}
                 disabled={isVoiceLoading}
                 className={`p-4 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl backdrop-blur-md border ${
                   isVoiceLoading

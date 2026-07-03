@@ -229,7 +229,7 @@ export const initializeChat = () => null;
 
 export const sendMessageToGemini = async function* (message: string) {
   try {
-    const historyToSend = memory.slice(-12);
+    const historyToSend = memory.slice(-6);
 
     const resp = await fetch("/api/gemini", {
       method: "POST",

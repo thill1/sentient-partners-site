@@ -59,12 +59,12 @@ export const FrontDeskDemo: React.FC = () => {
     }
   };
 
-  const speakThroughApi = async (text: string, generation: number): Promise<boolean> => {
+  const speakThroughApi = async (text: string, voiceId: string, generation: number): Promise<boolean> => {
     try {
       const response = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voiceId: 'default-natural-voice' }),
+        body: JSON.stringify({ text, voiceId }),
       });
       if (!response.ok) return false;
       const blob = await response.blob();
@@ -144,19 +144,15 @@ export const FrontDeskDemo: React.FC = () => {
       setSpeaking(beat.speaker);
       if (beat.ledger) setActiveLedgerId(beat.ledger);
 
-      if (beat.speaker === 'agent') {
-        const typing = typeLine('agent', beat.text, generation);
-        let spoke = false;
-        if (!mutedRef.current) {
-          spoke = await speakThroughApi(beat.spokenText ?? beat.text, generation);
-        }
-        await typing;
-        if (!spoke) {
-          await sleep(Math.min(4200, beat.text.length * (FALLBACK_MS_PER_CHAR - TYPE_MS)));
-        }
-      } else {
-        await typeLine('caller', beat.text, generation);
-        await sleep(Math.min(2200, beat.text.length * 18));
+      const voiceId = beat.speaker === 'agent' ? 'sp-agent' : selected.callerVoice;
+      const typing = typeLine(beat.speaker, beat.text, generation);
+      let spoke = false;
+      if (!mutedRef.current) {
+        spoke = await speakThroughApi(beat.spokenText ?? beat.text, voiceId, generation);
+      }
+      await typing;
+      if (!spoke) {
+        await sleep(Math.min(4200, beat.text.length * (FALLBACK_MS_PER_CHAR - TYPE_MS)));
       }
 
       if (generation !== generationRef.current) return;

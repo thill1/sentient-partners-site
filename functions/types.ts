@@ -16,6 +16,7 @@ export interface Env {
   SITE_SETTINGS?: KVNamespaceLike;
   TTS_API_KEY?: string;
   TTS_BASE_URL?: string;
+  TTS_MODEL_ID?: string;
 }
 
 export interface AdminSessionPayload {

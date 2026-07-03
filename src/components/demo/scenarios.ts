@@ -19,6 +19,8 @@ export interface LedgerEvent {
 export interface Scenario {
   id: string;
   industry: string;
+  /** ElevenLabs voice alias for the caller in this scenario */
+  callerVoice: string;
   businessName: string;
   sceneLine: string;
   clockStart: string;
@@ -33,6 +35,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'dental',
     industry: 'Dental practice',
+    callerVoice: 'sp-caller-sarah',
     businessName: 'Bright Smile Dental',
     sceneLine: 'A patient calls after hours with a dental emergency. No one is in the office.',
     clockStart: '9:47 PM',
@@ -57,6 +60,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'hvac',
     industry: 'HVAC company',
+    callerVoice: 'sp-caller-adam',
     businessName: 'Summit Air & Heat',
     sceneLine: "It's a 104° weekend. A homeowner's AC just died — and your techs are off the clock.",
     clockStart: '7:12 PM',
@@ -81,6 +85,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'law',
     industry: 'Law firm',
+    callerVoice: 'sp-caller-domi',
     businessName: 'Hartwell & Associates',
     sceneLine: 'A potential client calls Sunday evening after a car accident. Every rival firm went to voicemail.',
     clockStart: '8:23 PM',
@@ -105,6 +110,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'fitness',
     industry: 'Fitness studio',
+    callerVoice: 'sp-caller-josh',
     businessName: 'Ironline Fitness',
     sceneLine: 'A prospect messages at 6 AM before work — motivated now, gone by lunch.',
     clockStart: '6:04 AM',

@@ -35,6 +35,7 @@ export const onRequestGet = async () => {
 interface Env {
   API_KEY?: string;
   GEMINI_API_KEY?: string;
+  GROQ_API_KEY?: string;
   SENTIENT_SITE_MEMORY?: string;
 }
 
@@ -89,7 +90,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
         { role: "system", content: systemInstruction },
         ...history
           .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
-          .slice(-12)
+          .slice(-6)
           .map((h: any) => ({
             role: h.role === "model" ? "assistant" : "user",
             content: h.text,
@@ -97,7 +98,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
         { role: "user", content: message }
       ];
 
-      const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      let groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${apiKey}`,
@@ -111,6 +112,40 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
         }),
       });
 
+      if (!groqResponse.ok && groqResponse.status === 429) {
+        console.warn("Groq Llama 70B rate limited. Trying Llama 3.1 8B fallback...");
+        groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages,
+            temperature: 0.6,
+            max_tokens: 900,
+          }),
+        });
+      }
+
+      if (!groqResponse.ok && groqResponse.status === 429) {
+        console.warn("Groq Llama 8B rate limited. Trying Mixtral 8x7B fallback...");
+        groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "mixtral-8x7b-32768",
+            messages,
+            temperature: 0.6,
+            max_tokens: 900,
+          }),
+        });
+      }
+
       if (!groqResponse.ok) {
         const errorText = await groqResponse.text();
         return json(
@@ -123,13 +158,17 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
         );
       }
 
-      const data = (await groqResponse.json()) as any;
+      const data = (await groqResponse.json()) as {
+        choices?: { message?: { content?: string } }[];
+        model?: string;
+      };
       const replyText = String(data?.choices?.[0]?.message?.content || "").trim();
+      const actualModel = String(data?.model || "llama-3.3-70b-versatile");
 
       return json({
         ok: true,
         text: replyText,
-        model: "llama-3.3-70b-versatile",
+        model: actualModel,
       });
     } catch (err: any) {
       return json(
@@ -151,7 +190,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     const contents = [
       ...history
         .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
-        .slice(-12)
+        .slice(-6)
         .map((h: any) => ({
           role: h.role,
           parts: [{ text: h.text }],
