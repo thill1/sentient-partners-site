@@ -148,7 +148,7 @@ export const FrontDeskDemo: React.FC = () => {
         const typing = typeLine('agent', beat.text, generation);
         let spoke = false;
         if (!mutedRef.current) {
-          spoke = await speakThroughApi(beat.text, generation);
+          spoke = await speakThroughApi(beat.spokenText ?? beat.text, generation);
         }
         await typing;
         if (!spoke) {
