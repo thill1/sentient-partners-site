@@ -252,13 +252,13 @@ export const TESTIMONIALS = [
 ] as const;
 
 export const DEMO_CONTENT = {
-  eyebrow: "Interactive Demo",
-  heading: "Talk to the strategist behind the systems",
+  eyebrow: "Live Demonstration",
+  heading: "Hear your AI front desk in action",
   body:
-    "Open the on-page demo to ask how Sentient Partners would approach your calls, lead flow, follow-up, and website conversion opportunities. It is a website demo, not a replacement for a full production deployment.",
-  ctaLabel: "Launch Interactive Demo",
+    "Choose your industry and listen to an AI agent answer an after-hours call the way we would build it for you — qualifying the lead, handling pricing, and booking the appointment while your competitors go to voicemail.",
+  ctaLabel: "Play Simulation",
   helperText:
-    'Try asking: "How would you automate missed-call follow-up?" or "What would you fix first for a service business?"',
+    "Every conversation above is representative of a production deployment. When you press Try It Yourself, you are talking to a live AI agent — ask it anything.",
 };
 
 export const PRICING_SECTION_CONTENT = {
