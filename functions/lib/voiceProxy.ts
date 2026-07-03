@@ -11,15 +11,15 @@ interface VoiceProxyPayload {
  * 'sp-agent' is the Sentient Partners house voice used across the site.
  */
 const VOICE_ALIASES: Record<string, string> = {
-  'sp-agent': '21m00Tcm4TlvDq8ikWAM',
-  'default-natural-voice': '21m00Tcm4TlvDq8ikWAM',
-  'sp-caller-sarah': 'EXAVITQu4vr4xnSDxMaL',
-  'sp-caller-adam': 'pNInz6obpgDQGcFmaJgB',
-  'sp-caller-domi': 'AZnzlk1XvdvUeBnXmlld',
-  'sp-caller-josh': 'TxGEqnHWrfWFTfGW9XjX',
+  'sp-agent': 'EXAVITQu4vr4xnSDxMaL',
+  'default-natural-voice': 'EXAVITQu4vr4xnSDxMaL',
+  'sp-caller-dental': 'cgSgspJ2msm6clMCkdW9',
+  'sp-caller-hvac': 'nPczCjzI2devNBz1zQrb',
+  'sp-caller-law': 'XrExE9yKIg1WjnnlVkGX',
+  'sp-caller-fitness': 'cjVigY5qzO86Huf0OWal',
 };
 
-const DEFAULT_ELEVENLABS_VOICE = '21m00Tcm4TlvDq8ikWAM';
+const DEFAULT_ELEVENLABS_VOICE = 'EXAVITQu4vr4xnSDxMaL';
 const ELEVENLABS_VOICE_ID_PATTERN = /^[A-Za-z0-9]{15,32}$/;
 
 function resolveElevenLabsVoiceId(requested: string): string {
