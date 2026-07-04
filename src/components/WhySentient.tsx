@@ -27,7 +27,7 @@ export const WhySentient: React.FC = () => {
             </p>
             <h2
               id="why-heading"
-              className="mt-3 font-display text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white"
+              className="mt-3 font-display text-2xl md:text-3xl font-semibold tracking-tight text-brand-950 dark:text-white"
             >
               {WHY_SENTIENT_CONTENT.heading}
             </h2>
@@ -45,7 +45,7 @@ export const WhySentient: React.FC = () => {
                   <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-300">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+                  <h3 className="mt-4 text-sm font-semibold text-brand-950 dark:text-white">
                     {card.title}
                   </h3>
                   <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">

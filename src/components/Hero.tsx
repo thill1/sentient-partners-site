@@ -273,14 +273,7 @@ const Hero: React.FC = () => {
         <div className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-14">
           <div className="w-full max-w-6xl mx-auto">
             <div className="text-center min-w-0">
-              <div className="animate-slide-up opacity-0 [animation-delay:200ms] inline-flex mb-6 sm:mb-7">
-                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-brand-50 dark:bg-white/5 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-white/10 backdrop-blur-sm">
-                  <span className="w-2 h-2 bg-brand-500 rounded-full mr-2 animate-pulse" />
-                  {HERO_CONTENT.badge}
-                </span>
-              </div>
-
-              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
+              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-semibold tracking-tight text-brand-950 dark:text-white mb-6 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
                 <span className="block">{HERO_CONTENT.headingPrefix}</span>
 
                 <span
@@ -304,7 +297,7 @@ const Hero: React.FC = () => {
                     scrollToBlueprint();
                     window.setTimeout(() => nameInputRef.current?.focus(), 450);
                   }}
-                  className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-sm sm:text-base font-semibold
+                  className="inline-flex items-center justify-center rounded-full px-8 py-4 text-sm sm:text-base font-semibold
                              bg-white/85 hover:bg-white text-slate-900
                              dark:bg-slate-950/55 dark:hover:bg-slate-950/70 dark:text-white
                              border border-slate-200/70 dark:border-white/10 backdrop-blur"

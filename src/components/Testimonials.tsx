@@ -16,10 +16,10 @@ export const Testimonials: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section header */}
         <div className="text-center mb-16">
-          <h2 className="text-brand-600 dark:text-brand-400 font-semibold tracking-wide uppercase text-sm mb-3">
+          <h2 className="text-[11px] font-medium uppercase tracking-brand text-brand-700/90 dark:text-brand-300/90 mb-4">
             {TESTIMONIALS_SECTION_CONTENT.eyebrow}
           </h2>
-          <h3 className="text-3xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white">
+          <h3 className="text-3xl md:text-5xl font-display font-semibold mb-6 text-brand-950 dark:text-white">
             {TESTIMONIALS_SECTION_CONTENT.heading}
           </h3>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">

@@ -64,7 +64,7 @@ const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
               <service.icon size={28} />
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 leading-tight">
+            <h2 className="text-3xl md:text-4xl font-display font-semibold mb-4 leading-tight">
               {service.title}
             </h2>
             <p className="text-slate-300 text-lg leading-relaxed">
@@ -89,7 +89,7 @@ const ServiceModal: React.FC<{ service: ServiceItem; onClose: () => void }> = ({
         <div className="w-full md:w-3/5 p-8 md:p-12 bg-white dark:bg-dark-card overflow-y-auto">
           <div className="max-w-xl mx-auto md:max-w-none">
             <div className="mb-10">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-2xl font-display font-semibold text-brand-950 dark:text-white mb-2">
                 {service.details.heading}
               </h3>
               <div className="h-1 w-20 bg-brand-500 rounded-full" />
@@ -198,10 +198,10 @@ export const Services: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
+          <h2 className="text-[11px] font-medium uppercase tracking-brand text-brand-700/90 dark:text-brand-300/90 mb-4">
             {SERVICES_SECTION_CONTENT.eyebrow}
           </h2>
-          <h3 className="text-3xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
+          <h3 className="text-3xl md:text-5xl font-display font-semibold text-brand-950 dark:text-white mb-6">
             {SERVICES_SECTION_CONTENT.heading}
           </h3>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">

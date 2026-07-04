@@ -26,7 +26,7 @@ const BlueprintGrid = () => (
 const DiscoveryDiagram = () => (
   <div className="flex flex-col items-center justify-center w-full h-full p-4 animate-fade-in relative z-10">
     <div className="text-center mb-10">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
+      <h4 className="text-xl font-semibold text-brand-950 dark:text-white font-display">
         Workflow Audit Blueprint
       </h4>
       <p className="text-sm text-slate-500">
@@ -90,7 +90,7 @@ const DiscoveryDiagram = () => (
 const RoadmapDiagram = () => (
   <div className="w-full h-full p-6 animate-fade-in flex flex-col justify-center relative z-10">
     <div className="text-center mb-10">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
+      <h4 className="text-xl font-semibold text-brand-950 dark:text-white font-display">
         Execution Timeline
       </h4>
       <p className="text-sm text-slate-500">A clear 90-day path to full automation.</p>
@@ -144,7 +144,7 @@ const RoadmapDiagram = () => (
 const GrowthDiagram = () => (
   <div className="w-full h-full p-4 animate-fade-in flex flex-col items-center justify-center relative z-10">
     <div className="text-center mb-6">
-      <h4 className="text-xl font-bold text-slate-900 dark:text-white font-display">
+      <h4 className="text-xl font-semibold text-brand-950 dark:text-white font-display">
         Revenue Impact
       </h4>
       <p className="text-sm text-slate-500">Continuous optimization for maximum conversion.</p>
@@ -240,10 +240,10 @@ export const Process: React.FC = () => {
           {/* Floating glass card */}
           <div className="rounded-3xl overflow-hidden bg-white/6 dark:bg-slate-950/75 border border-white/10 backdrop-blur-xl shadow-[0_24px_70px_rgba(15,23,42,0.85)] p-8 sm:p-10">
             <div className="text-center mb-16">
-              <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
+              <h2 className="text-[11px] font-medium uppercase tracking-brand text-brand-700/90 dark:text-brand-300/90 mb-4">
                 {PROCESS_CONTENT.eyebrow}
               </h2>
-              <h3 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+              <h3 className="text-3xl md:text-4xl font-display font-semibold text-brand-950 dark:text-white">
                 {PROCESS_CONTENT.heading}
               </h3>
             </div>
@@ -279,7 +279,7 @@ export const Process: React.FC = () => {
                       </button>
 
                       <div className="bg-slate-50/90 dark:bg-white/5 p-8 rounded-3xl overflow-hidden border border-slate-100/70 dark:border-white/5 hover:bg-white dark:hover:bg-dark-card transition-colors duration-300 w-full mt-2">
-                        <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+                        <h4 className="text-xl font-display font-semibold text-brand-950 dark:text-white mb-4">
                           {step.title}
                         </h4>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">

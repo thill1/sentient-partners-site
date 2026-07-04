@@ -11,7 +11,7 @@ export const FAQ: React.FC = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-display font-semibold text-brand-950 dark:text-white mb-4">
             {FAQ_SECTION_CONTENT.heading}
           </h2>
           <p className="text-slate-600 dark:text-slate-300">

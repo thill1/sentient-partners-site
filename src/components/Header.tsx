@@ -3,6 +3,26 @@ import { Sun, Moon, Menu, X } from 'lucide-react';
 import { Button } from './Button';
 import { Logo } from './Logo';
 import { HEADER_CONTENT, NAV_LINKS } from '../content/siteContent';
+
+function useScrollSpy(ids: readonly string[]): string {
+  const [active, setActive] = React.useState('');
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        }
+      },
+      { rootMargin: '-35% 0px -55% 0px' }
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
 import { openBookingModal, scrollToSection } from '../lib/siteActions';
 import type { BannerDisplayState } from '../types';
 
@@ -17,6 +37,7 @@ const bannerVariantClasses: Record<BannerDisplayState['variant'], string> = {
 };
 
 export const Header: React.FC<HeaderProps> = ({ banner }) => {
+  const activeSection = useScrollSpy(NAV_LINKS.map((l) => l.id));
   const [dark, setDark] = useState<boolean>(() =>
     document.documentElement.classList.contains('dark'),
   );
@@ -117,16 +138,35 @@ export const Header: React.FC<HeaderProps> = ({ banner }) => {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm">
-            {NAV_LINKS.map((item) => (
-              <button
-                key={item.href}
-                type="button"
-                onClick={() => scrollToId(item.id)}
-                className="text-slate-900 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
+            {NAV_LINKS.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => scrollToId(item.id)}
+                  className={`relative pb-0.5 text-[11px] font-medium uppercase tracking-[0.18em] transition-colors ${
+                    isActive
+                      ? 'text-brand-950 dark:text-white'
+                      : 'text-slate-600 hover:text-brand-950 dark:text-slate-300 dark:hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                  {item.id === 'demo' && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-2.5 top-0 h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse"
+                    />
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute -bottom-0.5 left-0 right-0 h-px bg-brand-900 dark:bg-white origin-left transition-transform duration-300 ${
+                      isActive ? 'scale-x-100' : 'scale-x-0'
+                    }`}
+                  />
+                </button>
+              );
+            })}
           </nav>
 
           {/* Right-side controls */}

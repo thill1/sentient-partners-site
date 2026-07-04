@@ -24,10 +24,10 @@ export const Pricing: React.FC = () => {
     <section id="pricing" className="py-14 sm:py-20 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 max-w-3xl mx-auto">
-          <h2 className="text-brand-600 dark:text-brand-500 font-semibold tracking-wide uppercase text-sm mb-3">
+          <h2 className="text-[11px] font-medium uppercase tracking-brand text-brand-700/90 dark:text-brand-300/90 mb-4">
             {PRICING_SECTION_CONTENT.eyebrow}
           </h2>
-          <h3 className="text-3xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
+          <h3 className="text-3xl md:text-5xl font-display font-semibold text-brand-950 dark:text-white mb-6">
             {PRICING_SECTION_CONTENT.heading}
           </h3>
           <p className="text-lg text-slate-600 dark:text-slate-400">
