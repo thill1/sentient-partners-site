@@ -33,12 +33,16 @@ export const FrontDeskDemo: React.FC = () => {
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlCacheRef = useRef<Map<string, string>>(new Map());
   const transcriptRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const urlCache = audioUrlCacheRef.current;
     return () => {
       generationRef.current += 1;
       stopAudio();
+      urlCache.forEach((url) => URL.revokeObjectURL(url));
+      urlCache.clear();
     };
   }, []);
 
@@ -61,23 +65,29 @@ export const FrontDeskDemo: React.FC = () => {
 
   const speakThroughApi = async (text: string, voiceId: string, generation: number): Promise<boolean> => {
     try {
-      const response = await fetch('/api/voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, voiceId }),
-      });
-      if (!response.ok) return false;
-      const blob = await response.blob();
+      const cacheKey = `${voiceId}|${text}`;
+      let url = audioUrlCacheRef.current.get(cacheKey);
+
+      if (!url) {
+        const response = await fetch('/api/voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voiceId }),
+        });
+        if (!response.ok) return false;
+        const blob = await response.blob();
+        url = URL.createObjectURL(blob);
+        audioUrlCacheRef.current.set(cacheKey, url);
+      }
+
       if (generation !== generationRef.current || mutedRef.current) return false;
 
-      const url = URL.createObjectURL(blob);
       if (!audioRef.current) audioRef.current = new Audio();
       const audio = audioRef.current;
       audio.src = url;
 
       return await new Promise<boolean>((resolve) => {
         const finish = (ok: boolean) => {
-          URL.revokeObjectURL(url);
           audio.onended = null;
           audio.onerror = null;
           resolve(ok);

@@ -33,6 +33,19 @@ function resolveElevenLabsVoiceId(requested: string): string {
   return DEFAULT_ELEVENLABS_VOICE;
 }
 
+const VOICE_CACHE_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
+const edgeCaches = caches as CacheStorage & { default: Cache };
+
+async function buildVoiceCacheKey(text: string, voiceId: string, modelId: string): Promise<Request> {
+  const data = new TextEncoder().encode(`${voiceId}|${modelId}|${text}`);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const hex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return new Request(`https://voice-cache.sentient-partners.internal/${hex}`);
+}
+
 function decodeBase64Audio(base64: string): Uint8Array {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -115,6 +128,8 @@ export async function proxyVoiceRequest(env: Env, payload: VoiceProxyPayload): P
           headers: {
             'content-type': 'audio/mpeg',
             'cache-control': 'no-store',
+            'x-sp-voice-source': 'fallback',
+            'x-sp-voice-cache': 'bypass',
           },
         });
       }
@@ -130,6 +145,23 @@ export async function proxyVoiceRequest(env: Env, payload: VoiceProxyPayload): P
       return fallbackResponse;
     }
     return json({ error: 'Missing TTS_BASE_URL configuration and free fallback failed.' }, { status: 500 });
+  }
+
+  const modelId = String(env.TTS_MODEL_ID || '').trim() || "eleven_turbo_v2_5";
+  let cacheKey: Request | null = null;
+
+  try {
+    cacheKey = await buildVoiceCacheKey(payload.text, payload.voiceId, modelId);
+    const cached = await edgeCaches.default.match(cacheKey);
+    if (cached) {
+      const hitHeaders = new Headers(cached.headers);
+      hitHeaders.set('cache-control', 'no-store');
+      hitHeaders.set('x-sp-voice-source', 'premium');
+      hitHeaders.set('x-sp-voice-cache', 'hit');
+      return new Response(cached.body, { status: 200, headers: hitHeaders });
+    }
+  } catch {
+    cacheKey = null;
   }
 
   try {
@@ -161,7 +193,7 @@ export async function proxyVoiceRequest(env: Env, payload: VoiceProxyPayload): P
 
       bodyString = JSON.stringify({
         text: payload.text,
-        model_id: String(env.TTS_MODEL_ID || '').trim() || "eleven_turbo_v2_5",
+        model_id: modelId,
         voice_settings: {
           stability: 0.45,
           similarity_boost: 0.8,
@@ -213,22 +245,60 @@ export async function proxyVoiceRequest(env: Env, payload: VoiceProxyPayload): P
       const decodedAudio = decodeBase64Audio(base64Audio);
       const normalizedAudio = new Uint8Array(Array.from(decodedAudio));
 
+      if (cacheKey) {
+        try {
+          await edgeCaches.default.put(
+            cacheKey,
+            new Response(normalizedAudio.slice(0), {
+              status: 200,
+              headers: {
+                'content-type': data.mimeType || 'audio/mpeg',
+                'cache-control': `public, max-age=${VOICE_CACHE_TTL_SECONDS}`,
+              },
+            })
+          );
+        } catch {
+          void 0; // cache writes are best-effort
+        }
+      }
+
       return new Response(new Blob([normalizedAudio], { type: data.mimeType || 'audio/mpeg' }), {
         status: 200,
         headers: {
           'content-type': data.mimeType || 'audio/mpeg',
           'cache-control': 'no-store',
+          'x-sp-voice-source': 'premium',
+          'x-sp-voice-cache': 'miss',
         },
       });
     }
 
     const audioBuffer = await upstreamResponse.arrayBuffer();
 
+    if (cacheKey) {
+      try {
+        await edgeCaches.default.put(
+          cacheKey,
+          new Response(audioBuffer.slice(0), {
+            status: 200,
+            headers: {
+              'content-type': contentType,
+              'cache-control': `public, max-age=${VOICE_CACHE_TTL_SECONDS}`,
+            },
+          })
+        );
+      } catch {
+        void 0; // cache writes are best-effort
+      }
+    }
+
     return new Response(audioBuffer, {
       status: 200,
       headers: {
         'content-type': contentType,
         'cache-control': 'no-store',
+        'x-sp-voice-source': 'premium',
+        'x-sp-voice-cache': 'miss',
       },
     });
   } catch (err) {
