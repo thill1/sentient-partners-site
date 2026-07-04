@@ -42,15 +42,74 @@ type Stage = 'gate' | 'listening' | 'reasoning' | 'assembling' | 'pulse' | 'lift
 const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-/** Low bass bloom + delayed heartbeat thump, synthesized in Web Audio. */
-function playScore(pulseAtMs: number): void {
+type AudioContextCtor = typeof AudioContext;
+let sharedAudioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext | null {
   try {
-    type AudioContextCtor = typeof AudioContext;
+    if (sharedAudioCtx && sharedAudioCtx.state !== 'closed') {
+      if (sharedAudioCtx.state === 'suspended') void sharedAudioCtx.resume();
+      return sharedAudioCtx;
+    }
     const Ctor: AudioContextCtor | undefined =
       window.AudioContext ??
       (window as Window & { webkitAudioContext?: AudioContextCtor }).webkitAudioContext;
-    if (!Ctor) return;
-    const ctx = new Ctor();
+    if (!Ctor) return null;
+    sharedAudioCtx = new Ctor();
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+// A-minor pentatonic across two octaves — every note harmonious
+const SCALE = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
+
+/** One soft harp-like tone; pitch mapped from horizontal position. */
+function playWaveNote(xNorm: number): void {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const freq = SCALE[Math.min(SCALE.length - 1, Math.max(0, Math.floor(xNorm * SCALE.length)))];
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1600;
+
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const shimmer = ctx.createOscillator();
+    shimmer.type = 'triangle';
+    shimmer.frequency.value = freq * 2;
+    const shimmerGain = ctx.createGain();
+    shimmerGain.gain.value = 0.18;
+
+    osc.connect(filter);
+    shimmer.connect(shimmerGain);
+    shimmerGain.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    shimmer.start(now);
+    osc.stop(now + 1.2);
+    shimmer.stop(now + 1.2);
+  } catch {
+    // never let audio break the scene
+  }
+}
+
+/** Low bass bloom + delayed heartbeat thump, synthesized in Web Audio. */
+function playScore(pulseAtMs: number): void {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     const now = ctx.currentTime;
 
     const master = ctx.createGain();
@@ -94,9 +153,6 @@ function playScore(pulseAtMs: number): void {
     thump.start(thumpAt);
     thump.stop(thumpAt + 0.6);
 
-    window.setTimeout(() => {
-      void ctx.close().catch(() => undefined);
-    }, pulseAtMs + 1200);
   } catch {
     // Audio is a garnish; never let it break the sequence.
   }
@@ -116,6 +172,9 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
   stageRef.current = stage;
   const enteredAtRef = useRef<number | null>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
+  const draggingRef = useRef(false);
+  const ripplesRef = useRef<Array<{ x: number; born: number }>>([]);
+  const lastNoteRef = useRef({ x: -9999, time: 0 });
   const skipRef = useRef<() => void>(() => undefined);
   const enterRef = useRef<() => void>(() => undefined);
 
@@ -184,11 +243,35 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
       resize();
       window.addEventListener('resize', resize);
 
+      const strike = (clientX: number) => {
+        const nowMs = performance.now();
+        const last = lastNoteRef.current;
+        if (nowMs - last.time < 80 && Math.abs(clientX - last.x) < 28) return;
+        lastNoteRef.current = { x: clientX, time: nowMs };
+        ripplesRef.current.push({ x: clientX, born: nowMs });
+        if (ripplesRef.current.length > 10) ripplesRef.current.shift();
+        playWaveNote(clientX / width);
+      };
+
       const onPointer = (e: PointerEvent) => {
         mouseRef.current.x = e.clientX;
         mouseRef.current.y = e.clientY;
+        if (draggingRef.current && stageRef.current === 'gate') strike(e.clientX);
+      };
+      const onPointerDown = (e: PointerEvent) => {
+        if (stageRef.current !== 'gate') return;
+        draggingRef.current = true;
+        mouseRef.current.x = e.clientX;
+        mouseRef.current.y = e.clientY;
+        strike(e.clientX);
+      };
+      const onPointerUp = () => {
+        draggingRef.current = false;
       };
       window.addEventListener('pointermove', onPointer);
+      window.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
 
       const isMobile = width < 640;
       const PARTICLE_COUNT = isMobile ? 700 : 1400;
@@ -246,15 +329,43 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         const pulseT = gate ? 0 : clamp01((elapsed - T_PULSE) / 620);
         const mx = mouseRef.current.x;
         const my = mouseRef.current.y;
+        const nowMs = performance.now();
+        const ripples = ripplesRef.current;
+        while (ripples.length && nowMs - ripples[0].born > 1900) ripples.shift();
+        const cursorOnScreen = mx > -999;
 
         for (const p of particles) {
           p.phase += 0.016 * p.speed * (gate ? 0.6 : 1 + swell * 1.6);
 
           const centerWeight = 1 - Math.abs(p.homeX - width / 2) / (width / 2);
+
+          // The wave attends to you: local swell + lean toward the cursor
+          let attend = 0;
+          if (gate && cursorOnScreen) {
+            const dxm = p.homeX - mx;
+            attend = Math.exp(-(dxm * dxm) / (2 * 150 * 150));
+          }
+          const ampBoost = 1 + attend * 2.6;
+          const lean = gate && cursorOnScreen
+            ? Math.max(-52, Math.min(52, (my - height / 2) * attend * 0.3))
+            : 0;
+
+          // Plucked ripples travel outward along the line
+          let rippleY = 0;
+          for (const r of ripples) {
+            const age = nowMs - r.born;
+            const front = Math.abs(Math.abs(p.homeX - r.x) - age * 0.42);
+            if (front < 110) {
+              rippleY += Math.exp(-(front * front) / (2 * 34 * 34)) * 52 * Math.exp(-age / 620);
+            }
+          }
+
           const waveY =
             height / 2 +
-            Math.sin(p.phase + p.homeX * 0.012) * baseAmp * (0.35 + centerWeight * 0.65) +
-            Math.sin(p.phase * 0.5 + p.homeX * 0.004) * baseAmp * 0.3;
+            lean -
+            rippleY +
+            Math.sin(p.phase + p.homeX * 0.012) * baseAmp * ampBoost * (0.35 + centerWeight * 0.65) +
+            Math.sin(p.phase * 0.5 + p.homeX * 0.004) * baseAmp * ampBoost * 0.3;
 
           const t = easeOutQuint(clamp01(assembleT * 1.35 - p.drift * 0.35));
           let x = p.homeX + (p.targetX - p.homeX) * t;
@@ -279,7 +390,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
           const alpha =
             (0.28 + centerWeight * 0.45 + p.glow * 0.27) *
             shimmer *
-            (gate ? 0.55 : 1) *
+            (gate ? 0.55 + attend * 0.4 : 1) *
             (settled && pulseT > 0 ? 0.85 + Math.sin(pulseT * Math.PI) * 0.15 : 1);
 
           ctx.globalAlpha = alpha;
@@ -318,6 +429,9 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         cancelAnimationFrame(raf);
         window.removeEventListener('resize', resize);
         window.removeEventListener('pointermove', onPointer);
+        window.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
         window.removeEventListener('keydown', onKey);
         document.body.style.overflow = previousOverflow;
       };
@@ -350,7 +464,9 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     <div
       role="dialog"
       aria-label="Sentient Partners introduction"
-      onClick={() => (inGate ? enterRef.current() : skipRef.current())}
+      onClick={() => {
+        if (!inGate) skipRef.current();
+      }}
       className="fixed inset-0 z-[100] cursor-pointer overflow-hidden"
       style={{
         background:
@@ -393,7 +509,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
           Enter
         </button>
         <p className="text-[9px] uppercase text-white/30" style={{ letterSpacing: '0.4em', paddingLeft: '0.4em' }}>
-          Sound on
+          Draw across the wave &middot; Sound on
         </p>
       </div>
 
