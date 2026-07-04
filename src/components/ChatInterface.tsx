@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Send,
-  Bot,
   Loader2,
-  Sparkles,
   Mic,
   MicOff,
   Radio,
@@ -21,7 +19,9 @@ import {
 } from '../services/geminiService';
 import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { CHAT_EVENT } from '../lib/siteActions';
+import { CHAT_EVENT, type CtaEventDetail } from '../lib/siteActions';
+import spMonogramNavy from '../assets/sp-monogram-navy.png';
+import spMonogramWhite from '../assets/sp-monogram-white.png';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
@@ -44,6 +44,7 @@ export const ChatInterface: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const demoContextRef = useRef<string | null>(null);
 
   // Voice state
   const [isLiveConnected, setIsLiveConnected] = useState(false);
@@ -194,7 +195,23 @@ export const ChatInterface: React.FC = () => {
 
   // --- Boot/open listeners ---
   useEffect(() => {
-    const handleOpenEvent = () => setIsOpen(true);
+    const handleOpenEvent = (event: Event) => {
+      const detail = (event as CustomEvent<CtaEventDetail>).detail;
+      if (detail?.context && demoContextRef.current !== detail.context) {
+        demoContextRef.current = detail.context;
+        const industry = detail.context.toLowerCase();
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ctx-${Date.now()}`,
+            role: 'model',
+            text: `You just heard our AI handle an after-hours call for a ${industry}. Now it's your turn — ask me how that would work for your business: setup time, pricing, or how the agent learns your services and calendar.`,
+            timestamp: new Date(),
+          },
+        ]);
+      }
+      setIsOpen(true);
+    };
     window.addEventListener(CHAT_EVENT, handleOpenEvent);
 
     if (window.location.protocol === 'file:') {
@@ -372,7 +389,13 @@ export const ChatInterface: React.FC = () => {
     ]);
 
     try {
-      const stream = sendMessageToGemini(userMsg.text);
+      const contextNote = demoContextRef.current;
+      const outboundText = contextNote
+        ? `[Visitor context: they just watched the ${contextNote} AI front-desk demo on our website] ${userMsg.text}`
+        : userMsg.text;
+      demoContextRef.current = null;
+
+      const stream = sendMessageToGemini(outboundText);
       let fullText = '';
       let hasReceivedText = false;
 
@@ -790,19 +813,19 @@ export const ChatInterface: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-slate-900/40 border border-brand-400/60 px-4 py-3 text-sm font-medium text-slate-50 shadow-xl shadow-black/40 backdrop-blur-md hover:bg-slate-900/60 hover:border-brand-300/70 transition"
+        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-3 rounded-full bg-brand-950/90 border border-white/15 px-4 py-3 text-sm font-medium text-white shadow-xl shadow-brand-950/50 backdrop-blur-md hover:bg-brand-900 hover:border-white/30 transition"
       >
         <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
-            <Bot size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-full bg-brand-900 ring-1 ring-white/20 flex items-center justify-center p-2">
+            <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
           </div>
           <span className="absolute -top-1 -right-1 flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-slate-900"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-brand-950"></span>
           </span>
         </div>
         <div className="text-left">
-          <p className="text-[10px] font-bold text-brand-300 uppercase tracking-widest leading-none mb-1">
+          <p className="text-[9px] font-medium text-brand-200 uppercase tracking-brand leading-none mb-1">
             {CHAT_WIDGET_CONTENT.launcherEyebrow}
           </p>
           <p className="text-sm font-semibold text-white/90 leading-none">
@@ -831,11 +854,11 @@ export const ChatInterface: React.FC = () => {
       >
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 p-4 shrink-0 bg-white/50 dark:bg-black/20">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
-              <Bot size={20} />
+            <div className="w-9 h-9 rounded-xl bg-brand-900 flex items-center justify-center p-1.5 shadow-lg shadow-brand-900/20">
+              <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+              <h3 className="font-display font-semibold text-[15px] text-brand-900 dark:text-white leading-tight">
                 {CHAT_WIDGET_CONTENT.title}
               </h3>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
@@ -868,7 +891,7 @@ export const ChatInterface: React.FC = () => {
             onClick={() => setActiveTab('chat')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
               activeTab === 'chat'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                ? 'bg-brand-900 text-white dark:bg-white dark:text-brand-900 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
@@ -878,7 +901,7 @@ export const ChatInterface: React.FC = () => {
             onClick={() => setActiveTab('voice')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
               activeTab === 'voice'
-                ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm'
+                ? 'bg-brand-900 text-white dark:bg-white dark:text-brand-900 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
@@ -895,14 +918,15 @@ export const ChatInterface: React.FC = () => {
                   className={`flex items-end gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {msg.role !== 'user' && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-100 to-purple-100 dark:from-brand-900/40 dark:to-purple-900/40 border border-brand-200 dark:border-brand-800 flex items-center justify-center shrink-0 mb-1">
-                      <Sparkles size={14} className="text-brand-600 dark:text-brand-400" />
+                    <div className="w-7 h-7 rounded-full bg-brand-50 dark:bg-white/10 border border-brand-200 dark:border-white/15 flex items-center justify-center p-1 shrink-0 mb-1">
+                      <img src={spMonogramNavy} alt="" aria-hidden="true" className="h-full w-full object-contain dark:hidden" />
+                      <img src={spMonogramWhite} alt="" aria-hidden="true" className="hidden h-full w-full object-contain dark:block" />
                     </div>
                   )}
                   <div
                     className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm backdrop-blur-sm ${
                       msg.role === 'user'
-                        ? 'bg-brand-600 text-white rounded-br-none shadow-brand-500/20'
+                        ? 'bg-brand-900 text-white rounded-br-none shadow-brand-900/20'
                         : 'bg-white/80 dark:bg-white/10 text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-white/5 rounded-bl-none'
                     }`}
                   >
@@ -958,7 +982,7 @@ export const ChatInterface: React.FC = () => {
             {isThinkingOrSpeaking && !isVoiceLoading && (
               <button
                 onClick={handleInterrupt}
-                className="relative z-20 px-5 py-3 rounded-full bg-slate-950/70 border border-brand-500/50 hover:border-brand-400/80 text-white font-semibold text-xs tracking-wider uppercase flex items-center gap-2.5 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300 animate-pulse active:scale-95 mb-12"
+                className="relative z-20 px-5 py-3 rounded-full bg-slate-950/70 border border-brand-500/50 hover:border-brand-400/80 text-white font-semibold text-xs tracking-wider uppercase flex items-center gap-2.5 shadow-[0_0_20px_rgba(163,180,217,0.35)] hover:shadow-[0_0_25px_rgba(163,180,217,0.55)] transition-all duration-300 animate-pulse active:scale-95 mb-12"
               >
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -1016,7 +1040,7 @@ export const ChatInterface: React.FC = () => {
               )}
               {transcriptHistory.slice(-3).map((t, idx) => (
                 <div key={idx} className="text-xs leading-relaxed">
-                  <span className={`font-semibold mr-1.5 ${t.role === 'user' ? 'text-brand-300' : 'text-purple-300'}`}>
+                  <span className={`font-semibold mr-1.5 ${t.role === 'user' ? 'text-brand-300' : 'text-brand-200'}`}>
                     {t.role === 'user' ? 'You' : 'Sentient AI'}:
                   </span>
                   <span className="text-slate-200">{t.text}</span>
@@ -1029,7 +1053,7 @@ export const ChatInterface: React.FC = () => {
                 </div>
               )}
               {isThinkingOrSpeaking && !interimInput && (
-                <div className="flex items-center gap-2 text-xs text-purple-300 italic animate-pulse">
+                <div className="flex items-center gap-2 text-xs text-brand-200 italic animate-pulse">
                   <Loader2 size={12} className="animate-spin" /> Sentient AI is thinking...
                 </div>
               )}

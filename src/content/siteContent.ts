@@ -369,10 +369,10 @@ export const FOOTER_CONTENT = {
 };
 
 export const CHAT_WIDGET_CONTENT = {
-  launcherEyebrow: "Sentient AI",
-  launcherLabel: "Try the Demo",
-  title: "Sentient Intelligence",
-  status: "System Online",
+  launcherEyebrow: "Sentient Concierge",
+  launcherLabel: "Chat or talk live",
+  title: "Sentient Concierge",
+  status: "Online now",
   introMessage:
     "Hello. I'm Sentient Partners' AI strategist. Ask me about AI voice, chat, follow-up, or how we would improve your lead flow.",
   suggestedActions: [

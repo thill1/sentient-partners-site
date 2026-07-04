@@ -197,6 +197,7 @@ export const FrontDeskDemo: React.FC = () => {
     openSentientChat({
       source: 'Front Desk Demo',
       ctaLabel: 'Try It Yourself',
+      context: scenario.industry,
     });
   };
 

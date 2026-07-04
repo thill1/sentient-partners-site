@@ -12,6 +12,8 @@ export interface ContactModalPrefill {
 export interface CtaEventDetail {
   source?: string;
   ctaLabel?: string;
+  /** Optional visitor context, e.g. the industry demo they just watched */
+  context?: string;
 }
 
 export const CONTACT_MODAL_EVENT = "open-contact-modal";
