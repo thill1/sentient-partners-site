@@ -45,10 +45,36 @@ const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 type AudioContextCtor = typeof AudioContext;
 let sharedAudioCtx: AudioContext | null = null;
 
+let audioUnlocked = false;
+
+function unlockAudio(ctx: AudioContext): void {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try {
+    // iOS: ask for the media-playback audio session so the silent
+    // ringer switch does not mute Web Audio (iOS 17+).
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    if (nav.audioSession) nav.audioSession.type = 'playback';
+  } catch {
+    void 0;
+  }
+  try {
+    // Classic Safari unlock: one silent sample inside the user gesture.
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch {
+    void 0;
+  }
+}
+
 function getAudioCtx(): AudioContext | null {
   try {
     if (sharedAudioCtx && sharedAudioCtx.state !== 'closed') {
       if (sharedAudioCtx.state === 'suspended') void sharedAudioCtx.resume();
+      unlockAudio(sharedAudioCtx);
       return sharedAudioCtx;
     }
     const Ctor: AudioContextCtor | undefined =
@@ -56,6 +82,8 @@ function getAudioCtx(): AudioContext | null {
       (window as Window & { webkitAudioContext?: AudioContextCtor }).webkitAudioContext;
     if (!Ctor) return null;
     sharedAudioCtx = new Ctor();
+    if (sharedAudioCtx.state === 'suspended') void sharedAudioCtx.resume();
+    unlockAudio(sharedAudioCtx);
     return sharedAudioCtx;
   } catch {
     return null;
@@ -324,7 +352,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
 
         const gate = entered === null;
         const swell = gate ? 0 : clamp01((elapsed - T_SWELL + 400) / 900);
-        const baseAmp = (gate ? 4 : 6) + swell * (isMobile ? 42 : 64);
+        const baseAmp = (gate ? (isMobile ? 7 : 5) : 6) + swell * (isMobile ? 46 : 64);
         const assembleT = gate ? 0 : clamp01((elapsed - T_ASSEMBLE) / 950);
         const pulseT = gate ? 0 : clamp01((elapsed - T_PULSE) / 620);
         const mx = mouseRef.current.x;
@@ -334,20 +362,33 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         while (ripples.length && nowMs - ripples[0].born > 1900) ripples.shift();
         const cursorOnScreen = mx > -999;
 
+        // With no cursor (mobile, or before first mousemove) the wave
+        // scans the room on its own — a slow wandering focal point.
+        const focalX = cursorOnScreen
+          ? mx
+          : width / 2 +
+            Math.sin(nowMs * 0.00034) * width * 0.3 +
+            Math.sin(nowMs * 0.00013 + 2.1) * width * 0.12;
+        const focalY = cursorOnScreen
+          ? my
+          : height / 2 + Math.sin(nowMs * 0.00021 + 1.2) * 26;
+
         for (const p of particles) {
           p.phase += 0.016 * p.speed * (gate ? 0.6 : 1 + swell * 1.6);
 
           const centerWeight = 1 - Math.abs(p.homeX - width / 2) / (width / 2);
 
-          // The wave attends to you: local swell + lean toward the cursor
+          // The wave attends: local swell + lean toward cursor or its
+          // own wandering focus.
           let attend = 0;
-          if (gate && cursorOnScreen) {
-            const dxm = p.homeX - mx;
-            attend = Math.exp(-(dxm * dxm) / (2 * 150 * 150));
+          if (gate) {
+            const dxm = p.homeX - focalX;
+            const sigma = cursorOnScreen ? 150 : 190;
+            attend = Math.exp(-(dxm * dxm) / (2 * sigma * sigma)) * (cursorOnScreen ? 1 : 0.7);
           }
           const ampBoost = 1 + attend * 2.6;
-          const lean = gate && cursorOnScreen
-            ? Math.max(-52, Math.min(52, (my - height / 2) * attend * 0.3))
+          const lean = gate
+            ? Math.max(-52, Math.min(52, (focalY - height / 2) * attend * 0.3))
             : 0;
 
           // Plucked ripples travel outward along the line
@@ -469,6 +510,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
       }}
       className="fixed inset-0 z-[100] cursor-pointer overflow-hidden"
       style={{
+        touchAction: 'none',
         background:
           'radial-gradient(ellipse at 50% 42%, #0A1836 0%, #050B1F 55%, #030713 100%)',
         transform: lifting ? 'translateY(-100%)' : 'translateY(0)',
