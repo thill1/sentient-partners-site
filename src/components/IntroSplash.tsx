@@ -331,10 +331,12 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
       const onPointer = (e: PointerEvent) => {
         mouseRef.current.x = e.clientX;
         mouseRef.current.y = e.clientY;
-        if (draggingRef.current && stageRef.current === 'gate') strike(e.clientX);
+        const fingerDown = draggingRef.current || e.buttons > 0 || e.pointerType === 'touch';
+        if (fingerDown && stageRef.current === 'gate') strike(e.clientX);
       };
       const onPointerDown = (e: PointerEvent) => {
         if (stageRef.current !== 'gate') return;
+        if (e.pointerType === 'touch') e.preventDefault();
         draggingRef.current = true;
         mouseRef.current.x = e.clientX;
         mouseRef.current.y = e.clientY;
@@ -558,6 +560,10 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
       className="fixed inset-0 z-[100] cursor-pointer overflow-hidden"
       style={{
         touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent',
         background:
           'radial-gradient(ellipse at 50% 42%, #0A1836 0%, #050B1F 55%, #030713 100%)',
         transform: lifting ? 'translateY(-100%)' : 'translateY(0)',
