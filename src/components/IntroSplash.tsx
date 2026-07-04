@@ -46,6 +46,32 @@ type AudioContextCtor = typeof AudioContext;
 let sharedAudioCtx: AudioContext | null = null;
 
 let audioUnlocked = false;
+let mediaEl: HTMLAudioElement | null = null;
+let mediaDest: MediaStreamAudioDestinationNode | null = null;
+
+/**
+ * Route synth output through a hidden <audio> element. iOS classifies
+ * media-element playback as "playback" (not "ambient"), so it plays
+ * even when the ringer switch is on silent — the one reliable path.
+ */
+function getOutputNode(ctx: AudioContext): AudioNode {
+  try {
+    if (!mediaDest || (mediaDest.context as BaseAudioContext) !== ctx) {
+      mediaDest = ctx.createMediaStreamDestination();
+      mediaEl = document.createElement('audio');
+      mediaEl.setAttribute('playsinline', 'true');
+      mediaEl.style.display = 'none';
+      mediaEl.srcObject = mediaDest.stream;
+      document.body.appendChild(mediaEl);
+    }
+    if (mediaEl && mediaEl.paused) {
+      void mediaEl.play().catch(() => undefined);
+    }
+    return mediaDest;
+  } catch {
+    return ctx.destination;
+  }
+}
 
 function unlockAudio(ctx: AudioContext): void {
   if (audioUnlocked) return;
@@ -59,12 +85,14 @@ function unlockAudio(ctx: AudioContext): void {
     void 0;
   }
   try {
-    // Classic Safari unlock: one silent sample inside the user gesture.
+    // Classic Safari unlock: one silent sample inside the user gesture,
+    // and start the media-element output path while we hold the gesture.
     const buffer = ctx.createBuffer(1, 1, 22050);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
     source.start(0);
+    getOutputNode(ctx);
   } catch {
     void 0;
   }
@@ -101,9 +129,10 @@ function playWaveNote(xNorm: number): void {
     const now = ctx.currentTime;
     const freq = SCALE[Math.min(SCALE.length - 1, Math.max(0, Math.floor(xNorm * SCALE.length)))];
 
+    const small = window.innerWidth < 640;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(small ? 0.22 : 0.14, now + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
 
     const filter = ctx.createBiquadFilter();
@@ -123,7 +152,7 @@ function playWaveNote(xNorm: number): void {
     shimmer.connect(shimmerGain);
     shimmerGain.connect(filter);
     filter.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(getOutputNode(ctx));
     osc.start(now);
     shimmer.start(now);
     osc.stop(now + 1.2);
@@ -142,11 +171,11 @@ function playScore(pulseAtMs: number): void {
 
     const master = ctx.createGain();
     master.gain.value = 0.55;
-    master.connect(ctx.destination);
+    master.connect(getOutputNode(ctx));
 
     const lowpass = ctx.createBiquadFilter();
     lowpass.type = 'lowpass';
-    lowpass.frequency.value = 150;
+    lowpass.frequency.value = 340;
     lowpass.connect(master);
 
     // Bass bloom: 48Hz fundamental + quiet octave, slow attack, long tail
@@ -163,8 +192,12 @@ function playScore(pulseAtMs: number): void {
       osc.start(now);
       osc.stop(now + 3.6);
     };
+    // Fundamental for real speakers; harmonic ladder so small phone
+    // speakers (which cannot reproduce <200Hz) still hear the bloom.
     bloom(48, 0.8);
-    bloom(96, 0.22);
+    bloom(96, 0.34);
+    bloom(144, 0.18);
+    bloom(192, 0.11);
 
     // Heartbeat thump, timed to the pulse ring
     const thumpAt = now + pulseAtMs / 1000;
@@ -173,6 +206,20 @@ function playScore(pulseAtMs: number): void {
     thump.type = 'sine';
     thump.frequency.setValueAtTime(64, thumpAt);
     thump.frequency.exponentialRampToValueAtTime(40, thumpAt + 0.3);
+
+    // Audible heartbeat body for small speakers
+    const thumpHi = ctx.createOscillator();
+    const thumpHiGain = ctx.createGain();
+    thumpHi.type = 'sine';
+    thumpHi.frequency.setValueAtTime(196, thumpAt);
+    thumpHi.frequency.exponentialRampToValueAtTime(120, thumpAt + 0.22);
+    thumpHiGain.gain.setValueAtTime(0.0001, thumpAt);
+    thumpHiGain.gain.exponentialRampToValueAtTime(0.22, thumpAt + 0.015);
+    thumpHiGain.gain.exponentialRampToValueAtTime(0.0001, thumpAt + 0.4);
+    thumpHi.connect(thumpHiGain);
+    thumpHiGain.connect(lowpass);
+    thumpHi.start(thumpAt);
+    thumpHi.stop(thumpAt + 0.5);
     thumpGain.gain.setValueAtTime(0.0001, thumpAt);
     thumpGain.gain.exponentialRampToValueAtTime(0.5, thumpAt + 0.02);
     thumpGain.gain.exponentialRampToValueAtTime(0.0001, thumpAt + 0.5);
