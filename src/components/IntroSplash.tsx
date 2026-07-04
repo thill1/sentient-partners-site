@@ -4,42 +4,103 @@ import spMonogramWhite from '../assets/sp-monogram-white.png';
 /**
  * "The First Listen" — brand intro sequence.
  *
- * A voice waveform of light breathes in a navy void (LISTENING),
- * swells as it hears you (REASONING), then the sound itself lifts
- * and assembles into the SP monogram — the mark is literally built
- * out of voice. One heartbeat pulse, then the void lifts into the site.
+ * A hushed ENTER threshold. On entry: a low bass bloom, and a voice
+ * waveform of light that reacts to your cursor (LISTENING), swells
+ * (REASONING), then lifts and assembles into the SP monogram — the
+ * mark is built out of voice. One heartbeat pulse, then the void
+ * lifts into the site.
  *
  * Plays once per session. Skippable. Reduced-motion gets a calm fade.
  */
 
 const SESSION_KEY = 'sp-intro-seen';
 
-// Choreography (ms)
-const T_SWELL = 1450;
-const T_ASSEMBLE = 2450;
-const T_PULSE = 3550;
-const T_LIFT = 4250;
-const T_DONE = 5150;
+// Choreography relative to ENTER (ms)
+const T_SWELL = 1100;
+const T_ASSEMBLE = 2100;
+const T_PULSE = 3200;
+const T_LIFT = 3900;
+const LIFT_MS = 900;
 
 const EASE_DRAMATIC = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 interface Particle {
   x: number;
   y: number;
-  homeX: number; // resting position on the waveform line
-  targetX: number; // destination inside the monogram
+  homeX: number;
+  targetX: number;
   targetY: number;
   size: number;
   phase: number;
   speed: number;
-  drift: number; // per-particle assemble delay 0..1
+  drift: number;
   glow: number;
 }
 
-type Stage = 'listening' | 'reasoning' | 'assembling' | 'pulse' | 'lifting';
+type Stage = 'gate' | 'listening' | 'reasoning' | 'assembling' | 'pulse' | 'lifting';
 
 const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+
+/** Low bass bloom + delayed heartbeat thump, synthesized in Web Audio. */
+function playScore(pulseAtMs: number): void {
+  try {
+    type AudioContextCtor = typeof AudioContext;
+    const Ctor: AudioContextCtor | undefined =
+      window.AudioContext ??
+      (window as Window & { webkitAudioContext?: AudioContextCtor }).webkitAudioContext;
+    if (!Ctor) return;
+    const ctx = new Ctor();
+    const now = ctx.currentTime;
+
+    const master = ctx.createGain();
+    master.gain.value = 0.55;
+    master.connect(ctx.destination);
+
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = 150;
+    lowpass.connect(master);
+
+    // Bass bloom: 48Hz fundamental + quiet octave, slow attack, long tail
+    const bloom = (freq: number, peak: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(peak, now + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.4);
+      osc.connect(gain);
+      gain.connect(lowpass);
+      osc.start(now);
+      osc.stop(now + 3.6);
+    };
+    bloom(48, 0.8);
+    bloom(96, 0.22);
+
+    // Heartbeat thump, timed to the pulse ring
+    const thumpAt = now + pulseAtMs / 1000;
+    const thump = ctx.createOscillator();
+    const thumpGain = ctx.createGain();
+    thump.type = 'sine';
+    thump.frequency.setValueAtTime(64, thumpAt);
+    thump.frequency.exponentialRampToValueAtTime(40, thumpAt + 0.3);
+    thumpGain.gain.setValueAtTime(0.0001, thumpAt);
+    thumpGain.gain.exponentialRampToValueAtTime(0.5, thumpAt + 0.02);
+    thumpGain.gain.exponentialRampToValueAtTime(0.0001, thumpAt + 0.5);
+    thump.connect(thumpGain);
+    thumpGain.connect(lowpass);
+    thump.start(thumpAt);
+    thump.stop(thumpAt + 0.6);
+
+    window.setTimeout(() => {
+      void ctx.close().catch(() => undefined);
+    }, pulseAtMs + 1200);
+  } catch {
+    // Audio is a garnish; never let it break the sequence.
+  }
+}
 
 export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
   const [visible, setVisible] = useState<boolean>(() => {
@@ -47,11 +108,16 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     if (window.sessionStorage.getItem(SESSION_KEY)) return false;
     return true;
   });
-  const [stage, setStage] = useState<Stage>('listening');
+  const [stage, setStage] = useState<Stage>('gate');
   const [lifting, setLifting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const doneRef = useRef(false);
+  const stageRef = useRef<Stage>('gate');
+  stageRef.current = stage;
+  const enteredAtRef = useRef<number | null>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
   const skipRef = useRef<() => void>(() => undefined);
+  const enterRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     if (!visible) return;
@@ -59,7 +125,6 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     window.sessionStorage.setItem(SESSION_KEY, '1');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Lock scroll while the void holds the room
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -75,159 +140,201 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     };
 
     const beginLift = () => {
+      if (stageRef.current === 'lifting') return;
       setStage('lifting');
       setLifting(true);
-      timers.push(window.setTimeout(finish, T_DONE - T_LIFT));
+      timers.push(window.setTimeout(finish, LIFT_MS));
     };
-
     skipRef.current = beginLift;
 
-    if (reduceMotion) {
-      // Calm, luxurious fade: monogram + wordmark only.
-      setStage('pulse');
-      timers.push(window.setTimeout(beginLift, 1600));
+    const enter = () => {
+      if (stageRef.current !== 'gate') return;
+      enteredAtRef.current = performance.now();
+      playScore(reduceMotion ? 700 : T_PULSE);
+
+      if (reduceMotion) {
+        setStage('pulse');
+        timers.push(window.setTimeout(beginLift, 1700));
+        return;
+      }
+      setStage('listening');
+      timers.push(window.setTimeout(() => setStage('reasoning'), T_SWELL));
+      timers.push(window.setTimeout(() => setStage('assembling'), T_ASSEMBLE));
+      timers.push(window.setTimeout(() => setStage('pulse'), T_PULSE));
+      timers.push(window.setTimeout(beginLift, T_LIFT));
+    };
+    enterRef.current = enter;
+
+    // ---------- Canvas scene ----------
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d') ?? null;
+    if (canvas && ctx && !reduceMotion) {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+
+      const resize = () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      const onPointer = (e: PointerEvent) => {
+        mouseRef.current.x = e.clientX;
+        mouseRef.current.y = e.clientY;
+      };
+      window.addEventListener('pointermove', onPointer);
+
+      const isMobile = width < 640;
+      const PARTICLE_COUNT = isMobile ? 700 : 1400;
+      const REACT_RADIUS = isMobile ? 90 : 140;
+      const particles: Particle[] = [];
+
+      const img = new Image();
+      img.src = spMonogramWhite;
+      img.onload = () => {
+        const sample = document.createElement('canvas');
+        const sctx = sample.getContext('2d');
+        if (!sctx) return;
+        const S = 220;
+        sample.width = S;
+        sample.height = S;
+        sctx.drawImage(img, 0, 0, S, S);
+        const data = sctx.getImageData(0, 0, S, S).data;
+        const points: Array<[number, number]> = [];
+        for (let y = 0; y < S; y += 2) {
+          for (let x = 0; x < S; x += 2) {
+            if (data[(y * S + x) * 4 + 3] > 128) points.push([x, y]);
+          }
+        }
+        const markSize = Math.min(isMobile ? 200 : 280, height * 0.34);
+        const offsetX = width / 2 - markSize / 2;
+        const offsetY = height / 2 - markSize / 2 - (isMobile ? 54 : 66);
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const [px, py] = points[Math.floor(Math.random() * points.length)];
+          const homeX = width * 0.08 + Math.random() * width * 0.84;
+          particles.push({
+            x: homeX,
+            y: height / 2,
+            homeX,
+            targetX: offsetX + (px / S) * markSize + (Math.random() - 0.5) * 1.5,
+            targetY: offsetY + (py / S) * markSize + (Math.random() - 0.5) * 1.5,
+            size: 0.7 + Math.random() * 1.5,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.7 + Math.random() * 0.9,
+            drift: Math.random(),
+            glow: Math.random(),
+          });
+        }
+      };
+
+      const draw = (now: number) => {
+        const entered = enteredAtRef.current;
+        const elapsed = entered === null ? 0 : now - entered;
+        ctx.clearRect(0, 0, width, height);
+
+        const gate = entered === null;
+        const swell = gate ? 0 : clamp01((elapsed - T_SWELL + 400) / 900);
+        const baseAmp = (gate ? 4 : 6) + swell * (isMobile ? 42 : 64);
+        const assembleT = gate ? 0 : clamp01((elapsed - T_ASSEMBLE) / 950);
+        const pulseT = gate ? 0 : clamp01((elapsed - T_PULSE) / 620);
+        const mx = mouseRef.current.x;
+        const my = mouseRef.current.y;
+
+        for (const p of particles) {
+          p.phase += 0.016 * p.speed * (gate ? 0.6 : 1 + swell * 1.6);
+
+          const centerWeight = 1 - Math.abs(p.homeX - width / 2) / (width / 2);
+          const waveY =
+            height / 2 +
+            Math.sin(p.phase + p.homeX * 0.012) * baseAmp * (0.35 + centerWeight * 0.65) +
+            Math.sin(p.phase * 0.5 + p.homeX * 0.004) * baseAmp * 0.3;
+
+          const t = easeOutQuint(clamp01(assembleT * 1.35 - p.drift * 0.35));
+          let x = p.homeX + (p.targetX - p.homeX) * t;
+          let y = waveY + (p.targetY - waveY) * t;
+
+          // Cursor reactivity — the wave leans away from your touch,
+          // influence receding as the monogram takes form.
+          const dx = x - mx;
+          const dy = y - my;
+          const dist = Math.hypot(dx, dy);
+          if (dist < REACT_RADIUS && dist > 0.01) {
+            const force = (1 - dist / REACT_RADIUS) * (1 - t) * 34;
+            x += (dx / dist) * force;
+            y += (dy / dist) * force;
+          }
+
+          p.x = x;
+          p.y = y;
+
+          const settled = t > 0.96;
+          const shimmer = settled ? 0.75 + Math.sin(p.phase * 2) * 0.25 : 1;
+          const alpha =
+            (0.28 + centerWeight * 0.45 + p.glow * 0.27) *
+            shimmer *
+            (gate ? 0.55 : 1) *
+            (settled && pulseT > 0 ? 0.85 + Math.sin(pulseT * Math.PI) * 0.15 : 1);
+
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = settled ? '#EAF0FB' : '#A8B9D9';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (settled ? 0.9 : 1), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        if (pulseT > 0 && pulseT < 1) {
+          const r = easeOutQuint(pulseT) * Math.max(width, height) * 0.42;
+          ctx.strokeStyle = `rgba(168, 185, 217, ${0.5 * (1 - pulseT)})`;
+          ctx.lineWidth = 1.25;
+          ctx.beginPath();
+          ctx.arc(width / 2, height / 2 - (isMobile ? 54 : 66), r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        if (!doneRef.current) raf = requestAnimationFrame(draw);
+      };
+      raf = requestAnimationFrame(draw);
+
+      const onKey = (e: KeyboardEvent) => {
+        if (stageRef.current === 'gate' && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          enter();
+        } else if (e.key === 'Escape') {
+          beginLift();
+        }
+      };
+      window.addEventListener('keydown', onKey);
+
       return () => {
         timers.forEach(clearTimeout);
+        cancelAnimationFrame(raf);
+        window.removeEventListener('resize', resize);
+        window.removeEventListener('pointermove', onPointer);
+        window.removeEventListener('keydown', onKey);
         document.body.style.overflow = previousOverflow;
       };
     }
 
-    timers.push(window.setTimeout(() => setStage('reasoning'), T_SWELL));
-    timers.push(window.setTimeout(() => setStage('assembling'), T_ASSEMBLE));
-    timers.push(window.setTimeout(() => setStage('pulse'), T_PULSE));
-    timers.push(window.setTimeout(beginLift, T_LIFT));
-
-    // ---------- Canvas scene ----------
-    const canvas = canvasRef.current;
-    if (!canvas) return () => timers.forEach(clearTimeout);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return () => timers.forEach(clearTimeout);
-
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-
-    const resize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(dpr, dpr);
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const isMobile = width < 640;
-    const PARTICLE_COUNT = isMobile ? 700 : 1400;
-    const particles: Particle[] = [];
-    const startedAt = performance.now();
-
-    // Sample the monogram alpha channel for particle destinations
-    const img = new Image();
-    img.src = spMonogramWhite;
-    img.onload = () => {
-      const sample = document.createElement('canvas');
-      const sctx = sample.getContext('2d');
-      if (!sctx) return;
-      const S = 220;
-      sample.width = S;
-      sample.height = S;
-      sctx.drawImage(img, 0, 0, S, S);
-      const data = sctx.getImageData(0, 0, S, S).data;
-      const points: Array<[number, number]> = [];
-      const step = 2;
-      for (let y = 0; y < S; y += step) {
-        for (let x = 0; x < S; x += step) {
-          if (data[(y * S + x) * 4 + 3] > 128) points.push([x, y]);
-        }
-      }
-      // Monogram footprint on screen
-      const markSize = Math.min(isMobile ? 200 : 280, height * 0.34);
-      const offsetX = width / 2 - markSize / 2;
-      const offsetY = height / 2 - markSize / 2 - (isMobile ? 54 : 66);
-
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const [px, py] = points[Math.floor(Math.random() * points.length)];
-        const homeX = width * 0.08 + Math.random() * width * 0.84;
-        particles.push({
-          x: homeX,
-          y: height / 2,
-          homeX,
-          targetX: offsetX + (px / S) * markSize + (Math.random() - 0.5) * 1.5,
-          targetY: offsetY + (py / S) * markSize + (Math.random() - 0.5) * 1.5,
-          size: 0.7 + Math.random() * 1.5,
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.7 + Math.random() * 0.9,
-          drift: Math.random(),
-          glow: Math.random(),
-        });
-      }
-    };
-
-    const draw = (now: number) => {
-      const elapsed = now - startedAt;
-      ctx.clearRect(0, 0, width, height);
-
-      // Wave energy per stage
-      const swell = clamp01((elapsed - T_SWELL + 400) / 900);
-      const baseAmp = 6 + swell * (isMobile ? 42 : 64);
-      const assembleT = clamp01((elapsed - T_ASSEMBLE) / 950);
-      const pulseT = clamp01((elapsed - T_PULSE) / 620);
-
-      for (const p of particles) {
-        p.phase += 0.016 * p.speed * (1 + swell * 1.6);
-
-        // Waveform position: layered sines, center-weighted
-        const centerWeight = 1 - Math.abs(p.homeX - width / 2) / (width / 2);
-        const waveY =
-          height / 2 +
-          Math.sin(p.phase + p.homeX * 0.012) * baseAmp * (0.35 + centerWeight * 0.65) +
-          Math.sin(p.phase * 0.5 + p.homeX * 0.004) * baseAmp * 0.3;
-
-        // Per-particle staggered assemble
-        const t = easeOutQuint(clamp01(assembleT * 1.35 - p.drift * 0.35));
-        p.x = p.homeX + (p.targetX - p.homeX) * t;
-        p.y = waveY + (p.targetY - waveY) * t;
-
-        const settled = t > 0.96;
-        const shimmer = settled ? 0.75 + Math.sin(p.phase * 2) * 0.25 : 1;
-        const alpha =
-          (0.28 + centerWeight * 0.45 + p.glow * 0.27) *
-          shimmer *
-          (settled && pulseT > 0 ? 0.85 + Math.sin(pulseT * Math.PI) * 0.15 : 1);
-
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = settled ? '#EAF0FB' : '#A8B9D9';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (settled ? 0.9 : 1), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      // Heartbeat ring
-      if (pulseT > 0 && pulseT < 1) {
-        const r = easeOutQuint(pulseT) * Math.max(width, height) * 0.42;
-        ctx.strokeStyle = `rgba(168, 185, 217, ${0.5 * (1 - pulseT)})`;
-        ctx.lineWidth = 1.25;
-        ctx.beginPath();
-        ctx.arc(width / 2, height / 2 - (isMobile ? 54 : 66), r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      if (!doneRef.current) raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-
+    // Reduced motion: keyboard still enters/skips
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter') beginLift();
+      if (stageRef.current === 'gate' && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        enter();
+      } else if (e.key === 'Escape') {
+        beginLift();
+      }
     };
     window.addEventListener('keydown', onKey);
-
     return () => {
       timers.forEach(clearTimeout);
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = previousOverflow;
     };
@@ -235,6 +342,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
 
   if (!visible) return null;
 
+  const inGate = stage === 'gate';
   const wordStage = stage === 'listening' ? 'LISTENING' : stage === 'reasoning' ? 'REASONING' : null;
   const showLockup = stage === 'assembling' || stage === 'pulse' || stage === 'lifting';
 
@@ -242,17 +350,16 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     <div
       role="dialog"
       aria-label="Sentient Partners introduction"
-      onClick={() => skipRef.current()}
+      onClick={() => (inGate ? enterRef.current() : skipRef.current())}
       className="fixed inset-0 z-[100] cursor-pointer overflow-hidden"
       style={{
         background:
           'radial-gradient(ellipse at 50% 42%, #0A1836 0%, #050B1F 55%, #030713 100%)',
         transform: lifting ? 'translateY(-100%)' : 'translateY(0)',
-        transition: `transform ${(T_DONE - T_LIFT) / 1000}s ${EASE_DRAMATIC}`,
+        transition: `transform ${LIFT_MS / 1000}s ${EASE_DRAMATIC}`,
         willChange: 'transform',
       }}
     >
-      {/* Film grain */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay"
@@ -263,6 +370,32 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
       />
 
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
+
+      {/* Gate */}
+      <div
+        className="absolute inset-x-0 top-[60%] flex flex-col items-center gap-6"
+        style={{
+          opacity: inGate ? 1 : 0,
+          transform: inGate ? 'translateY(0)' : 'translateY(-8px)',
+          transition: `opacity 0.6s ${EASE_DRAMATIC}, transform 0.6s ${EASE_DRAMATIC}`,
+          pointerEvents: inGate ? 'auto' : 'none',
+        }}
+      >
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            enterRef.current();
+          }}
+          className="rounded-full border border-white/25 px-10 py-3 text-[11px] uppercase text-white/80 transition-all duration-500 hover:border-white/70 hover:bg-white hover:text-[#0D1F4E]"
+          style={{ letterSpacing: '0.5em', paddingLeft: 'calc(2.5rem + 0.5em)' }}
+        >
+          Enter
+        </button>
+        <p className="text-[9px] uppercase text-white/30" style={{ letterSpacing: '0.4em', paddingLeft: '0.4em' }}>
+          Sound on
+        </p>
+      </div>
 
       {/* Stage words */}
       <div className="pointer-events-none absolute inset-x-0 top-[62%] flex justify-center">
@@ -301,7 +434,6 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         </p>
       </div>
 
-      {/* Skip */}
       <button
         type="button"
         onClick={(e) => {
