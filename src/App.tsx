@@ -6,6 +6,7 @@ import { Hero } from './components/Hero';
 import { Services } from './components/Services';
 import { DemoSection } from './components/DemoSection';
 import { BlueprintEngine } from './components/BlueprintEngine';
+import { VoiceCommand } from './components/VoiceCommand';
 import { Testimonials } from './components/Testimonials';
 import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
@@ -201,6 +202,7 @@ function App() {
       <Footer />
 
       <ChatInterface />
+      <VoiceCommand />
       <BookingModal />
       <ContactModal />
       <Toast />

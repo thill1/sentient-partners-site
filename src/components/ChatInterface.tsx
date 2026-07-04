@@ -226,6 +226,10 @@ export const ChatInterface: React.FC = () => {
           },
         ]);
       }
+      if (detail?.prefill) {
+        setActiveTab('chat');
+        setInputValue(detail.prefill);
+      }
       setIsOpen(true);
     };
     window.addEventListener(CHAT_EVENT, handleOpenEvent);
