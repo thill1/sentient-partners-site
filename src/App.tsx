@@ -15,6 +15,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
+import { IntroSplash } from './components/IntroSplash';
 import { WhySentient } from './components/WhySentient';
 import { HOME_SECTION_ORDER } from './content/siteContent';
 import { getAdminSettings, loginAdmin, logoutAdmin, updateAdminSettings } from './lib/adminApi';
@@ -180,6 +181,7 @@ function App() {
 
   return (
     <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
+      <IntroSplash />
       <Header banner={siteSettings.bannerState} />
 
       <main id="main-content" className={homeMainPaddingClasses}>
