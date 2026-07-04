@@ -267,7 +267,7 @@ const Hero: React.FC = () => {
   return (
     <>
       {/* HERO */}
-      <section className="relative w-full min-h-[88vh] flex items-center justify-center overflow-hidden py-20 sm:py-24 lg:py-32">
+      <section className="relative w-full min-h-[76svh] sm:min-h-[88vh] flex items-center justify-center overflow-hidden py-14 sm:py-24 lg:py-32">
         <ParticleBackground />
 
         <div className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-14">
@@ -280,11 +280,11 @@ const Hero: React.FC = () => {
                 </span>
               </div>
 
-              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
+              <h1 className="min-w-0 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-6 sm:mb-10 animate-slide-up opacity-0 [animation-delay:400ms] leading-[1.03] overflow-visible">
                 <span className="block">{HERO_CONTENT.headingPrefix}</span>
 
                 <span
-                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400 leading-[1.03] pb-[0.14em]"
+                  className="block min-w-0 max-w-full text-transparent bg-clip-text bg-gradient-to-r from-brand-800 to-brand-500 dark:from-brand-200 dark:to-brand-400 leading-[1.03] pb-[0.14em]"
                   title={currentPhrase}
                 >
                   {currentPhrase}
@@ -293,7 +293,7 @@ const Hero: React.FC = () => {
                 <span className="block">{HERO_CONTENT.headingSuffix}</span>
               </h1>
 
-              <p className="max-w-4xl mx-auto text-xl sm:text-2xl lg:text-2xl text-slate-600 dark:text-slate-300 mb-10 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
+              <p className="max-w-4xl mx-auto text-lg sm:text-2xl text-slate-600 dark:text-slate-300 mb-8 sm:mb-12 animate-slide-up opacity-0 [animation-delay:600ms] leading-relaxed">
                 {HERO_CONTENT.subtitle}
               </p>
 

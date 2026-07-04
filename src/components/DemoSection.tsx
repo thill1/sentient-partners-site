@@ -5,7 +5,7 @@ import { FrontDeskDemo } from './demo/FrontDeskDemo';
 
 export const DemoSection: React.FC = () => {
   return (
-    <section id="demo" className="relative overflow-hidden py-24">
+    <section id="demo" className="relative overflow-hidden py-14 sm:py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative z-10 overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-2xl dark:border-dark-border dark:bg-dark-card md:p-12">
           {/* Glow background */}
@@ -21,7 +21,7 @@ export const DemoSection: React.FC = () => {
                 <span>{DEMO_CONTENT.eyebrow}</span>
               </div>
 
-              <h2 className="mb-4 font-display text-4xl font-semibold text-brand-900 dark:text-white md:text-5xl">
+              <h2 className="mb-4 font-display text-3xl sm:text-4xl font-semibold text-brand-900 dark:text-white md:text-5xl">
                 {DEMO_CONTENT.heading}
               </h2>
 

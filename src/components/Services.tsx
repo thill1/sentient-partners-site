@@ -194,7 +194,7 @@ export const Services: React.FC = () => {
   const activeService = SERVICES.find((s) => s.id === selectedServiceId);
 
   return (
-    <section id="services" className="py-24">
+    <section id="services" className="py-14 sm:py-20 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">

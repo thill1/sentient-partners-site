@@ -15,7 +15,7 @@ export const CTASection: React.FC = () => {
   return (
     <section
       id="get-started"
-      className="relative py-24 sm:py-28"
+      className="relative py-16 sm:py-24 md:py-28"
     >
       {/* Local background glows only (no solid section background) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">

@@ -226,7 +226,7 @@ export const Process: React.FC = () => {
   return (
     <section
       id="process"
-      className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative py-14 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         <div className="relative">

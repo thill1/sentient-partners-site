@@ -8,7 +8,7 @@ export const WhySentient: React.FC = () => {
   return (
     <section
       id="why"
-      className="relative py-24 sm:py-28"
+      className="relative py-16 sm:py-24 md:py-28"
       aria-labelledby="why-heading"
     >
       {/* Soft ambient glows – no solid band */}
@@ -27,7 +27,7 @@ export const WhySentient: React.FC = () => {
             </p>
             <h2
               id="why-heading"
-              className="mt-3 font-display text-2xl sm:text-1xl md:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
+              className="mt-3 font-display text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white"
             >
               {WHY_SENTIENT_CONTENT.heading}
             </h2>
