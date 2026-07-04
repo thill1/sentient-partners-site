@@ -16,11 +16,11 @@ import spMonogramWhite from '../assets/sp-monogram-white.png';
 const SESSION_KEY = 'sp-intro-seen';
 
 // Choreography relative to ENTER (ms)
-const T_SWELL = 1100;
-const T_ASSEMBLE = 2100;
-const T_PULSE = 3200;
-const T_LIFT = 3900;
-const LIFT_MS = 900;
+const T_SWELL = 2000;
+const T_ASSEMBLE = 3300;
+const T_PULSE = 4900;
+const T_LIFT = 6300;
+const LIFT_MS = 1100;
 
 const EASE_DRAMATIC = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -162,8 +162,8 @@ function playWaveNote(xNorm: number): void {
   }
 }
 
-/** Low bass bloom + delayed heartbeat thump, synthesized in Web Audio. */
-function playScore(pulseAtMs: number): void {
+/** Low bass bloom, assembly swell, delayed heartbeat — the score. */
+function playScore(assembleAtMs: number, pulseAtMs: number): void {
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
@@ -179,18 +179,18 @@ function playScore(pulseAtMs: number): void {
     lowpass.connect(master);
 
     // Bass bloom: 48Hz fundamental + quiet octave, slow attack, long tail
-    const bloom = (freq: number, peak: number) => {
+    const bloom = (freq: number, peak: number, at = now, attack = 0.5, tail = 4.6) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(peak, now + 0.4);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.4);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(peak, at + attack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + tail);
       osc.connect(gain);
       gain.connect(lowpass);
-      osc.start(now);
-      osc.stop(now + 3.6);
+      osc.start(at);
+      osc.stop(at + tail + 0.2);
     };
     // Fundamental for real speakers; harmonic ladder so small phone
     // speakers (which cannot reproduce <200Hz) still hear the bloom.
@@ -198,6 +198,11 @@ function playScore(pulseAtMs: number): void {
     bloom(96, 0.34);
     bloom(144, 0.18);
     bloom(192, 0.11);
+
+    // A quieter swell rises with the particles as the mark assembles
+    const assembleAt = now + assembleAtMs / 1000;
+    bloom(96, 0.2, assembleAt, 0.7, 2.4);
+    bloom(192, 0.09, assembleAt, 0.7, 2.4);
 
     // Heartbeat thump, timed to the pulse ring
     const thumpAt = now + pulseAtMs / 1000;
@@ -284,11 +289,12 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
     const enter = () => {
       if (stageRef.current !== 'gate') return;
       enteredAtRef.current = performance.now();
-      playScore(reduceMotion ? 700 : T_PULSE);
+      if (reduceMotion) playScore(500, 900);
+      else playScore(T_ASSEMBLE, T_PULSE);
 
       if (reduceMotion) {
         setStage('pulse');
-        timers.push(window.setTimeout(beginLift, 1700));
+        timers.push(window.setTimeout(beginLift, 2000));
         return;
       }
       setStage('listening');
@@ -400,10 +406,13 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         ctx.clearRect(0, 0, width, height);
 
         const gate = entered === null;
-        const swell = gate ? 0 : clamp01((elapsed - T_SWELL + 400) / 900);
-        const baseAmp = (gate ? (isMobile ? 7 : 5) : 6) + swell * (isMobile ? 46 : 64);
-        const assembleT = gate ? 0 : clamp01((elapsed - T_ASSEMBLE) / 950);
-        const pulseT = gate ? 0 : clamp01((elapsed - T_PULSE) / 620);
+        const swell = gate ? 0 : clamp01((elapsed - T_SWELL + 400) / 1100);
+        // A breath of stillness right after ENTER — the wave inhales
+        // while the bass blooms, then begins to speak.
+        const inhale = gate ? 1 : 1 - 0.7 * Math.sin(Math.PI * clamp01(elapsed / 640));
+        const baseAmp = ((gate ? (isMobile ? 7 : 5) : 6) + swell * (isMobile ? 46 : 64)) * inhale;
+        const assembleT = gate ? 0 : clamp01((elapsed - T_ASSEMBLE) / 1450);
+        const pulseT = gate ? 0 : clamp01((elapsed - T_PULSE) / 780);
         const mx = mouseRef.current.x;
         const my = mouseRef.current.y;
         const nowMs = performance.now();
@@ -632,7 +641,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
           opacity: showLockup ? 1 : 0,
           transform: showLockup ? 'translateY(0)' : 'translateY(14px)',
           transition: `opacity 1.1s ${EASE_DRAMATIC}, transform 1.1s ${EASE_DRAMATIC}`,
-          transitionDelay: '0.35s',
+          transitionDelay: '0.5s',
         }}
       >
         <h1 className="font-display text-3xl font-semibold text-white md:text-5xl">
