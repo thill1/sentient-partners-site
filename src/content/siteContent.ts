@@ -25,8 +25,8 @@ export const HOME_SECTION_ORDER = [
 
 export const HEADER_CONTENT = {
   promoBanner:
-    "Custom AI blueprints for service businesses built around calls, leads, and follow-up",
-  bookingCtaLabel: "Book Strategy Call",
+    "The AI-first agency for businesses that run on calls",
+  bookingCtaLabel: "Book a strategy call",
 };
 
 export const HERO_CONTENT = {
@@ -39,12 +39,12 @@ export const HERO_CONTENT = {
     "Always-On Support",
     "Sales Automations",
   ],
-  headingPrefix: "We Build",
-  headingSuffix: "That Never Sleep",
+  headingPrefix: "We build",
+  headingSuffix: "that never miss.",
   subtitle:
-    "AI voice, chat, websites, and follow-up systems designed to capture more leads, book more appointments, and reduce manual work.",
-  quickStartLabel: "Get My AI Blueprint",
-  blueprintTitle: "Get a Custom AI Blueprint",
+    "Voice, chat, and follow-up systems that answer every inquiry and book the work — designed, installed, and tuned for your business.",
+  quickStartLabel: "Request a blueprint",
+  blueprintTitle: "Request a custom AI blueprint",
   blueprintDescription:
     "Tell us what is slowing growth right now. We will review it and follow up with practical recommendations for your business.",
   blueprintDisclaimer:
@@ -55,8 +55,9 @@ export const HERO_CONTENT = {
 
 export const WHY_SENTIENT_CONTENT = {
   eyebrow: "Why Sentient Partners",
-  heading:
-    "Sentient Partners helps service businesses deploy AI voice, chat, websites, and automations that improve speed-to-lead and reduce missed revenue.",
+  heading: "Built for businesses that run on calls.",
+  subheading:
+    "We help service businesses deploy AI voice, chat, and automation that improve speed-to-lead and stop missed revenue before it happens.",
   cards: [
     {
       title: "Strategy tied to revenue",

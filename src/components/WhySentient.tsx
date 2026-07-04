@@ -31,6 +31,9 @@ export const WhySentient: React.FC = () => {
             >
               {WHY_SENTIENT_CONTENT.heading}
             </h2>
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+          {WHY_SENTIENT_CONTENT.subheading}
+        </p>
           </div>
 
           {/* Cards row */}
