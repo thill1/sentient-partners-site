@@ -20,6 +20,7 @@ import {
 import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { CHAT_EVENT, type CtaEventDetail } from '../lib/siteActions';
+import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
 import spMonogramNavy from '../assets/sp-monogram-navy.png';
 import spMonogramWhite from '../assets/sp-monogram-white.png';
 
@@ -197,6 +198,21 @@ export const ChatInterface: React.FC = () => {
   useEffect(() => {
     const handleOpenEvent = (event: Event) => {
       const detail = (event as CustomEvent<CtaEventDetail>).detail;
+      if (!detail?.context && isReturningVisitor()) {
+        const remembered = getVisitorMemory().industryLabel;
+        if (remembered && demoContextRef.current !== remembered) {
+          demoContextRef.current = remembered;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ctx-${Date.now()}`,
+              role: 'model',
+              text: `Welcome back. Last time you were exploring how our AI front desk works for a ${remembered.toLowerCase()} — happy to pick that back up, or take any new question.`,
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      }
       if (detail?.context && demoContextRef.current !== detail.context) {
         demoContextRef.current = detail.context;
         const industry = detail.context.toLowerCase();

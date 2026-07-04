@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
 import { DemoSection } from './components/DemoSection';
+import { BlueprintEngine } from './components/BlueprintEngine';
 import { Testimonials } from './components/Testimonials';
 import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
@@ -16,6 +17,7 @@ import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
 import { IntroSplash } from './components/IntroSplash';
+import { rememberVisit } from './lib/visitorMemory';
 import { WhySentient } from './components/WhySentient';
 import { HOME_SECTION_ORDER } from './content/siteContent';
 import { getAdminSettings, loginAdmin, logoutAdmin, updateAdminSettings } from './lib/adminApi';
@@ -30,6 +32,13 @@ function getCurrentRoute(hash: string): AppRoute {
 
 function App() {
   const siteSettings = useSiteSettings();
+
+  useEffect(() => {
+    if (!window.sessionStorage.getItem('sp-visit-counted')) {
+      window.sessionStorage.setItem('sp-visit-counted', '1');
+      rememberVisit();
+    }
+  }, []);
   const [route, setRoute] = useState<AppRoute>(() => getCurrentRoute(window.location.hash));
   const [adminSettings, setAdminSettings] = useState<SiteSettings | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
@@ -97,6 +106,7 @@ function App() {
     why: <WhySentient key="why" />,
     services: <Services key="services" />,
     demo: <DemoSection key="demo" />,
+    diagnosis: <BlueprintEngine key="diagnosis" />,
     testimonials: <Testimonials key="testimonials" />,
     process: <Process key="process" />,
     pricing: <Pricing key="pricing" />,

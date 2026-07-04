@@ -5,6 +5,7 @@ import { Waveform } from './Waveform';
 import { ValueLedger } from './ValueLedger';
 import { SCENARIOS, type Scenario, type Speaker } from './scenarios';
 import { openBookingModal, openSentientChat } from '../../lib/siteActions';
+import { getVisitorMemory, rememberIndustry } from '../../lib/visitorMemory';
 
 interface TranscriptLine {
   speaker: Speaker;
@@ -20,7 +21,10 @@ const FALLBACK_MS_PER_CHAR = 52;
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const FrontDeskDemo: React.FC = () => {
-  const [scenario, setScenario] = useState<Scenario>(SCENARIOS[0]);
+  const [scenario, setScenario] = useState<Scenario>(() => {
+    const remembered = getVisitorMemory().industryId;
+    return SCENARIOS.find((s) => s.id === remembered) ?? SCENARIOS[0];
+  });
   const [phase, setPhase] = useState<Phase>('idle');
   const [lines, setLines] = useState<TranscriptLine[]>([]);
   const [speaking, setSpeaking] = useState<Speaker | null>(null);
@@ -184,6 +188,7 @@ export const FrontDeskDemo: React.FC = () => {
     if (next.id === scenario.id && phase !== 'idle') return;
     generationRef.current += 1;
     stopAudio();
+    rememberIndustry(next.id, next.industry);
     setScenario(next);
     setPhase('idle');
     setLines([]);
@@ -194,6 +199,7 @@ export const FrontDeskDemo: React.FC = () => {
   };
 
   const tryItYourself = () => {
+    rememberIndustry(scenario.id, scenario.industry);
     openSentientChat({
       source: 'Front Desk Demo',
       ctaLabel: 'Try It Yourself',

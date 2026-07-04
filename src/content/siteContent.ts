@@ -15,6 +15,7 @@ export const HOME_SECTION_ORDER = [
   "why",
   "services",
   "demo",
+  "diagnosis",
   "testimonials",
   "process",
   "pricing",
