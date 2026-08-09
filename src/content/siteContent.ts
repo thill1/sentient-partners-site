@@ -6,7 +6,6 @@ export const NAV_LINKS = [
   { id: "demo", label: "Demo", href: "#demo" },
   { id: "testimonials", label: "Results", href: "#testimonials" },
   { id: "process", label: "Process", href: "#process" },
-  { id: "pricing", label: "Pricing", href: "#pricing" },
   { id: "faq", label: "FAQ", href: "#faq" },
 ] as const;
 
@@ -264,64 +263,14 @@ export const DEMO_CONTENT = {
 };
 
 export const PRICING_SECTION_CONTENT = {
-  eyebrow: "Pricing Plans",
-  heading: "Choose the right starting point",
+  eyebrow: "Investment",
+  heading: "Scoped to your business, not a published rate card",
   subheading:
-    "Start with the system you need most, then expand into a fuller automation stack as volume and complexity grow.",
+    "Every engagement is priced after we understand your call volume, systems, and goals.",
+  body:
+    "There is no one-size-fits-all package on this site. On a short strategy call, we outline a practical scope and an investment range that matches the work — not a generic starter price.",
+  ctaLabel: "Book a strategy call",
 };
-
-export const PRICING_PLANS = [
-  {
-    name: "Starter",
-    description:
-      "A focused starting point for businesses that need faster lead response and a stronger website foundation.",
-    price: "$497",
-    period: "/month",
-    features: [
-      "High-converting website foundation",
-      "Basic call routing",
-      "Missed call text back",
-      "Real-time transcripts",
-      "Email support",
-    ],
-    cta: "Get Started",
-    highlight: false,
-  },
-  {
-    name: "Growth",
-    description:
-      "A complete lead capture and follow-up system for businesses ready to scale response speed and booked opportunities.",
-    price: "$997",
-    period: "/month",
-    features: [
-      "24/7 AI voice agents",
-      "CRM setup and automation",
-      "Website chatbot and SMS agent",
-      "Automated workflows",
-      "Priority support",
-      "Lead capture and nurture flows",
-    ],
-    cta: "Start Scaling",
-    highlight: true,
-  },
-  {
-    name: "Enterprise",
-    description:
-      "Custom architecture for multi-location, high-volume, or more complex implementation needs.",
-    price: "Custom",
-    period: "",
-    features: [
-      "Custom AI workflows",
-      "Multi-location visibility",
-      "Dedicated success support",
-      "Custom integrations",
-      "SLA planning",
-      "Strategic consulting",
-    ],
-    cta: "Contact Sales",
-    highlight: false,
-  },
-] as const;
 
 export const FAQ_SECTION_CONTENT = {
   heading: "Common questions",
@@ -389,8 +338,9 @@ export const CHAT_WIDGET_CONTENT = {
         "How would an AI voice receptionist help a business that misses calls?",
     },
     {
-      label: "Pricing",
-      prompt: "What does a typical Sentient Partners implementation cost?",
+      label: "Investment",
+      prompt:
+        "How do you determine investment for an AI implementation, and what should I expect on a strategy call?",
     },
     {
       label: "Book a Call",
@@ -408,12 +358,12 @@ const serviceContext = SERVICE_CATALOG.map(
     )}. Benefits: ${service.details.benefits.join(", ")}.`,
 ).join("\n");
 
-const pricingContext = PRICING_PLANS.map(
-  (plan) =>
-    `- ${plan.name} Plan: ${plan.price}${plan.period}. Includes: ${plan.features.join(
-      ", ",
-    )}.`,
-).join("\n");
+const pricingContext = `
+- Sentient Partners does not publish fixed monthly package prices on the website.
+- Investment is scoped per engagement after a strategy call, based on call volume, systems, integrations, and goals.
+- Do not invent dollar amounts, starter tiers, or package prices.
+- If asked about cost, explain that pricing requires a short consult and guide the user to book a strategy call.
+`.trim();
 
 const faqContext = FAQS.map(
   (faq) => `Q: ${faq.question} A: ${faq.answer}`,

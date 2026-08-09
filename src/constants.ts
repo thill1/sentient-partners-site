@@ -11,7 +11,6 @@ import {
   BOOKING_URL,
   FAQS,
   NAV_LINKS,
-  PRICING_PLANS,
   SERVICE_CATALOG,
   TESTIMONIALS,
   buildAiSystemInstruction,
@@ -26,7 +25,7 @@ const SERVICE_ICONS = {
   strategy: Zap,
 } as const;
 
-export { BOOKING_URL, FAQS, NAV_LINKS, PRICING_PLANS, TESTIMONIALS };
+export { BOOKING_URL, FAQS, NAV_LINKS, TESTIMONIALS };
 
 export const SERVICES: ServiceItem[] = SERVICE_CATALOG.map((service) => ({
   id: service.id,

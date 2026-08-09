@@ -4,7 +4,7 @@ import { openBookingModal, openSentientChat, scrollToSection } from '../lib/site
 
 /**
  * Voice navigation — hold the mic, say where you want to go.
- * "Show me pricing" scrolls. "Book a call" opens booking.
+ * "Show me investment" scrolls. "Book a call" opens booking.
  * Anything else becomes a question for the Concierge.
  */
 
@@ -29,8 +29,8 @@ function resolveIntent(raw: string): Intent {
 
   if (has('book', 'appointment', 'strategy call', 'schedule', 'meeting'))
     return { label: 'Booking a call', run: () => openBookingModal({ source: 'Voice Command', ctaLabel: 'Voice' }) };
-  if (has('pricing', 'price', 'cost', 'how much', 'plans'))
-    return { label: 'Pricing', run: () => scrollToSection('pricing') };
+  if (has('pricing', 'price', 'cost', 'how much', 'plans', 'investment'))
+    return { label: 'Investment', run: () => scrollToSection('pricing') };
   if (has('demo', 'simulation', 'front desk', 'hear it'))
     return { label: 'Demo', run: () => scrollToSection('demo') };
   if (has('blueprint', 'estimate', 'calculator', 'my numbers', 'diagnosis'))
@@ -138,7 +138,7 @@ export const VoiceCommand: React.FC = () => {
       <button
         type="button"
         aria-label="Hold to speak a command"
-        title="Hold and speak — try \u201cshow me pricing\u201d"
+        title="Hold and speak — try \u201cbook a call\u201d"
         onPointerDown={(e) => {
           e.preventDefault();
           start();

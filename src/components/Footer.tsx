@@ -44,10 +44,10 @@ const Footer: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => scrollToSection('pricing')}
+                onClick={() => scrollToSection('faq')}
                 className="block text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
               >
-                Pricing
+                FAQ
               </button>
             </div>
 
