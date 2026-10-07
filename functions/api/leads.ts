@@ -81,6 +81,10 @@ async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
     headers: {
       "content-type": "application/json",
       accept: "application/json",
+      // FormSubmit rejects requests without a browser-style origin
+      // ("Make sure you open this page through a web server").
+      origin: "https://sentientpartners.ai",
+      referer: "https://sentientpartners.ai/",
     },
     body: JSON.stringify({
       _subject:
