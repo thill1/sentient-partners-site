@@ -24,7 +24,7 @@ export const HOME_SECTION_ORDER = [
 
 export const HEADER_CONTENT = {
   promoBanner:
-    "The AI-first agency for businesses that run on calls",
+    "Your local business and technology partner for businesses that run on calls",
   bookingCtaLabel: "Book a strategy call",
 };
 
@@ -316,7 +316,7 @@ export const CTA_SECTION_CONTENT = {
 export const FOOTER_CONTENT = {
   tagline:
     "Sentient Partners helps service businesses deploy AI voice, chat, websites, and automation systems that increase speed-to-lead and reduce missed revenue.",
-  footerLabel: "AI First Agency · Strategy. Implementation. Results.",
+  footerLabel: "Your local business and technology partner · Strategy. Implementation. Results.",
 };
 
 export const CHAT_WIDGET_CONTENT = {

@@ -52,7 +52,7 @@ export const BlueprintEngine: React.FC = () => {
     });
 
     const prompt = [
-      `You are the senior AI strategist at Sentient Partners, an AI-first agency.`,
+      `You are the senior AI strategist at Sentient Partners, a local business and technology partner.`,
       `A ${industry.label.toLowerCase()} owner just shared: ~${callsPerWeek} inbound calls/week,`,
       `~${missedPct}% missed or after-hours, average job value ${fmt(avgJobValue)}.`,
       `Our conservative math says an AI front desk recovers roughly ${fmt(math.low)}–${fmt(math.high)} per month.`,
