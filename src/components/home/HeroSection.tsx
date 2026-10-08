@@ -22,13 +22,13 @@ export const HeroSection: React.FC = () => (
       />
     </div>
     {/* Two quiet scrims: one keeps the header legible, one carries the copy. */}
-    <div aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-sp-deep/55 to-transparent" />
+    <div aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-48 bg-gradient-to-b from-sp-deep/70 to-transparent" />
     <div
       aria-hidden="true"
       className="absolute inset-0 -z-10 bg-gradient-to-t from-sp-deep/90 via-sp-deep/35 to-transparent lg:bg-gradient-to-tr lg:from-sp-deep/85 lg:via-sp-deep/25 lg:to-transparent"
     />
 
-    <div className="sp-shell pb-[clamp(2.5rem,7vh,5.5rem)] pt-32">
+    <div className="sp-shell pb-[clamp(2.5rem,8vh,6rem)] pt-36">
       <h1 className="sp-display sp-arrive text-sp-ivory" style={{ '--sp-delay': '0.35s' } as React.CSSProperties}>
         {HOME_HERO.heading.map((line) => (
           <span key={line} className="block">
@@ -37,13 +37,13 @@ export const HeroSection: React.FC = () => (
         ))}
       </h1>
       <p
-        className="sp-lede sp-arrive mt-6 max-w-[34rem] text-sp-ivory/90"
+        className="sp-lede sp-arrive mt-6 max-w-[36rem] text-sp-ivory/95"
         style={{ '--sp-delay': '0.55s' } as React.CSSProperties}
       >
         {HOME_HERO.body}
       </p>
       <div
-        className="sp-arrive mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+        className="sp-arrive mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
         style={{ '--sp-delay': '0.75s' } as React.CSSProperties}
       >
         <button type="button" onClick={() => bookIntroduction('Hero')} className="sp-btn sp-btn-champagne">

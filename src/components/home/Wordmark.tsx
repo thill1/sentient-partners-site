@@ -16,10 +16,10 @@ export const Wordmark: React.FC<WordmarkProps> = ({ tone, className = '' }) => (
       aria-hidden="true"
       width={513}
       height={835}
-      className="h-10 w-auto"
+      className="h-10 w-auto lg:h-11"
     />
     <span
-      className={`font-editorial text-[15px] uppercase leading-none tracking-[0.24em] sm:text-[16px] ${
+      className={`font-editorial text-[15px] uppercase leading-none tracking-[0.24em] sm:text-[17px] ${
         tone === 'light' ? 'text-sp-ivory' : 'text-sp-navy'
       }`}
     >

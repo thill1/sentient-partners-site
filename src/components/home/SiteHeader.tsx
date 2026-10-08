@@ -28,7 +28,9 @@ export const SiteHeader: React.FC = () => {
   }, [menuOpen]);
 
   const tone = solid ? 'dark' : 'light';
-  const linkTone = solid ? 'text-sp-navy/80 hover:text-sp-navy' : 'text-sp-ivory/85 hover:text-sp-ivory';
+  const linkTone = solid
+    ? 'text-sp-navy/85 hover:text-sp-navy'
+    : 'text-sp-ivory [text-shadow:0_1px_12px_rgba(8,20,51,0.55)] hover:text-white';
 
   return (
     <header
@@ -36,19 +38,19 @@ export const SiteHeader: React.FC = () => {
         solid ? 'bg-sp-ivory/95 shadow-[0_1px_0_rgba(13,31,78,0.1)] backdrop-blur-md' : 'bg-transparent'
       }`}
     >
-      <div className="sp-shell flex h-[72px] items-center justify-between gap-6">
+      <div className="sp-shell flex h-[76px] items-center justify-between gap-6 lg:h-[84px]">
         <a href="#top" onClick={(event) => goToSection(event, 'top')} aria-label="Sentient Partners, back to top">
           <Wordmark tone={tone} />
         </a>
 
         <nav aria-label="Sections" className="hidden lg:block">
-          <ul className="flex items-center gap-9">
+          <ul className="flex items-center gap-7 xl:gap-10">
             {HOME_NAV.map((item) => (
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
                   onClick={(event) => goToSection(event, item.id)}
-                  className={`text-[15px] transition-colors ${linkTone}`}
+                  className={`text-[16px] font-medium transition-colors ${linkTone}`}
                 >
                   {item.label}
                 </a>
@@ -61,7 +63,7 @@ export const SiteHeader: React.FC = () => {
           <button
             type="button"
             onClick={() => bookIntroduction('Header')}
-            className={`sp-btn hidden min-h-[2.75rem] px-5 py-2 sm:inline-flex ${solid ? 'sp-btn-navy' : 'sp-btn-champagne'}`}
+            className={`sp-btn hidden min-h-[2.75rem] px-5 py-2 text-[15px] sm:inline-flex ${solid ? 'sp-btn-navy' : 'sp-btn-champagne'}`}
           >
             {HOME_CTA.book}
           </button>
@@ -86,7 +88,7 @@ export const SiteHeader: React.FC = () => {
           className="sp-root fixed inset-0 m-0 h-[100dvh] max-h-none w-screen max-w-none bg-sp-deep p-0 font-ui text-sp-ivory backdrop:bg-sp-deep"
         >
           <div className="sp-shell flex h-full flex-col">
-            <div className="flex h-[72px] shrink-0 items-center justify-between">
+            <div className="flex h-[76px] shrink-0 items-center justify-between">
               <Wordmark tone="light" />
               <button
                 type="button"

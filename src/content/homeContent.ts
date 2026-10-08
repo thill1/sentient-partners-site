@@ -187,7 +187,7 @@ export const HOME_DEMO = {
   voice: {
     scenarioId: 'hvac',
     idle: 'A homeowner calls after hours. Press play to hear the call.',
-    note: 'Scripted call with generated voices. Audio starts only when you press play.',
+    note: 'Scripted call, generated voices. Nothing plays until you press play.',
   },
 
   web: {
