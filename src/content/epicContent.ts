@@ -58,8 +58,8 @@ export const EPIC_BEATS = [
 export const EPIC_CHAPTERS = [
   { at: 0, label: 'Above the fog' },
   { at: 0.27, label: 'The Golden Gate' },
-  { at: 0.54, label: 'Through the fog' },
-  { at: 0.67, label: 'Under the span' },
+  { at: 0.5, label: 'Through the fog' },
+  { at: 0.58, label: 'Under the span' },
   { at: 0.97, label: 'The city' },
 ] as const;
 

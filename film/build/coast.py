@@ -9,8 +9,9 @@ import bpy
 mesh = bpy.data.objects["Terrain"].data
 moved = 0
 for v in mesh.vertices:
-    if -5.0 < v.co.z < 16.0:
-        v.co.z = -8.0
+    if v.co.z < 16.0 and v.co.z > -79.0:
+        # Deep enough that the bay's water hides the seabed entirely.
+        v.co.z = -80.0
         moved += 1
 mesh.update()
 print("coast: lowered", moved, "vertices")

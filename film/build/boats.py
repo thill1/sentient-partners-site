@@ -305,35 +305,62 @@ def place(obj, start, heading, speed, heel=0.0):
             k.interpolation = "LINEAR"
 
 
-ship = container_ship("ContainerShip")
-place(ship, (1350, 420), (1.0, -0.12), 7.0)
-wake(ship, 300, 40, 520)
+# A fresh layout for each render: BOAT_SEED picks it, so sunset, day and
+# night each get their own traffic. Every vessel starts and ends on open
+# water (checked against the terrain), spread from close by the camera's run
+# to far across the bay.
+import os
+from mathutils import Vector
 
-f1 = ferry("Ferry1")
-# Cross the camera's low bay run once, in the middle distance, so a ferry and
-# its wake read clearly between the bridge pass and the skyline reveal.
-place(f1, (2050, -650), (0.45, 1.0), 11.0)
-wake(f1, 42, 11, 160)
-f2 = ferry("Ferry2")
-place(f2, (5650, -2050), (-0.55, 0.83), 10.0)
-wake(f2, 42, 11, 160)
+rng = random.Random(int(os.environ.get("BOAT_SEED", "2026")))
+terrain = bpy.data.objects["Terrain"]
+inv = terrain.matrix_world.inverted()
 
-t = tug("Tug")
-place(t, (700, 380), (0.3, -1.0), 5.0)
-wake(t, 30, 10, 90)
 
-p = pilot_boat("Boat_Pilot")
-place(p, (3300, -250), (-1.0, 0.1), 12.0)
-wake(p, 19, 5.6, 110)
+def on_water(x, y, margin=60.0):
+    for ox, oy in ((0, 0), (margin, 0), (-margin, 0), (0, margin), (0, -margin)):
+        origin = inv @ Vector((x + ox, y + oy, 900.0))
+        hit, loc, _n, _i = terrain.ray_cast(origin, inv.to_3x3() @ Vector((0, 0, -1)))
+        if hit and (terrain.matrix_world @ loc).z > -2.0:
+            return False
+    return True
 
-SAILS = [
-    (450, -330, (0.2, 1.0), 10), (900, -520, (1.0, 0.4), 12), (1250, 120, (-0.6, 1.0), 11),
-    (1700, -620, (0.9, -0.2), 13), (2050, 160, (0.3, 1.0), 9), (2650, -560, (1.0, 0.3), 12),
-    (3050, 60, (-1.0, 0.6), 14), (3700, -700, (0.6, -1.0), 11), (4250, -1150, (1.0, 0.5), 12),
-    (4900, -1900, (-0.3, -1.0), 10), (5700, -2550, (1.0, -0.2), 13), (5100, -2050, (0.8, 1.0), 11),
-]
-for i, (x, y, heading, L) in enumerate(SAILS):
-    boat = sailboat(f"Sail{i}", L)
-    place(boat, (x, y), heading, random.uniform(3.0, 5.0), heel=math.radians(random.uniform(-16, 16)))
-    wake(boat, L, L * 0.32, L * 4)
+
+# The camera runs low from the Gate (x~-300) to the city waterfront (x~4300,
+# y~-2300); vessels are drawn from a band around that run.
+def pick(speed, length, near):
+    for _ in range(400):
+        t = rng.random()
+        cx, cy = -300 + 4700 * t, 300 - 2700 * t
+        spread = rng.uniform(80, 700) if near else rng.uniform(500, 2600)
+        side = rng.choice((-1, 1))
+        x, y = cx + side * spread * 0.55, cy + side * spread * 0.85
+        angle = rng.uniform(0, math.tau)
+        heading = (math.cos(angle), math.sin(angle))
+        travel = speed * 10.0
+        ex, ey = x + heading[0] * travel, y + heading[1] * travel
+        if on_water(x, y, margin=length) and on_water(ex, ey, margin=length):
+            return (x, y), heading
+    return (cx, cy), (1.0, 0.0)
+
+
+def launch(obj, speed, length, beam, wake_len, near, heel=0.0):
+    start, heading = pick(speed, length, near)
+    place(obj, start, heading, speed, heel=heel)
+    wake(obj, length, beam, wake_len)
+
+
+launch(container_ship("ContainerShip"), rng.uniform(5.5, 8.0), 300, 40, 520, near=rng.random() < 0.6)
+if rng.random() < 0.5:
+    launch(container_ship("ContainerShip2"), rng.uniform(5.0, 7.0), 300, 40, 520, near=False)
+for i in range(rng.randint(1, 3)):
+    launch(ferry(f"Ferry{i + 1}"), rng.uniform(9.0, 13.0), 42, 11, 160, near=rng.random() < 0.5)
+for i in range(rng.randint(0, 2)):
+    launch(tug(f"Tug{i}"), rng.uniform(4.0, 6.0), 30, 10, 90, near=rng.random() < 0.5)
+if rng.random() < 0.7:
+    launch(pilot_boat("Boat_Pilot"), rng.uniform(10.0, 14.0), 19, 5.6, 110, near=rng.random() < 0.5)
+for i in range(rng.randint(7, 16)):
+    L = rng.uniform(8.0, 16.0)
+    launch(sailboat(f"Sail{i}", L), rng.uniform(2.5, 5.5), L, L * 0.32, L * 4, near=rng.random() < 0.45,
+           heel=math.radians(rng.uniform(-18, 18)))
 print(f"boats: {len(fleet.objects)} objects")
