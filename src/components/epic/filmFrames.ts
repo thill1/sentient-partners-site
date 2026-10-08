@@ -43,6 +43,9 @@ export class FramePlayer {
   readonly frames: (HTMLImageElement | null)[];
   private ready: boolean[];
   private kind: string;
+  /** Where and which frame was last drawn, for anything drawn in the same space. */
+  lastRect = { x: 0, y: 0, w: 0, h: 0 };
+  lastIndex = 0;
   /** False once the first frame has failed to load: there is no sequence to play. */
   available = true;
 
@@ -101,7 +104,8 @@ export class FramePlayer {
     const w = image.naturalWidth * scale;
     const h = image.naturalHeight * scale;
     ctx.globalAlpha = alpha;
-    ctx.drawImage(image, (width - w) * focus, (height - h) / 2, w, h);
+    this.lastRect = { x: (width - w) * focus, y: (height - h) / 2, w, h };
+    ctx.drawImage(image, this.lastRect.x, this.lastRect.y, w, h);
     ctx.globalAlpha = 1;
   }
 
@@ -112,6 +116,7 @@ export class FramePlayer {
   draw(ctx: CanvasRenderingContext2D, t: number, alpha = 1) {
     const n = this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1));
     if (n < 0) return false;
+    this.lastIndex = n;
     this.cover(ctx, this.frames[n] as HTMLImageElement, alpha, focusAt(t));
     return true;
   }

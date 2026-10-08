@@ -4,6 +4,7 @@ import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
+import { AirTraffic } from './airTraffic';
 import { FILM_SEQUENCES, FramePlayer, focusAt } from './filmFrames';
 import { timeOfDay } from './timeOfDay';
 
@@ -29,6 +30,7 @@ export const Descent: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLCanvasElement>(null);
+  const airRef = useRef<HTMLCanvasElement>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
@@ -145,6 +147,9 @@ export const Descent: React.FC = () => {
     // The rendered film for this time of day, when one exists.
     const film = filmRef.current;
     const filmCtx = film?.getContext('2d') ?? null;
+    const air = airRef.current;
+    const airCtx = air?.getContext('2d') ?? null;
+    const traffic = new AirTraffic();
     let player: FramePlayer | null = null;
     // Held-camera loops for when the visitor pauses at the start or the end.
     let openLoop: FramePlayer | null = null;
@@ -156,6 +161,7 @@ export const Descent: React.FC = () => {
       if (kind === playerKind) return;
       playerKind = kind;
       player = count ? new FramePlayer(kind, count) : null;
+      traffic.setKind(kind);
       openLoop = count ? new FramePlayer(`${kind}-open`, 48) : null;
       cityLoop = count ? new FramePlayer(`${kind}-city`, 48) : null;
     };
@@ -165,6 +171,10 @@ export const Descent: React.FC = () => {
       const scale = Math.min(window.devicePixelRatio || 1, 2);
       film.width = Math.round(film.clientWidth * scale);
       film.height = Math.round(film.clientHeight * scale);
+      if (air) {
+        air.width = film.width;
+        air.height = film.height;
+      }
     };
     sizeFilm();
     window.addEventListener('resize', sizeFilm);
@@ -231,6 +241,13 @@ export const Descent: React.FC = () => {
         const atCity = clamp01((story - 0.975) / 0.02);
         if (atOpen > 0 && openLoop?.available && openLoop.complete) openLoop.drawLoop(filmCtx, seconds, 12, atOpen, focusAt(0));
         if (atCity > 0 && cityLoop?.available && cityLoop.complete) cityLoop.drawLoop(filmCtx, seconds, 12, atCity, focusAt(1));
+        // Aircraft on random paths, in the frame's own camera. They are above
+        // the fog, so they fade out as the camera goes into it and stay hidden
+        // until it is out from under it, east of the Gate.
+        if (airCtx && !still) {
+          const visible = 1 - clamp01((story - 0.43) / 0.035) + clamp01((story - 0.76) / 0.05);
+          traffic.draw(airCtx, traffic.pose(player.lastIndex), player.lastRect, seconds, clamp01(visible));
+        }
       } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
         gl.uniform1f(uniforms.uTime, still ? 12 : (performance.now() - started) / 1000);
@@ -295,6 +312,8 @@ export const Descent: React.FC = () => {
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100 group-data-[rendered=true]/film:hidden" />
         {/* The rendered descent, played by scroll (film/descent.blend). */}
         <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
+        {/* Live air traffic, drawn over the film in its own 3D space. */}
+        <canvas ref={airRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Path-traced stills of the opening shot, one per time of day (rendered in Blender, film/descent.blend). */}
         {(['sunset', 'day', 'night'] as const).map((kind) => (
           <img

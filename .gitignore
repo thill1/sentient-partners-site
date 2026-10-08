@@ -49,3 +49,4 @@ film/build/__pycache__/
 
 # Raw Blender frames (encoded copies live in public/film)
 film/frames/
+film/descent-*.blend
