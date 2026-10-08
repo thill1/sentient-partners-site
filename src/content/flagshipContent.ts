@@ -15,7 +15,7 @@ export const FLAGSHIP_NAV = [
 
 export const FLAGSHIP_RINGS = {
   heading: 'One partner. Four ways to build a stronger business.',
-  body: 'A redwood grows outward from its heartwood. So does the work: strategy at the center, and everything customers see growing around it.',
+  body: 'A redwood grows outward from its heartwood. So does the work: strategy at the center, and everything your customers see growing around it.',
   /** From the heartwood out to the bark. */
   rings: [
     {

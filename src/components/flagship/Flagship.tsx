@@ -3,9 +3,9 @@ import { FLAGSHIP_NAV } from '../../content/flagshipContent';
 import { HOME_CONTACT, HOME_INTRO, HOME_META } from '../../content/homeContent';
 import { AuburnSection, CloseSection, FounderSection, SiteFooter } from '../home/Sections';
 import { SiteHeader } from '../home/SiteHeader';
+import { Heartwood } from './Heartwood';
 import { MainStreetDay } from './MainStreetDay';
 import { Opening } from './Opening';
-import { Rings } from './Rings';
 import { Span } from './Span';
 
 /** The firm in two sentences, set large, where the fog gives way to the page. */
@@ -39,7 +39,7 @@ const Thesis: React.FC = () => (
  * The flagship homepage: from the Gate to Main Street.
  *
  * Fog clears over the bridge → the firm's thesis → the founder among the
- * redwoods → four ways of working as growth rings → Auburn → one day at a
+ * redwoods → four ways of working as a redwood grown ring by ring → Auburn → one day at a
  * fictional Main Street business → the approach as a span → one next step.
  */
 export const Flagship: React.FC = () => {
@@ -59,12 +59,12 @@ export const Flagship: React.FC = () => {
       >
         Skip to content
       </a>
-      <SiteHeader nav={FLAGSHIP_NAV} />
+      <SiteHeader nav={FLAGSHIP_NAV} centered />
       <main id="main-content" tabIndex={-1} className="focus:outline-none">
         <Opening />
         <Thesis />
         <FounderSection />
-        <Rings />
+        <Heartwood />
         <AuburnSection />
         <MainStreetDay />
         <Span />

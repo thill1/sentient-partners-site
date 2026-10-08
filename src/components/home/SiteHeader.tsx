@@ -10,9 +10,11 @@ import { Wordmark } from './Wordmark';
  */
 interface SiteHeaderProps {
   nav?: readonly { id: string; label: string }[];
+  /** Sections at the left, the wordmark in the middle, booking at the right. */
+  centered?: boolean;
 }
 
-export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV }) => {
+export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered = false }) => {
   const [solid, setSolid] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDialogElement>(null);
@@ -42,19 +44,28 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV }) => {
         solid ? 'bg-sp-ivory/95 shadow-[0_1px_0_rgba(13,31,78,0.1)] backdrop-blur-md' : 'bg-transparent'
       }`}
     >
-      <div className="sp-shell flex h-[76px] items-center justify-between gap-6 lg:h-[84px]">
-        <a href="#top" onClick={(event) => goToSection(event, 'top')} aria-label="Sentient Partners, back to top">
+      <div
+        className={`sp-shell flex h-[76px] items-center justify-between gap-6 lg:h-[84px] ${
+          centered ? 'lg:grid lg:grid-cols-[1fr_auto_1fr]' : ''
+        }`}
+      >
+        <a
+          href="#top"
+          onClick={(event) => goToSection(event, 'top')}
+          aria-label="Sentient Partners, back to top"
+          className={centered ? 'lg:order-2' : ''}
+        >
           <Wordmark tone={tone} />
         </a>
 
-        <nav aria-label="Sections" className="hidden lg:block">
-          <ul className="flex items-center gap-7 xl:gap-10">
+        <nav aria-label="Sections" className={`hidden lg:block ${centered ? 'lg:order-1' : ''}`}>
+          <ul className={`flex items-center ${centered ? 'gap-6 xl:gap-8' : 'gap-7 xl:gap-10'}`}>
             {nav.map((item) => (
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
                   onClick={(event) => goToSection(event, item.id)}
-                  className={`text-[16px] font-medium transition-colors ${linkTone}`}
+                  className={`font-medium transition-colors ${centered ? 'text-[15px]' : 'text-[16px]'} ${linkTone}`}
                 >
                   {item.label}
                 </a>
@@ -63,7 +74,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV }) => {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${centered ? 'lg:order-3 lg:justify-self-end' : ''}`}>
           <button
             type="button"
             onClick={() => bookIntroduction('Header')}

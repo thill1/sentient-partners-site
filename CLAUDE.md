@@ -23,7 +23,7 @@ The short version:
 
 ## Where things are
 
-- `src/components/flagship/`: the homepage. `Flagship.tsx` composes it: `Opening.tsx` (Golden Gate with `FogCanvas.tsx`, a WebGL fog that is skipped under reduced motion), `Rings.tsx` (the four ways of working as redwood rings), `MainStreetDay.tsx` (the eight capabilities as one day at a fictional business, held on scroll on desktop), `Span.tsx` (the approach as a bridge).
+- `src/components/flagship/`: the homepage. `Flagship.tsx` composes it: `Opening.tsx` (Golden Gate with `FogCanvas.tsx`, a WebGL fog that is skipped under reduced motion), `Heartwood.tsx` (the four ways of working as a 3D redwood cross-section that grows ring by ring, held on scroll on desktop), `MainStreetDay.tsx` (the eight capabilities as one day at a fictional business, held on scroll on desktop), `Span.tsx` (the approach as a bridge).
 - `src/components/home/`: shared pieces the flagship reuses (`SiteHeader`, `Sections.tsx` for founder, Auburn, close and footer, and the eight demos in `cards/`), plus `HomePage.tsx`, the first version of the homepage.
 - `src/content/flagshipContent.ts` and `src/content/homeContent.ts`: all homepage copy and the demos' sample data. The fictional business is Summit Air & Heat everywhere.
 - `src/index.css` (`.sp-*`) and `tailwind.config.js` (`sp` colors, `font-editorial`, `font-ui`): the homepage type scale and tokens.
