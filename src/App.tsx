@@ -6,7 +6,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
-import { HomePage } from './components/home/HomePage';
+import { Flagship } from './components/flagship/Flagship';
 import { rememberVisit } from './lib/visitorMemory';
 import { getAdminSettings, loginAdmin, logoutAdmin, updateAdminSettings } from './lib/adminApi';
 import type { SiteSettings } from './lib/siteSettingsSchema';
@@ -17,6 +17,9 @@ import type { AppRoute } from './types';
 const CaliforniaConcept = lazy(() =>
   import('./components/california/CaliforniaConcept').then((m) => ({ default: m.CaliforniaConcept })),
 );
+const HomePage = lazy(() =>
+  import('./components/home/HomePage').then((m) => ({ default: m.HomePage })),
+);
 const ClassicHome = lazy(() =>
   import('./components/ClassicHome').then((m) => ({ default: m.ClassicHome })),
 );
@@ -25,6 +28,7 @@ function getCurrentRoute(hash: string): AppRoute {
   if (hash === '#/admin') return 'admin';
   if (hash === '#/california') return 'california';
   if (hash === '#/classic') return 'classic';
+  if (hash === '#/v1') return 'v1';
   return 'home';
 }
 
@@ -197,10 +201,17 @@ function App() {
   }
 
   // Homepage: Global Experience. Local Impact. Booking, contact and the
-  // Concierge are the same shared components the other routes use.
+  // Concierge are the same shared components the other routes use. /#/v1 is
+  // the first version of this homepage (the eight-card grid), kept for comparison.
   return (
     <>
-      <HomePage />
+      {route === 'v1' ? (
+        <Suspense fallback={<div className="min-h-screen bg-sp-ivory" />}>
+          <HomePage />
+        </Suspense>
+      ) : (
+        <Flagship />
+      )}
       <ChatInterface launcher="concept" />
       <BookingModal variant="concept" />
       <ContactModal variant="concept" />

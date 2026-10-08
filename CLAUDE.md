@@ -23,11 +23,12 @@ The short version:
 
 ## Where things are
 
-- `src/components/home/`: the homepage. `HomePage.tsx` composes it, `Sections.tsx` holds the editorial sections, `CapabilitiesSection.tsx` frames the eight cards in `cards/`.
-- `src/content/homeContent.ts`: all homepage copy and the cards' sample data.
+- `src/components/flagship/`: the homepage. `Flagship.tsx` composes it: `Opening.tsx` (Golden Gate with `FogCanvas.tsx`, a WebGL fog that is skipped under reduced motion), `Rings.tsx` (the four ways of working as redwood rings), `MainStreetDay.tsx` (the eight capabilities as one day at a fictional business, held on scroll on desktop), `Span.tsx` (the approach as a bridge).
+- `src/components/home/`: shared pieces the flagship reuses (`SiteHeader`, `Sections.tsx` for founder, Auburn, close and footer, and the eight demos in `cards/`), plus `HomePage.tsx`, the first version of the homepage.
+- `src/content/flagshipContent.ts` and `src/content/homeContent.ts`: all homepage copy and the demos' sample data. The fictional business is Summit Air & Heat everywhere.
 - `src/index.css` (`.sp-*`) and `tailwind.config.js` (`sp` colors, `font-editorial`, `font-ui`): the homepage type scale and tokens.
 - `public/home/`: the homepage photographs, built from the originals by `python3 scripts/build-home-images.py`.
-- Routes (hash-based, in `src/App.tsx`): `/` homepage, `/#/classic` the previous homepage, `/#/california` the earlier California concept, `/#/admin` settings.
+- Routes (hash-based, in `src/App.tsx`): `/` homepage, `/#/v1` the first version (eight-card grid), `/#/classic` the previous production homepage, `/#/california` the earlier California concept, `/#/admin` settings.
 - Shared integrations, used by every route: `BookingModal` (Cal.com, link checked through `/api/booking`), `ChatInterface` (the Concierge, `/api/gemini`), `ContactModal` (`/api/leads`), and the front-desk voice demo hook `components/demo/useFrontDeskDemo.ts` (`/api/voice`). Open them through `src/lib/siteActions.ts`.
 - `BOOKING_URL` in `src/content/siteContent.ts` is the single booking link. Confirm it returns 200 before changing it.
 

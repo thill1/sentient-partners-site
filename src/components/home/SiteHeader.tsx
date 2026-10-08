@@ -8,7 +8,11 @@ import { Wordmark } from './Wordmark';
  * Clear over the hero photograph, ivory once the page scrolls. Below the lg
  * breakpoint the section links move into a full-screen menu.
  */
-export const SiteHeader: React.FC = () => {
+interface SiteHeaderProps {
+  nav?: readonly { id: string; label: string }[];
+}
+
+export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV }) => {
   const [solid, setSolid] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDialogElement>(null);
@@ -45,7 +49,7 @@ export const SiteHeader: React.FC = () => {
 
         <nav aria-label="Sections" className="hidden lg:block">
           <ul className="flex items-center gap-7 xl:gap-10">
-            {HOME_NAV.map((item) => (
+            {nav.map((item) => (
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
@@ -101,7 +105,7 @@ export const SiteHeader: React.FC = () => {
             </div>
             <nav aria-label="Sections" className="mt-8 flex-1">
               <ul className="divide-y divide-sp-ivory/15 border-y border-sp-ivory/15">
-                {HOME_NAV.map((item) => (
+                {nav.map((item) => (
                   <li key={item.id}>
                     <a
                       href={`#${item.id}`}

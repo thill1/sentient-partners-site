@@ -160,11 +160,11 @@ export const HOME_CLOSE = {
 
 export const HOME_DEMO = {
   /** The fictional business most cards are set in. */
-  business: 'Ridge & Co.',
-  trade: 'Heating & Air',
+  business: 'Summit Air & Heat',
+  trade: 'Heating & cooling',
 
   chat: {
-    greeting: 'Hi, this is the Ridge & Co. assistant. How can I help?',
+    greeting: 'Hi, this is the Summit Air & Heat assistant. How can I help?',
     prompts: [
       {
         label: 'Do you service Auburn?',
@@ -197,8 +197,8 @@ export const HOME_DEMO = {
     points: ['Same-week visits', 'Licensed and insured', 'Upfront pricing'],
     search: {
       query: 'heating repair near Auburn',
-      title: 'Ridge & Co. Heating & Air | Auburn, CA',
-      url: 'ridgeandco.example',
+      title: 'Summit Air & Heat | Auburn, CA',
+      url: 'summitairheat.example',
       description: 'Furnace and AC repair, tune-ups, and new systems. Request service online.',
     },
   },
@@ -282,6 +282,6 @@ export const HOME_DEMO = {
     stars: 5,
     review: 'Technician arrived on time, explained the repair, and left everything clean.',
     draft: 'Thank you for the kind words. We are glad the repair went smoothly, and we will pass this along to your technician.',
-    request: 'Hi Dana, thanks for choosing Ridge & Co. Would you share a quick review of today’s visit?',
+    request: 'Hi Dana, thanks for choosing Summit Air & Heat. Would you share a quick review of today’s visit?',
   },
 } as const;
