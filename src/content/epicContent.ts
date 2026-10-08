@@ -25,25 +25,25 @@ export const EPIC_BEATS = [
   },
   {
     id: 'founder',
-    range: [0.2, 0.36],
+    range: [0.17, 0.36],
     heading: 'Decades of leadership at global scale.',
     body: 'Our founder led organizations of thousands and mission-critical operations across banking, brokerage, airlines, and healthcare.',
   },
   {
     id: 'fog',
-    range: [0.44, 0.59],
+    range: [0.5, 0.59],
     heading: 'Perspective is the view from above. Impact happens on the ground.',
     body: '',
   },
   {
     id: 'thesis',
-    range: [0.66, 0.82],
+    range: [0.73, 0.86],
     heading: 'Enterprise-caliber thinking. Small business practicality.',
     body: 'We bring the strategic perspective of global enterprise leadership and the hands-on commitment of a local partner.',
   },
   {
     id: 'home',
-    range: [0.89, 2],
+    range: [0.91, 2],
     heading: 'Auburn, California.',
     body: 'Local, reachable, and invested. Clients work directly with an accountable partner, not a distant ticket queue.',
   },
@@ -52,9 +52,9 @@ export const EPIC_BEATS = [
 /** Where each chapter of the film sits, for the rail at the side. */
 export const EPIC_CHAPTERS = [
   { at: 0, label: 'Cruising altitude' },
-  { at: 0.28, label: 'The Golden Gate' },
-  { at: 0.52, label: 'Through the fog' },
-  { at: 0.74, label: 'The foothills' },
+  { at: 0.27, label: 'The Golden Gate' },
+  { at: 0.54, label: 'Through the fog' },
+  { at: 0.67, label: 'Under the span' },
   { at: 0.97, label: 'Auburn' },
 ] as const;
 

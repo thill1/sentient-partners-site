@@ -72,9 +72,17 @@ export const Descent: React.FC = () => {
         // One small tile of random values feeds every cloud, ridge and light.
         const tile = new Uint8Array(256 * 256 * 4);
         let seed = 20261008;
-        for (let index = 0; index < tile.length; index++) {
+        for (let index = 0; index < tile.length; index += 4) {
           seed = (seed * 1664525 + 1013904223) >>> 0;
           tile[index] = seed >>> 24;
+          tile[index + 3] = 255;
+        }
+        // Green holds the same values one layer down, so a single fetch
+        // returns both layers a 3D lookup needs.
+        for (let y = 0; y < 256; y++) {
+          for (let x = 0; x < 256; x++) {
+            tile[(y * 256 + x) * 4 + 1] = tile[(((y - 17) & 255) * 256 + ((x - 37) & 255)) * 4];
+          }
         }
         gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, tile);
@@ -89,9 +97,12 @@ export const Descent: React.FC = () => {
       }
     }
 
+    // Rendering resolution follows the machine: it steps down if frames run
+    // long and back up when there is room, so the film stays smooth.
+    let quality = 1;
     const resize = () => {
       const phone = window.innerWidth < 768;
-      const scale = Math.min(window.devicePixelRatio || 1, phone ? 2 : 1.5) * (phone ? 0.5 : 0.75);
+      const scale = Math.min(window.devicePixelRatio || 1, phone ? 2 : 1.5) * (phone ? 0.5 : 0.75) * quality;
       canvas.width = Math.max(2, Math.round(canvas.clientWidth * scale));
       canvas.height = Math.max(2, Math.round(canvas.clientHeight * scale));
       gl?.viewport(0, 0, canvas.width, canvas.height);
@@ -115,10 +126,33 @@ export const Descent: React.FC = () => {
     let story = target();
     let frame = 0;
     const started = performance.now();
+    let last = started;
+    let slow = 0;
+    let quick = 0;
     const draw = () => {
       frame = requestAnimationFrame(draw);
       const rect = section.getBoundingClientRect();
+      const now = performance.now();
+      const elapsed = now - last;
+      last = now;
       if (rect.bottom < 0 || document.hidden) return;
+
+      // Ignore the first seconds (loading makes every machine look slow), step
+      // down only on a sustained run of long frames, and climb back promptly.
+      if (program && elapsed < 250 && now - started > 2500) {
+        slow = elapsed > 26 ? slow + 1 : Math.max(0, slow - 1);
+        quick = elapsed < 18 ? quick + 1 : 0;
+        if (slow > 45 && quality > 0.6) {
+          quality = Math.max(0.6, quality * 0.88);
+          slow = 0;
+          quick = 0;
+          resize();
+        } else if (quick > 150 && quality < 1) {
+          quality = Math.min(1, quality * 1.12);
+          quick = 0;
+          resize();
+        }
+      }
 
       // The camera follows the scroll with a little weight, like a crane.
       const wanted = target();
@@ -157,7 +191,7 @@ export const Descent: React.FC = () => {
         if (node) node.dataset.current = index === current ? 'true' : 'false';
       });
       // In the fog the frame is pale, so the instruments turn dark.
-      section.dataset.fog = story > 0.47 && story < 0.585 ? 'true' : 'false';
+      section.dataset.fog = story > 0.5 && story < 0.592 ? 'true' : 'false';
     };
     frame = requestAnimationFrame(draw);
 
