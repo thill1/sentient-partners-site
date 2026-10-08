@@ -23,7 +23,7 @@ The short version:
 
 ## Where things are
 
-- `src/components/epic/`: the homepage. `Epic.tsx` composes it. `Descent.tsx` is the opening film: a scroll-driven camera descent rendered live in WebGL by `descentShader.ts` (cloud sea, bridge towers, fog, town lights; no photographs). `MainStreet.tsx` presents the eight capabilities as eight storefronts that open the working demos. Under reduced motion the film renders one still frame per scroll position; without WebGL a still gradient stands in.
+- `src/components/epic/`: the homepage. `Epic.tsx` composes it. `Descent.tsx` is the opening film: a scroll-driven camera descent rendered live in WebGL by `descentShader.ts` (cloud sea, bridge towers, fog, town lights; no photographs). `MainStreet.tsx` presents the eight capabilities as a walk down a street of eight storefronts: on desktop the street is held and slides past on scroll, on phones it is swiped; the shop in front is lit and its window holds the working demo (only that one is mounted). Under reduced motion the film renders one still frame per scroll position; without WebGL a still gradient stands in.
 - `src/components/flagship/`: the previous homepage (photographs, fog, redwood, a day on Main Street), at `/#/v2`.
 - `src/components/home/`: shared pieces every version reuses (`SiteHeader`, the footer in `Sections.tsx`, and the eight demos in `cards/`), plus `HomePage.tsx`, the first version of the homepage.
 - `src/content/epicContent.ts`, `src/content/flagshipContent.ts` and `src/content/homeContent.ts`: all homepage copy and the demos' sample data. The fictional business is Summit Air & Heat everywhere.

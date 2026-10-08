@@ -49,9 +49,21 @@ export const EPIC_BEATS = [
   },
 ] as const;
 
+/** Where each chapter of the film sits, for the rail at the side. */
+export const EPIC_CHAPTERS = [
+  { at: 0, label: 'Cruising altitude' },
+  { at: 0.28, label: 'The Golden Gate' },
+  { at: 0.52, label: 'Through the fog' },
+  { at: 0.74, label: 'The foothills' },
+  { at: 0.97, label: 'Auburn' },
+] as const;
+
+export const EPIC_SCROLL_CUE = 'Scroll to descend';
+
 export const EPIC_STREET = {
   heading: 'Eight windows on Main Street.',
-  body: 'Every one is a working miniature. Step up to a window and try it.',
+  previous: 'Previous window',
+  next: 'Next window',
   note: 'Summit Air & Heat, its customers, and its numbers are fictional.',
 };
 

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { BarChart3, Globe, LayoutGrid, MessageSquare, Phone, Star, Users, Workflow, type LucideIcon } from 'lucide-react';
 import { EPIC_SIGNS, EPIC_STREET, EPIC_STREET_ORDER } from '../../content/epicContent';
 import { HOME_CAPABILITY_CARDS, type CapabilityId } from '../../content/homeContent';
+import { Arrow } from '../home/Arrow';
 import { AnalyticsDemo } from '../home/cards/AnalyticsDemo';
 import { AppsDemo } from '../home/cards/AppsDemo';
 import { ChatDemo } from '../home/cards/ChatDemo';
@@ -22,192 +24,329 @@ const DEMOS: Record<CapabilityId, React.FC> = {
   reputation: ReputationDemo,
 };
 
+/** What a passer-by sees in a dark window: the trade of the shop. */
+const GLYPHS: Record<CapabilityId, LucideIcon> = {
+  web: Globe,
+  chat: MessageSquare,
+  voice: Phone,
+  apps: LayoutGrid,
+  crm: Users,
+  workflow: Workflow,
+  analytics: BarChart3,
+  reputation: Star,
+};
+
 type Roof = 'cornice' | 'stepped' | 'arched' | 'gable' | 'flat' | 'cupola';
 
 /** Eight buildings in the manner of a Gold Country main street. */
-const BUILDINGS: Record<CapabilityId, { height: number; wall: string; roof: Roof; awning: boolean; windows: number }> = {
-  web: { height: 232, wall: '#3B2230', roof: 'cornice', awning: true, windows: 3 },
-  chat: { height: 204, wall: '#172150', roof: 'stepped', awning: false, windows: 2 },
-  voice: { height: 262, wall: '#33202E', roof: 'arched', awning: false, windows: 2 },
-  apps: { height: 246, wall: '#B9B6C6', roof: 'gable', awning: false, windows: 2 },
-  crm: { height: 216, wall: '#402530', roof: 'cornice', awning: true, windows: 3 },
-  workflow: { height: 196, wall: '#1B2658', roof: 'flat', awning: true, windows: 2 },
-  analytics: { height: 250, wall: '#2A2A52', roof: 'stepped', awning: false, windows: 3 },
-  reputation: { height: 236, wall: '#43283A', roof: 'cupola', awning: false, windows: 3 },
+const BUILDINGS: Record<CapabilityId, { wall: string; roof: Roof; awning: boolean; windows: number }> = {
+  web: { wall: '#4A2A36', roof: 'cornice', awning: true, windows: 3 },
+  chat: { wall: '#1C2860', roof: 'stepped', awning: false, windows: 2 },
+  voice: { wall: '#3E2634', roof: 'arched', awning: false, windows: 3 },
+  apps: { wall: '#C2BFCF', roof: 'gable', awning: false, windows: 2 },
+  crm: { wall: '#52303A', roof: 'cornice', awning: true, windows: 3 },
+  workflow: { wall: '#212D69', roof: 'flat', awning: true, windows: 2 },
+  analytics: { wall: '#33325F', roof: 'stepped', awning: false, windows: 3 },
+  reputation: { wall: '#55323F', roof: 'cupola', awning: false, windows: 3 },
 };
 
-const GROUND = 330;
 const WARM = '#F6C98A';
+const COUNT = EPIC_STREET_ORDER.length;
+/** Scroll distance from one shop to the next while the street is held, in viewport heights. */
+const STEP_VH = 78;
+const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 
-const Storefront: React.FC<{ id: CapabilityId; lit: boolean }> = ({ id, lit }) => {
-  const { height, wall, roof, awning, windows } = BUILDINGS[id];
-  const top = GROUND - height;
-  const pale = wall === '#B9B6C6';
-  const trim = pale ? '#6F6C82' : '#C9A96F';
-  const slots = Array.from({ length: windows }, (_, index) => 24 + ((152 - 24) / (windows - 1 || 1)) * index);
+/** The upper floor and roofline of a building. */
+const UpperFloor: React.FC<{ id: CapabilityId; lit: boolean }> = ({ id, lit }) => {
+  const { wall, roof, windows } = BUILDINGS[id];
+  const pale = wall === '#C2BFCF';
+  const trim = pale ? '#77748C' : '#C9A96F';
+  const slots = Array.from({ length: windows }, (_, index) => 54 + ((346 - 54 - 44) / (windows - 1 || 1)) * index);
 
   return (
-    <svg viewBox="0 0 200 340" className="block h-auto w-full overflow-visible" aria-hidden="true">
-      {lit && <ellipse cx={100} cy={GROUND + 4} rx={96} ry={9} fill={WARM} opacity={0.28} className="sp-fade" />}
-
-      {roof === 'gable' && <path d={`M4 ${top + 30} L100 ${top - 22} L196 ${top + 30} Z`} fill={wall} />}
-      {roof === 'stepped' && <path d={`M4 ${top} H60 V${top - 14} H140 V${top} H196 V${top + 4} H4 Z`} fill={wall} />}
+    <svg viewBox="0 0 400 128" className="block h-auto w-full overflow-visible" aria-hidden="true">
+      {roof === 'gable' && <path d="M0 58 L200 -6 L400 58 Z" fill={wall} />}
+      {roof === 'stepped' && <path d="M0 36 H112 V10 H288 V36 H400 V40 H0 Z" fill={wall} />}
       {roof === 'cupola' && (
         <g fill={wall}>
-          <rect x={78} y={top - 34} width={44} height={36} />
-          <path d={`M72 ${top - 34} Q100 ${top - 74} 128 ${top - 34} Z`} />
-          <rect x={98.5} y={top - 78} width={3} height={14} />
+          <rect x={166} y={-22} width={68} height={62} />
+          <path d="M156 -22 Q200 -84 244 -22 Z" />
+          <rect x={198} y={-92} width={4} height={22} />
+          <rect x={184} y={-8} width={12} height={26} fill={lit ? WARM : '#0B1230'} opacity={lit ? 0.9 : 1} />
+          <rect x={204} y={-8} width={12} height={26} fill={lit ? WARM : '#0B1230'} opacity={lit ? 0.9 : 1} />
         </g>
       )}
-      <rect x={4} y={roof === 'gable' ? top + 30 : top} width={192} height={roof === 'gable' ? height - 30 : height} fill={wall} />
-      {(roof === 'cornice' || roof === 'flat' || roof === 'arched' || roof === 'cupola') && (
-        <rect x={0} y={top - 5} width={200} height={roof === 'flat' ? 6 : 10} fill={wall} stroke={trim} strokeOpacity={0.5} strokeWidth={0.8} />
+      <rect x={0} y={roof === 'gable' ? 58 : 36} width={400} height={roof === 'gable' ? 70 : 92} fill={wall} />
+      {roof !== 'gable' && roof !== 'stepped' && (
+        <rect x={-6} y={28} width={412} height={roof === 'flat' ? 9 : 14} fill={wall} stroke={trim} strokeOpacity={0.55} strokeWidth={1} />
       )}
-      <rect x={4} y={GROUND - 152} width={192} height={1} fill={trim} opacity={0.35} />
+      {roof === 'stepped' && <path d="M112 10 H288" stroke={trim} strokeOpacity={0.55} strokeWidth={1.5} />}
 
-      {/* Upper floor */}
       {slots.map((x, index) => {
         const glowing = lit || (index + id.length) % 3 === 0;
-        const y = (roof === 'gable' ? top + 46 : top + 24) + (roof === 'arched' ? 8 : 0);
+        const y = roof === 'gable' ? 70 : 54;
+        const height = roof === 'gable' ? 46 : 60;
+        const shared = { fill: glowing ? WARM : '#0B1230', opacity: glowing ? (lit ? 0.92 : 0.38) : 1 };
         return roof === 'arched' ? (
-          <path
-            key={x}
-            d={`M${x} ${y + 46} V${y + 12} Q${x + 12} ${y - 8} ${x + 24} ${y + 12} V${y + 46} Z`}
-            fill={glowing ? WARM : '#0B1230'}
-            opacity={glowing ? (lit ? 0.9 : 0.4) : 1}
-          />
+          <path key={x} d={`M${x} ${y + height} V${y + 18} Q${x + 22} ${y - 14} ${x + 44} ${y + 18} V${y + height} Z`} {...shared} />
         ) : (
-          <rect key={x} x={x} y={y} width={24} height={38} fill={glowing ? WARM : '#0B1230'} opacity={glowing ? (lit ? 0.9 : 0.4) : 1} />
+          <g key={x}>
+            <rect x={x} y={y} width={44} height={height} {...shared} />
+            <path d={`M${x + 22} ${y} V${y + height} M${x} ${y + height / 2} H${x + 44}`} stroke={wall} strokeWidth={2} />
+            <rect x={x - 3} y={y + height} width={50} height={3} fill={trim} opacity={0.5} />
+          </g>
         );
       })}
-
-      {/* Sign */}
-      <rect x={14} y={GROUND - 146} width={172} height={26} fill="#080E26" stroke={lit ? WARM : trim} strokeOpacity={lit ? 0.9 : 0.45} strokeWidth={1} />
-      <text
-        x={100}
-        y={GROUND - 128}
-        textAnchor="middle"
-        fontSize={13.5}
-        letterSpacing={2.4}
-        className="font-editorial uppercase transition-[fill] duration-500"
-        fill={lit ? '#FCE9C8' : '#C9B38A'}
-      >
-        {EPIC_SIGNS[id]}
-      </text>
-
-      {/* Shop window and door */}
-      {lit && <rect x={10} y={GROUND - 124} width={180} height={120} fill={WARM} opacity={0.35} filter="blur(10px)" className="sp-fade" />}
-      <rect x={18} y={GROUND - 110} width={112} height={86} fill={WARM} opacity={lit ? 1 : 0.2} className="transition-opacity duration-700" />
-      <rect x={142} y={GROUND - 110} width={40} height={110} fill={WARM} opacity={lit ? 0.85 : 0.14} className="transition-opacity duration-700" />
-      <g stroke="#080E26" strokeWidth={2} opacity={0.85}>
-        <line x1={74} y1={GROUND - 110} x2={74} y2={GROUND - 24} />
-        <line x1={18} y1={GROUND - 84} x2={130} y2={GROUND - 84} />
-        <line x1={142} y1={GROUND - 70} x2={182} y2={GROUND - 70} />
-      </g>
-      {awning && (
-        <g>
-          <path d={`M10 ${GROUND - 116} H190 L198 ${GROUND - 98} H2 Z`} fill="#0B1230" />
-          {Array.from({ length: 10 }, (_, stripe) => (
-            <path
-              key={stripe}
-              d={`M${10 + stripe * 18} ${GROUND - 116} h9 l${0.4 + stripe * 0.02}  18 h-${9.6} Z`}
-              fill={trim}
-              opacity={0.55}
-              transform={`translate(${(stripe - 4.5) * 0.9} 0)`}
-            />
-          ))}
-        </g>
-      )}
-      <rect x={0} y={GROUND} width={200} height={4} fill="#1A2247" />
     </svg>
   );
 };
 
-/** A string of lights along the street, hung in four swags. */
-const StringLights: React.FC = () => (
-  <svg viewBox="0 0 1600 60" preserveAspectRatio="none" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-[8%] hidden h-10 w-full lg:block">
-    {Array.from({ length: 4 }, (_, swag) => (
-      <path key={swag} d={`M${swag * 400} 8 Q${swag * 400 + 200} 64 ${swag * 400 + 400} 8`} fill="none" stroke="#C9A96F" strokeOpacity={0.45} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+const Awning: React.FC<{ pale: boolean }> = ({ pale }) => (
+  <svg viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true" className="absolute inset-x-[-2%] top-0 z-10 h-[7%] w-[104%]">
+    <path d="M12 0 H388 L400 30 H0 Z" fill="#0B1230" />
+    {Array.from({ length: 12 }, (_, stripe) => (
+      <path
+        key={stripe}
+        d={`M${12 + stripe * 31.3 + 8} 0 h15.6 l${(stripe - 5.5) * 0.9} 30 h-16.6 Z`}
+        fill={pale ? '#77748C' : '#C9A96F'}
+        opacity={0.6}
+      />
     ))}
-    {Array.from({ length: 44 }, (_, bulb) => {
-      const t = ((bulb + 0.5) / 44) * 4;
-      const local = t % 1;
-      return <circle key={bulb} cx={t * 400} cy={8 + 56 * 2 * local * (1 - local)} r={3.2} fill="#FFE2AE" opacity={0.9} />;
-    })}
   </svg>
 );
 
 /**
- * The eight capabilities as eight storefronts. Choosing a window lights the
- * shop and opens its working miniature above the street. Only the open one is
- * mounted, so a call in progress stops when you walk on.
+ * The eight capabilities as a walk down a main street at dusk. On a desktop
+ * the street holds and slides past as the page scrolls; on a phone you swipe
+ * along it. The shop in front of you is lit, and its window is the working
+ * miniature. Only that one is mounted, so a call in progress stops when you
+ * walk on.
  */
 export const MainStreet: React.FC = () => {
-  const [open, setOpen] = useState<CapabilityId>('voice');
-  const card = HOME_CAPABILITY_CARDS.find((item) => item.id === open) ?? HOME_CAPABILITY_CARDS[0];
-  const Demo = DEMOS[open];
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLUListElement>(null);
+  const ridgeRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const [held, setHeld] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px) and (min-height: 640px)');
+    const apply = () => setHeld(query.matches);
+    apply();
+    query.addEventListener('change', apply);
+    return () => query.removeEventListener('change', apply);
+  }, []);
+
+  // Held: the page's scroll walks the street, with a little weight in the step.
+  useEffect(() => {
+    const section = sectionRef.current;
+    const track = trackRef.current;
+    if (!held || !section || !track) return;
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let position = -1;
+    let frame = 0;
+    const walk = () => {
+      frame = requestAnimationFrame(walk);
+      const rect = section.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+      const travel = rect.height - window.innerHeight;
+      const wanted = clamp(-rect.top / Math.max(1, travel), 0, 1) * (COUNT - 1);
+      position = position < 0 || still ? wanted : position + (wanted - position) * 0.09;
+      track.style.transform = `translate3d(calc(50vw - var(--bw) * ${(position + 0.5).toFixed(4)}), 0, 0)`;
+      if (ridgeRef.current) ridgeRef.current.style.transform = `translate3d(${(-position * 3).toFixed(3)}vw, 0, 0)`;
+      setIndex((current) => {
+        const next = Math.round(position);
+        return next === current ? current : next;
+      });
+    };
+    frame = requestAnimationFrame(walk);
+    return () => {
+      cancelAnimationFrame(frame);
+      track.style.transform = '';
+    };
+  }, [held]);
+
+  // Not held: the street scrolls sideways on its own, and the nearest shop opens.
+  const onSwipe = () => {
+    const track = trackRef.current;
+    if (held || !track) return;
+    const shop = track.children[0] as HTMLElement | undefined;
+    if (!shop) return;
+    setIndex(clamp(Math.round(track.scrollLeft / shop.offsetWidth), 0, COUNT - 1));
+  };
+
+  const go = (target: number) => {
+    const next = clamp(target, 0, COUNT - 1);
+    const section = sectionRef.current;
+    const track = trackRef.current;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (held && section) {
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      const travel = section.offsetHeight - window.innerHeight;
+      window.scrollTo({ top: top + (next / (COUNT - 1)) * travel, behavior: smooth ? 'smooth' : 'auto' });
+    } else if (track) {
+      const shop = track.children[0] as HTMLElement | undefined;
+      track.scrollTo({ left: next * (shop?.offsetWidth ?? 0), behavior: smooth ? 'smooth' : 'auto' });
+    }
+  };
+
+  const openId = EPIC_STREET_ORDER[index];
+  const card = HOME_CAPABILITY_CARDS.find((item) => item.id === openId) ?? HOME_CAPABILITY_CARDS[0];
+  const stepper =
+    'inline-flex h-11 w-11 items-center justify-center rounded-full border border-sp-ivory/40 text-sp-ivory transition-colors hover:border-sp-ivory disabled:opacity-30';
 
   return (
     <section
       id="capabilities"
+      ref={sectionRef}
       aria-labelledby="capabilities-heading"
-      className="relative flex flex-col overflow-hidden bg-[linear-gradient(to_bottom,#060A1C_0%,#0A1030_38%,#241F52_70%,#5B3F6E_88%,#A8604F_100%)] text-sp-ivory"
+      className="relative bg-[#060A1C] text-sp-ivory [--bw:86vw] lg:[--bw:min(36vw,calc((100svh-404px)/1.164),34rem)]"
+      style={held ? { height: `calc(100vh + ${(COUNT - 1) * STEP_VH}vh)` } : undefined}
     >
-      <div className="sp-shell pt-[var(--sp-space)]">
-        <div className="grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-12">
-          <h2 id="capabilities-heading" className="sp-h2 lg:col-span-7">
-            {EPIC_STREET.heading}
-          </h2>
-          <p className="sp-lede text-sp-mist lg:col-span-5">{EPIC_STREET.body}</p>
-        </div>
-      </div>
-
-      <div className="sp-shell order-3 pb-[var(--sp-space)] pt-8 lg:order-2 lg:pb-0">
-        <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          <div key={card.id} className="sp-fade lg:col-span-6" aria-live="polite">
-            <h3 className="font-editorial text-[clamp(2.25rem,1.4rem+3.2vw,4.5rem)] leading-[1.02] tracking-[-0.022em]">{card.title}</h3>
-            <p className="sp-lede mt-5 max-w-[30rem] text-sp-mist">{card.outcome}</p>
-          </div>
-          <div className="lg:col-span-6 lg:flex lg:justify-end">
-            <div
-              key={card.id}
-              className="sp-demo sp-fade mx-auto w-full max-w-[25rem] rounded-[10px] bg-sp-deep p-3 shadow-[0_0_90px_-10px_rgba(246,201,138,0.35)] ring-1 ring-[#F6C98A]/35 lg:mx-0 lg:max-w-[min(24rem,calc((100svh-26rem)*0.786))]"
-            >
-              <Stage label={`${card.title} demonstration`}>
-                <Demo />
-              </Stage>
+      <div
+        className={`flex flex-col overflow-hidden bg-[linear-gradient(to_bottom,#060A1C_0%,#0B1132_30%,#2A2259_62%,#70487A_84%,#C4705A_100%)] ${
+          held ? 'sticky top-0 h-screen' : 'relative'
+        }`}
+      >
+        <div className="sp-shell shrink-0 pb-6 pt-[calc(var(--sp-space)*0.9)] lg:pb-4 lg:pt-[104px]">
+          <div className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-12">
+            <div className="lg:col-span-8">
+              <h2 id="capabilities-heading" className="text-[13px] uppercase tracking-[0.24em] text-sp-champagne">
+                {EPIC_STREET.heading}
+              </h2>
+              <div key={card.id} className="sp-fade mt-3" aria-live="polite">
+                <h3 className="font-editorial text-[clamp(2.25rem,1.3rem+3.4vw,4.25rem)] leading-[1] tracking-[-0.022em]">{card.title}</h3>
+                <p className="sp-lede mt-3 max-w-[38rem] text-sp-mist">{card.outcome}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-6 lg:col-span-4 lg:justify-end">
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => go(index - 1)} disabled={index === 0} aria-label={EPIC_STREET.previous} className={stepper}>
+                  <Arrow className="rotate-180" />
+                </button>
+                <span className="min-w-[3.25rem] text-center text-[15px] tabular-nums tracking-[0.1em]" aria-hidden="true">
+                  {index + 1} / {COUNT}
+                </span>
+                <button type="button" onClick={() => go(index + 1)} disabled={index === COUNT - 1} aria-label={EPIC_STREET.next} className={stepper}>
+                  <Arrow />
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="relative order-2 mt-8 lg:order-3 lg:mt-4">
-        <StringLights />
-        <ul
-          aria-label="Storefronts"
-          className="flex snap-x snap-mandatory items-end gap-0 overflow-x-auto px-[var(--sp-gutter)] [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-[clamp(0.5rem,2vw,2.5rem)]"
-        >
-          {EPIC_STREET_ORDER.map((id) => {
-            const lit = id === open;
-            const title = HOME_CAPABILITY_CARDS.find((item) => item.id === id)?.title ?? id;
-            return (
-              <li key={id} className="w-[44vw] max-w-[13rem] shrink-0 snap-center lg:w-auto lg:max-w-none">
-                <button
-                  type="button"
-                  aria-pressed={lit}
-                  aria-label={title}
-                  onClick={() => setOpen(id)}
-                  className={`block w-full origin-bottom transition-[transform,filter] duration-500 ease-out hover:brightness-125 focus-visible:brightness-125 motion-reduce:transition-none ${
-                    lit ? 'lg:scale-[1.04]' : ''
-                  }`}
-                >
-                  <Storefront id={id} lit={lit} />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="bg-[#0B1027] px-[var(--sp-gutter)] py-3 text-center text-[13.5px] text-sp-mist/80 lg:py-4">{EPIC_STREET.note}</p>
+        <div className="relative flex min-h-0 flex-1 flex-col justify-end">
+          {/* The far ridge, which moves more slowly than the street. */}
+          <div ref={ridgeRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-[-10vw] w-[150vw] will-change-transform">
+            <svg viewBox="0 0 1500 300" preserveAspectRatio="none" className="absolute bottom-[4vh] h-[46%] w-full">
+              <path d="M0 210 C120 150 220 190 340 140 C460 92 560 170 700 120 C830 76 930 150 1060 108 C1200 66 1320 150 1500 96 V300 H0 Z" fill="#1A1744" opacity={0.75} />
+              <path d="M0 250 C160 200 300 240 450 196 C620 150 760 232 930 190 C1100 150 1270 226 1500 176 V300 H0 Z" fill="#120F33" />
+            </svg>
+          </div>
+
+          <ul
+            ref={trackRef}
+            onScroll={onSwipe}
+            aria-label="Storefronts"
+            className={`relative flex items-end will-change-transform ${
+              held ? '' : 'snap-x snap-mandatory overflow-x-auto px-[7vw] [scrollbar-width:none]'
+            }`}
+          >
+            {EPIC_STREET_ORDER.map((id, position) => {
+              const lit = position === index;
+              const { wall, awning } = BUILDINGS[id];
+              const pale = wall === '#C2BFCF';
+              const title = HOME_CAPABILITY_CARDS.find((item) => item.id === id)?.title ?? id;
+              const Demo = DEMOS[id];
+              const Glyph = GLYPHS[id];
+              return (
+                <li key={id} className="relative w-[var(--bw)] shrink-0 snap-center px-[0.6%]">
+                  {/* String lights from lamp to lamp. */}
+                  <svg viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-[2.5%] z-20 h-[6%] w-full">
+                    <path d="M0 4 Q200 60 400 4" fill="none" stroke="#C9A96F" strokeOpacity={0.5} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+                    {Array.from({ length: 9 }, (_, bulb) => {
+                      const t = (bulb + 0.5) / 9;
+                      return <ellipse key={bulb} cx={t * 400} cy={4 + 56 * 2 * t * (1 - t) * 0.98} rx={3.4} ry={4.2} fill="#FFE2AE" />;
+                    })}
+                  </svg>
+
+                  <div
+                    className={`transition-[filter] duration-700 ease-out motion-reduce:transition-none ${
+                      lit ? '' : 'brightness-[0.72] saturate-[0.9]'
+                    }`}
+                  >
+                    <UpperFloor id={id} lit={lit} />
+                    <div style={{ backgroundColor: wall }}>
+                      <p
+                        className={`mx-[5%] border py-[2.2%] text-center font-editorial text-[clamp(0.95rem,calc(var(--bw)*0.046),1.45rem)] uppercase leading-none tracking-[0.3em] transition-colors duration-700 ${
+                          lit ? 'border-[#F6C98A] bg-[#080E26] text-[#FCE9C8]' : 'border-[#C9A96F]/50 bg-[#080E26] text-[#C9B38A]'
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {EPIC_SIGNS[id]}
+                      </p>
+                      <div className="relative flex items-end gap-[3%] px-[5%] pt-[4.5%]">
+                        {awning && <Awning pale={pale} />}
+                        <div
+                          className={`sp-demo relative min-w-0 flex-1 rounded-t-[5px] bg-[#070C20] p-[6px] ring-1 transition-shadow duration-700 ${
+                            lit ? 'shadow-[0_0_70px_4px_rgba(246,201,138,0.55)] ring-[#F6C98A]' : 'ring-[#C9A96F]/40'
+                          }`}
+                        >
+                          {lit ? (
+                            <div className="sp-fade">
+                              <Stage label={`${title} demonstration`}>
+                                <Demo />
+                              </Stage>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => go(position)}
+                              aria-label={title}
+                              className="flex w-full items-center justify-center rounded-[4px] bg-[linear-gradient(160deg,rgba(246,201,138,0.62),rgba(246,201,138,0.30)_55%,rgba(246,201,138,0.5))]"
+                              style={{ aspectRatio: '264 / 336' }}
+                            >
+                              <Glyph aria-hidden="true" className="h-[22%] w-[22%] text-[#080E26] opacity-60" strokeWidth={1} />
+                            </button>
+                          )}
+                        </div>
+                        <div
+                          aria-hidden="true"
+                          className="relative h-[calc(var(--bw)*0.86)] w-[15%] shrink-0 rounded-t-[3px] ring-1 ring-[#C9A96F]/40 transition-colors duration-700"
+                          style={{ backgroundColor: lit ? '#F3C583' : 'rgba(246,201,138,0.42)' }}
+                        >
+                          <span className="absolute inset-x-0 top-[22%] h-[2px] bg-[#070C20]/70" />
+                          <span className="absolute left-[18%] top-[55%] h-[9%] w-[3px] rounded-full bg-[#070C20]/70" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-[10px] bg-[#1A2247]" />
+                  </div>
+
+                  {/* The light a lit window throws onto the pavement. */}
+                  <div
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute inset-x-[4%] bottom-[-14px] h-7 rounded-[50%] bg-[#F6C98A] blur-[14px] transition-opacity duration-700 ${
+                      lit ? 'opacity-60' : 'opacity-0'
+                    }`}
+                  />
+                  {/* A street lamp between buildings. */}
+                  <svg viewBox="0 0 30 300" aria-hidden="true" className="pointer-events-none absolute bottom-0 right-[-15px] z-20 h-[62%] w-[30px] overflow-visible">
+                    <circle cx={15} cy={16} r={15} fill="#FFE2AE" opacity={0.22} filter="blur(4px)" />
+                    <rect x={13.5} y={24} width={3} height={276} fill="#070C20" />
+                    <path d="M8 26 H22 L19 8 H11 Z" fill="#FFE2AE" />
+                    <rect x={6} y={4} width={18} height={4} fill="#070C20" />
+                    <rect x={9} y={292} width={12} height={8} fill="#070C20" />
+                  </svg>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="relative shrink-0 bg-[#0A0F26] px-[var(--sp-gutter)] py-3 text-center text-[13.5px] text-sp-mist/80 lg:py-[1.6vh]">
+            {EPIC_STREET.note}
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { EPIC_ALTITUDE, EPIC_BEATS } from '../../content/epicContent';
+import { EPIC_ALTITUDE, EPIC_BEATS, EPIC_CHAPTERS, EPIC_SCROLL_CUE } from '../../content/epicContent';
 import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
@@ -29,6 +29,16 @@ export const Descent: React.FC = () => {
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
+  const chapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const cueRef = useRef<HTMLParagraphElement>(null);
+
+  const goTo = (at: number) => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const top = section.getBoundingClientRect().top + window.scrollY;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: top + at * (section.offsetHeight - window.innerHeight), behavior: smooth ? 'smooth' : 'auto' });
+  };
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -57,8 +67,22 @@ export const Descent: React.FC = () => {
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
         uniforms = Object.fromEntries(
-          ['uRes', 'uTime', 'uP', 'uLook'].map((name) => [name, gl.getUniformLocation(program as WebGLProgram, name)]),
+          ['uRes', 'uTime', 'uP', 'uLook', 'uNoise'].map((name) => [name, gl.getUniformLocation(program as WebGLProgram, name)]),
         );
+        // One small tile of random values feeds every cloud, ridge and light.
+        const tile = new Uint8Array(256 * 256 * 4);
+        let seed = 20261008;
+        for (let index = 0; index < tile.length; index++) {
+          seed = (seed * 1664525 + 1013904223) >>> 0;
+          tile[index] = seed >>> 24;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0, gl.RGBA, gl.UNSIGNED_BYTE, tile);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.uniform1i(uniforms.uNoise, 0);
         canvas.dataset.live = 'true';
       } else {
         program = null;
@@ -67,7 +91,7 @@ export const Descent: React.FC = () => {
 
     const resize = () => {
       const phone = window.innerWidth < 768;
-      const scale = Math.min(window.devicePixelRatio || 1, phone ? 2 : 1.5) * (phone ? 0.45 : 0.62);
+      const scale = Math.min(window.devicePixelRatio || 1, phone ? 2 : 1.5) * (phone ? 0.5 : 0.75);
       canvas.width = Math.max(2, Math.round(canvas.clientWidth * scale));
       canvas.height = Math.max(2, Math.round(canvas.clientHeight * scale));
       gl?.viewport(0, 0, canvas.width, canvas.height);
@@ -123,7 +147,15 @@ export const Descent: React.FC = () => {
       if (altitudeRef.current) {
         altitudeRef.current.textContent = `${(story > 0.985 ? EPIC_ALTITUDE.to : Math.round(feet / 10) * 10).toLocaleString('en-US')} ft`;
       }
-      if (railRef.current) railRef.current.style.transform = `scaleY(${story})`;
+      if (railRef.current) railRef.current.style.transform = `scaleX(${story})`;
+      if (cueRef.current) cueRef.current.style.opacity = String(clamp01(1 - story * 14));
+      let current = 0;
+      EPIC_CHAPTERS.forEach((chapter, index) => {
+        if (story >= chapter.at - 0.06) current = index;
+      });
+      chapterRefs.current.forEach((node, index) => {
+        if (node) node.dataset.current = index === current ? 'true' : 'false';
+      });
       // In the fog the frame is pale, so the instruments turn dark.
       section.dataset.fog = story > 0.47 && story < 0.585 ? 'true' : 'false';
     };
@@ -145,19 +177,51 @@ export const Descent: React.FC = () => {
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#060A1C]/70 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#060A1C]/60 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
 
-        {/* Altitude: where you are in the story. */}
-        <div
-          aria-hidden="true"
-          className="absolute bottom-[clamp(1.5rem,5vh,3rem)] left-[var(--sp-gutter)] hidden items-end gap-3 text-sp-ivory transition-colors duration-700 group-data-[fog=true]/film:text-sp-navy sm:flex"
+        {/* Chapters of the film. */}
+        <nav
+          aria-label="Chapters"
+          className="absolute right-[var(--sp-gutter)] top-[72%] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[fog=true]/film:text-sp-navy md:block"
         >
-          <span className="relative block h-24 w-px">
-            <span className="absolute inset-0 bg-current opacity-30" />
-            <span ref={railRef} className="absolute inset-0 origin-top bg-current" />
-          </span>
-          <span ref={altitudeRef} className="text-[13px] tabular-nums tracking-[0.18em]">
-            38,000 ft
-          </span>
-        </div>
+          {/* Altitude: where you are in the story. */}
+          <p aria-hidden="true" className="mb-5 flex items-center justify-end gap-3 text-[13px] tabular-nums tracking-[0.18em]">
+            <span ref={altitudeRef}>38,000 ft</span>
+            <span className="relative block h-px w-9">
+              <span className="absolute inset-0 bg-current opacity-30" />
+              <span ref={railRef} className="absolute inset-0 origin-left bg-current" />
+            </span>
+          </p>
+          <ol className="flex flex-col items-end gap-4">
+            {EPIC_CHAPTERS.map((chapter, index) => (
+              <li key={chapter.label}>
+                <button
+                  type="button"
+                  ref={(node) => {
+                    chapterRefs.current[index] = node;
+                  }}
+                  onClick={() => goTo(chapter.at)}
+                  className="group/chapter flex items-center gap-3 py-1 text-[13px] tracking-[0.08em]"
+                >
+                  <span className="opacity-0 transition-opacity duration-300 group-hover/chapter:opacity-100 group-focus-visible/chapter:opacity-100 group-data-[current=true]/chapter:opacity-100">
+                    {chapter.label}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="block h-px w-5 bg-current opacity-50 transition-all duration-500 group-hover/chapter:w-9 group-hover/chapter:opacity-100 group-data-[current=true]/chapter:w-9 group-data-[current=true]/chapter:opacity-100"
+                  />
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <p
+          ref={cueRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2 text-[12px] uppercase tracking-[0.24em] text-sp-ivory/80"
+        >
+          {EPIC_SCROLL_CUE}
+          <span className="sp-cue block h-7 w-px bg-sp-ivory/70" />
+        </p>
 
         {EPIC_BEATS.map((beat, index) => {
           const Heading = index === 0 ? 'h1' : 'h2';
@@ -168,26 +232,26 @@ export const Descent: React.FC = () => {
               ref={(node) => {
                 beatRefs.current[index] = node;
               }}
-              className={`absolute inset-x-0 bottom-[clamp(4.5rem,13vh,8rem)] px-[var(--sp-gutter)] text-center will-change-[opacity,transform] ${
+              className={`absolute inset-x-0 bottom-[clamp(5.5rem,13vh,8rem)] px-[var(--sp-gutter)] text-center will-change-[opacity,transform] lg:text-left ${
                 pale ? 'text-sp-navy' : 'text-sp-ivory'
               } ${index === 0 ? '' : 'invisible opacity-0'}`}
             >
               <Heading
-                className={`mx-auto font-editorial font-normal tracking-[-0.02em] ${
+                className={`mx-auto font-editorial font-normal tracking-[-0.022em] lg:mx-0 ${
                   index === 0
-                    ? 'max-w-[18ch] text-[clamp(2.5rem,1.3rem+4.4vw,5.25rem)] leading-[1.02] sm:max-w-none'
-                    : 'max-w-[24ch] text-[clamp(2rem,1.2rem+3vw,4rem)] leading-[1.06]'
+                    ? 'max-w-[12ch] text-[clamp(2.75rem,1.3rem+5.4vw,6.75rem)] leading-[0.98]'
+                    : 'max-w-[20ch] text-[clamp(2rem,1.2rem+3.4vw,4.75rem)] leading-[1.03]'
                 }`}
               >
                 {beat.heading}
               </Heading>
               {beat.body && (
-                <p className={`mx-auto mt-5 max-w-[38rem] text-[clamp(1.0625rem,1rem+0.3vw,1.25rem)] leading-[1.55] ${pale ? 'text-sp-navy/85' : 'text-sp-ivory/90'}`}>
+                <p className={`mx-auto mt-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] lg:mx-0 ${pale ? 'text-sp-navy/85' : 'text-sp-ivory/90'}`}>
                   {beat.body}
                 </p>
               )}
               {index === 0 && (
-                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
                   <button type="button" onClick={() => bookIntroduction('Film')} className="sp-btn sp-btn-champagne w-full max-w-[20rem] sm:w-auto">
                     {HOME_CTA.book}
                     <Arrow />

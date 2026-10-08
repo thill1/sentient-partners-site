@@ -371,6 +371,20 @@ html:has(.ca-root) {
     }
   }
 }
+@keyframes spCue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+.sp-cue {
+  animation: spCue 2.4s cubic-bezier(0.6, 0, 0.3, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-cue {
+    animation: none;
+  }
+}
 .sp-settle {
   animation: spSettle 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
