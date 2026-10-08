@@ -21,6 +21,8 @@ export interface CtaEventDetail {
 export const CONTACT_MODAL_EVENT = "open-contact-modal";
 export const BOOKING_MODAL_EVENT = "open-booking-modal";
 export const CHAT_EVENT = "open-sentient-chat";
+/** Asks the voice launcher to point itself out. */
+export const VOICE_HINT_EVENT = "sentient-voice-hint";
 
 export function openContactModal(detail: ContactModalPrefill = {}) {
   window.dispatchEvent(
@@ -41,6 +43,7 @@ export function openSentientChat(detail: CtaEventDetail = {}) {
 export function scrollToSection(sectionId: string) {
   const element = document.getElementById(sectionId);
   if (element) {
+    if (element instanceof HTMLDetailsElement) element.open = true;
     element.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }

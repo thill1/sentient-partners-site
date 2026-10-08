@@ -19,14 +19,20 @@ import {
 } from '../services/geminiService';
 import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { CHAT_EVENT, type CtaEventDetail } from '../lib/siteActions';
+import { CHAT_EVENT, openBookingModal, type CtaEventDetail } from '../lib/siteActions';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
+import { CA_CTA } from '../content/californiaContent';
 import spMonogramNavy from '../assets/sp-monogram-navy.png';
 import spMonogramWhite from '../assets/sp-monogram-white.png';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
-export const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {
+  /** 'concept' renders a quieter, square launcher that collapses to the monogram on phones. */
+  launcher?: 'default' | 'concept';
+}
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ launcher = 'default' }) => {
   const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
@@ -829,6 +835,22 @@ export const ChatInterface: React.FC = () => {
   };
 
   // --- UI ---
+  if (!isOpen && launcher === 'concept') {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        aria-label={`Open ${CHAT_WIDGET_CONTENT.launcherEyebrow}`}
+        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-3 border border-white/15 bg-ca-deep/90 p-1.5 text-white shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors hover:border-white/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-ca-orange sm:pr-4"
+      >
+        <span className="flex h-9 w-9 items-center justify-center bg-ca-navy p-1.5">
+          <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+        </span>
+        <span className="hidden text-[14px] font-medium text-white/90 sm:inline">Talk to the Concierge</span>
+      </button>
+    );
+  }
+
   if (!isOpen) {
     return (
       <button
@@ -962,11 +984,13 @@ export const ChatInterface: React.FC = () => {
               {SUGGESTED_ACTIONS.map((action, i) => (
                 <button
                   key={i}
-                  onClick={() => handleSend(action.prompt)}
+                  onClick={() => launcher === 'concept' && action.label === 'Book a Call'
+                    ? openBookingModal({ source: 'California · Concierge', ctaLabel: CA_CTA.primary })
+                    : handleSend(action.prompt)}
                   disabled={isLoading}
                   className="whitespace-nowrap px-3 py-1.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600 dark:hover:bg-white/10 dark:hover:text-white transition-all shadow-sm"
                 >
-                  {action.label}
+                  {launcher === 'concept' && action.label === 'Book a Call' ? CA_CTA.primary : action.label}
                 </button>
               ))}
             </div>

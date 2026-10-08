@@ -30,11 +30,14 @@ Frontend-only development:
 npm run dev
 ```
 
-Pages Functions and bindings require Wrangler-based local development. Use local secrets in `.dev.vars` and run the Cloudflare dev server when you need `/api/*` routes:
+For booking, chat, and other `/api/*` routes, build once and start Pages Functions in a second terminal. Vite proxies API requests to this server, so the frontend retains hot reload. Keep local secrets in `.dev.vars`.
 
 ```bash
-wrangler dev
+npm run build
+npm run dev:api
 ```
+
+You can also open `http://localhost:8788` to check the built site with its real Pages Functions. Rebuild after frontend edits when using this address.
 
 Recommended local secrets in `.dev.vars`:
 

@@ -12,6 +12,7 @@ export const onRequestGet = async () => {
     const response = await fetch(BOOKING_URL, {
       method: "HEAD",
       redirect: "follow",
+      signal: AbortSignal.timeout(8000),
     });
 
     return json({

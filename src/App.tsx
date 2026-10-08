@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminPanel } from './components/AdminPanel';
 import { Header } from './components/Header';
@@ -26,8 +26,15 @@ import type { SiteSettings } from './lib/siteSettingsSchema';
 import { useSiteSettings } from './hooks/useSiteSettings';
 import type { AppRoute } from './types';
 
+// Concept route is code-split so production visitors never download it.
+const CaliforniaConcept = lazy(() =>
+  import('./components/california/CaliforniaConcept').then((m) => ({ default: m.CaliforniaConcept })),
+);
+
 function getCurrentRoute(hash: string): AppRoute {
-  return hash === '#/admin' ? 'admin' : 'home';
+  if (hash === '#/admin') return 'admin';
+  if (hash === '#/california') return 'california';
+  return 'home';
 }
 
 
@@ -187,6 +194,23 @@ function App() {
         settings={adminSettings}
         status={adminStatus}
       />
+    );
+  }
+
+  // California Intelligence concept: no intro splash, no production header or
+  // banner. Booking, contact, Concierge, and Voice Command are shared unchanged.
+  if (route === 'california') {
+    return (
+      <>
+        <Suspense fallback={<div className="min-h-screen bg-ca-deep" />}>
+          <CaliforniaConcept />
+        </Suspense>
+        <ChatInterface launcher="concept" />
+        <VoiceCommand variant="concept" />
+        <BookingModal variant="concept" />
+        <ContactModal variant="concept" />
+        <Toast />
+      </>
     );
   }
 

@@ -5,6 +5,12 @@ export default defineConfig(() => {
   return {
     plugins: [react()],
     base: "/",
+    server: {
+      proxy: {
+        // Run `npm run dev:api` alongside Vite for real Pages Functions.
+        "/api": "http://127.0.0.1:8788",
+      },
+    },
     build: {
       outDir: "dist",
       assetsDir: "assets",

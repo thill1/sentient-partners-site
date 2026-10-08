@@ -1,84 +1,30 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { ArrowRight, Loader2, PhoneMissed, TrendingUp } from 'lucide-react';
 import { Button } from './Button';
 import { openBookingModal } from '../lib/siteActions';
-import { rememberBlueprint, rememberIndustry } from '../lib/visitorMemory';
-
-const INDUSTRIES = [
-  { id: 'dental', label: 'Dental practice' },
-  { id: 'hvac', label: 'HVAC company' },
-  { id: 'law', label: 'Law firm' },
-  { id: 'fitness', label: 'Fitness studio' },
-  { id: 'home-services', label: 'Home services' },
-  { id: 'other', label: 'Something else' },
-];
-
-// Conservative, stated assumption: roughly a third of recovered
-// inquiries convert to booked work.
-const BOOKING_RATE = 0.35;
-const WEEKS_PER_MONTH = 4.33;
-
-const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
+import {
+  BLUEPRINT_INDUSTRIES as INDUSTRIES,
+  BOOKING_RATE,
+  formatDollars as fmt,
+  useBlueprintEngine,
+} from '../hooks/useBlueprintEngine';
 
 export const BlueprintEngine: React.FC = () => {
-  const [industry, setIndustry] = useState(INDUSTRIES[0]);
-  const [callsPerWeek, setCallsPerWeek] = useState(60);
-  const [missedPct, setMissedPct] = useState(30);
-  const [avgJobValue, setAvgJobValue] = useState(400);
-  const [phase, setPhase] = useState<'input' | 'generating' | 'ready'>('input');
-  const [narrative, setNarrative] = useState<string>('');
-
-  const math = useMemo(() => {
-    const missedPerWeek = callsPerWeek * (missedPct / 100);
-    const monthlyMissed = missedPerWeek * WEEKS_PER_MONTH;
-    const monthlyRecovered = monthlyMissed * BOOKING_RATE * avgJobValue;
-    return {
-      missedPerWeek: Math.round(missedPerWeek),
-      monthlyMissed: Math.round(monthlyMissed),
-      monthlyRecovered,
-      low: monthlyRecovered * 0.75,
-      high: monthlyRecovered * 1.25,
-    };
-  }, [callsPerWeek, missedPct, avgJobValue]);
-
-  const generate = async () => {
-    setPhase('generating');
-    rememberIndustry(industry.id, industry.label);
-    rememberBlueprint({
-      callsPerWeek,
-      missedPct,
-      avgJobValue,
-      monthlyRecovered: Math.round(math.monthlyRecovered),
-    });
-
-    const prompt = [
-      `You are the senior AI strategist at Sentient Partners, an AI-first agency.`,
-      `A ${industry.label.toLowerCase()} owner just shared: ~${callsPerWeek} inbound calls/week,`,
-      `~${missedPct}% missed or after-hours, average job value ${fmt(avgJobValue)}.`,
-      `Our conservative math says an AI front desk recovers roughly ${fmt(math.low)}–${fmt(math.high)} per month.`,
-      `Write their blueprint in 3 short sections with these exact headings:`,
-      `WHERE THE MONEY LEAKS / THE SYSTEM WE WOULD INSTALL / FIRST 30 DAYS.`,
-      `Plain text only, no markdown symbols. Confident, calm, specific to their industry.`,
-      `Under 180 words total. Do not invent statistics beyond the numbers given.`,
-    ].join(' ');
-
-    try {
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, history: [] }),
-      });
-      const data = (await res.json()) as { ok?: boolean; text?: string };
-      setNarrative(
-        data.ok && data.text
-          ? data.text
-          : 'Your numbers are in — book a strategy call and we will walk the full blueprint together.'
-      );
-    } catch {
-      setNarrative('Your numbers are in — book a strategy call and we will walk the full blueprint together.');
-    }
-    setPhase('ready');
-  };
+  const {
+    industry,
+    setIndustry,
+    callsPerWeek,
+    setCallsPerWeek,
+    missedPct,
+    setMissedPct,
+    avgJobValue,
+    setAvgJobValue,
+    phase,
+    setPhase,
+    narrative,
+    math,
+    generate,
+  } = useBlueprintEngine();
 
   const Stepper = ({
     label, value, setValue, min, max, step, format,
