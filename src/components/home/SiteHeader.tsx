@@ -12,9 +12,11 @@ interface SiteHeaderProps {
   nav?: readonly { id: string; label: string }[];
   /** Sections at the left, the wordmark in the middle, booking at the right. */
   centered?: boolean;
+  /** Stay dark once the page scrolls, for a page that is mostly night. */
+  night?: boolean;
 }
 
-export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered = false }) => {
+export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered = false, night = false }) => {
   const [solid, setSolid] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDialogElement>(null);
@@ -33,15 +35,19 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
     return () => menu.close();
   }, [menuOpen]);
 
-  const tone = solid ? 'dark' : 'light';
-  const linkTone = solid
+  const tone = solid && !night ? 'dark' : 'light';
+  const linkTone = solid && !night
     ? 'text-sp-navy/85 hover:text-sp-navy'
     : 'text-sp-ivory [text-shadow:0_1px_12px_rgba(8,20,51,0.55)] hover:text-white';
 
   return (
     <header
       className={`fixed inset-x-0 top-0 z-30 transition-[background-color,box-shadow] duration-300 ${
-        solid ? 'bg-sp-ivory/95 shadow-[0_1px_0_rgba(13,31,78,0.1)] backdrop-blur-md' : 'bg-transparent'
+        solid
+          ? night
+            ? 'bg-[#060A1C]/75 shadow-[0_1px_0_rgba(247,245,240,0.12)] backdrop-blur-md'
+            : 'bg-sp-ivory/95 shadow-[0_1px_0_rgba(13,31,78,0.1)] backdrop-blur-md'
+          : 'bg-transparent'
       }`}
     >
       <div
@@ -78,7 +84,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
           <button
             type="button"
             onClick={() => bookIntroduction('Header')}
-            className={`sp-btn hidden min-h-[2.75rem] px-5 py-2 text-[15px] sm:inline-flex ${solid ? 'sp-btn-navy' : 'sp-btn-champagne'}`}
+            className={`sp-btn hidden min-h-[2.75rem] px-5 py-2 text-[15px] sm:inline-flex ${solid && !night ? 'sp-btn-navy' : 'sp-btn-champagne'}`}
           >
             {HOME_CTA.book}
           </button>
@@ -87,7 +93,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
             className={`inline-flex h-11 w-11 items-center justify-center rounded-[3px] lg:hidden ${
-              solid ? 'text-sp-navy' : 'text-sp-ivory'
+              solid && !night ? 'text-sp-navy' : 'text-sp-ivory'
             }`}
           >
             <Menu aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />

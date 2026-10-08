@@ -15,7 +15,7 @@ The short version:
 
 - Positioning is **Global Experience. Local Impact.** Signature: **Strategy | Intelligence | Results**. Lead with client outcomes, judgment and accountability, not AI tools.
 - Palette is navy, champagne, ivory and charcoal. Serif display type with a readable sans for body and interface.
-- The three supplied photographs are the imagery: Golden Gate in fog (hero), redwoods (founder), downtown Auburn (local roots).
+- The current homepage draws its own imagery live and uses no photographs (the owner allowed this on 2026-10-08). The three supplied photographs remain in `design-foundation/` and on `/#/v2`.
 - No badges, floating labels, status pills, filler captions, neon, robots, circuit boards or decorative animation. No autoplay audio or video. Respect reduced motion.
 - No invented clients, testimonials, metrics or live-integration claims. Sample data in demos must be obviously illustrative.
 - No employer names in the homepage hero or founder section; they belong in a full bio.
@@ -23,12 +23,13 @@ The short version:
 
 ## Where things are
 
-- `src/components/flagship/`: the homepage. `Flagship.tsx` composes it: `Opening.tsx` (Golden Gate with `FogCanvas.tsx`, a WebGL fog that is skipped under reduced motion), `Heartwood.tsx` (the four ways of working as a 3D redwood cross-section that grows ring by ring, held on scroll on desktop), `MainStreetDay.tsx` (the eight capabilities as one day at a fictional business, held on scroll on desktop), `Span.tsx` (the approach as a bridge).
-- `src/components/home/`: shared pieces the flagship reuses (`SiteHeader`, `Sections.tsx` for founder, Auburn, close and footer, and the eight demos in `cards/`), plus `HomePage.tsx`, the first version of the homepage.
-- `src/content/flagshipContent.ts` and `src/content/homeContent.ts`: all homepage copy and the demos' sample data. The fictional business is Summit Air & Heat everywhere.
+- `src/components/epic/`: the homepage. `Epic.tsx` composes it. `Descent.tsx` is the opening film: a scroll-driven camera descent rendered live in WebGL by `descentShader.ts` (cloud sea, bridge towers, fog, town lights; no photographs). `MainStreet.tsx` presents the eight capabilities as eight storefronts that open the working demos. Under reduced motion the film renders one still frame per scroll position; without WebGL a still gradient stands in.
+- `src/components/flagship/`: the previous homepage (photographs, fog, redwood, a day on Main Street), at `/#/v2`.
+- `src/components/home/`: shared pieces every version reuses (`SiteHeader`, the footer in `Sections.tsx`, and the eight demos in `cards/`), plus `HomePage.tsx`, the first version of the homepage.
+- `src/content/epicContent.ts`, `src/content/flagshipContent.ts` and `src/content/homeContent.ts`: all homepage copy and the demos' sample data. The fictional business is Summit Air & Heat everywhere.
 - `src/index.css` (`.sp-*`) and `tailwind.config.js` (`sp` colors, `font-editorial`, `font-ui`): the homepage type scale and tokens.
 - `public/home/`: the homepage photographs, built from the originals by `python3 scripts/build-home-images.py`.
-- Routes (hash-based, in `src/App.tsx`): `/` homepage, `/#/v1` the first version (eight-card grid), `/#/classic` the previous production homepage, `/#/california` the earlier California concept, `/#/admin` settings.
+- Routes (hash-based, in `src/App.tsx`): `/` homepage, `/#/v2` the photographic version, `/#/v1` the first version (eight-card grid), `/#/classic` the previous production homepage, `/#/california` the earlier California concept, `/#/admin` settings.
 - Shared integrations, used by every route: `BookingModal` (Cal.com, link checked through `/api/booking`), `ChatInterface` (the Concierge, `/api/gemini`), `ContactModal` (`/api/leads`), and the front-desk voice demo hook `components/demo/useFrontDeskDemo.ts` (`/api/voice`). Open them through `src/lib/siteActions.ts`.
 - `BOOKING_URL` in `src/content/siteContent.ts` is the single booking link. Confirm it returns 200 before changing it.
 

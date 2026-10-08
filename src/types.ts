@@ -27,7 +27,7 @@ export enum Theme {
   DARK = 'dark',
 }
 
-export type AppRoute = 'home' | 'admin' | 'california' | 'classic' | 'v1';
+export type AppRoute = 'home' | 'admin' | 'california' | 'classic' | 'v1' | 'v2';
 
 export interface BannerDisplayState {
   visible: boolean;
