@@ -30,46 +30,44 @@ const Ways: React.FC = () => (
   </section>
 );
 
-/** The founder, with a modest portrait. Employer names stay in the full bio. */
+/** The founder: a modest portrait, with the story beside it. */
 const Founder: React.FC = () => {
   const [portrait, setPortrait] = React.useState(true);
   return (
     <section id="founder" aria-labelledby="founder-heading" className="sp-section bg-sp-deep text-sp-ivory">
-      <div className="sp-shell">
-        <h2 id="founder-heading" className={`${statement} max-w-[19ch]`}>
-          {HOME_FOUNDER.heading}
-        </h2>
-        <div className="mt-12 grid gap-10 lg:mt-20 lg:grid-cols-12 lg:gap-12">
-          <div className="lg:col-span-5">
-            <figure className="flex items-center gap-5">
-              {portrait && (
-                <img
-                  src="/home/troy-hill-480.webp"
-                  srcSet="/home/troy-hill-240.webp 240w, /home/troy-hill-480.webp 480w"
-                  sizes="160px"
-                  width={480}
-                  height={480}
-                  alt="Troy Hill"
-                  loading="lazy"
-                  decoding="async"
-                  onError={() => setPortrait(false)}
-                  className="h-32 w-32 shrink-0 rounded-full object-cover ring-1 ring-sp-ivory/20 sm:h-40 sm:w-40"
-                />
-              )}
-              <figcaption>
-                <span className="block font-editorial text-[1.625rem] leading-tight">{HOME_FOUNDER_NAME.name}</span>
-                <span className="mt-1 block text-[15px] text-sp-mist">{HOME_FOUNDER_NAME.title}</span>
-              </figcaption>
-            </figure>
-            <div className="mt-8 space-y-5">
-              {HOME_FOUNDER.body.map((paragraph) => (
-                <p key={paragraph} className="sp-lede text-sp-mist">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+      <div className="sp-shell grid gap-10 md:grid-cols-12 md:gap-12 lg:gap-16">
+        <figure className="md:col-span-4 lg:col-span-3">
+          {portrait && (
+            <img
+              src="/home/troy-hill-480.webp"
+              srcSet="/home/troy-hill-240.webp 240w, /home/troy-hill-480.webp 480w"
+              sizes="(min-width: 768px) 240px, 180px"
+              width={480}
+              height={480}
+              alt="Troy Hill"
+              loading="lazy"
+              decoding="async"
+              onError={() => setPortrait(false)}
+              className="aspect-square w-[180px] rounded-[6px] object-cover ring-1 ring-sp-ivory/15 md:w-full md:max-w-[240px]"
+            />
+          )}
+          <figcaption className="mt-5">
+            <span className="block font-editorial text-[1.5rem] leading-tight">{HOME_FOUNDER_NAME.name}</span>
+            <span className="mt-1 block text-[15px] text-sp-mist">{HOME_FOUNDER_NAME.title}</span>
+          </figcaption>
+        </figure>
+        <div className="md:col-span-8 lg:col-span-9 lg:col-start-4">
+          <h2 id="founder-heading" className="font-editorial text-[clamp(2.25rem,1.3rem+3.4vw,4.5rem)] leading-[1.02] tracking-[-0.022em]">
+            {HOME_FOUNDER.heading}
+          </h2>
+          <div className="mt-8 max-w-[40rem] space-y-5">
+            {HOME_FOUNDER.body.map((paragraph) => (
+              <p key={paragraph} className="sp-lede text-sp-mist">
+                {paragraph}
+              </p>
+            ))}
           </div>
-          <p className="font-editorial text-[clamp(1.75rem,1.3rem+1.6vw,2.75rem)] leading-[1.15] tracking-[-0.015em] text-sp-champagne lg:col-span-6 lg:col-start-7 lg:self-start lg:pt-10">
+          <p className="mt-9 border-t border-sp-ivory/20 pt-7 font-editorial text-[clamp(1.5rem,1.2rem+1vw,2.125rem)] leading-[1.2] text-sp-champagne">
             {HOME_FOUNDER.closing}
           </p>
         </div>
