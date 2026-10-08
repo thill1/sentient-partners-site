@@ -4,6 +4,7 @@ import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
+import { FILM_SEQUENCES, FramePlayer } from './filmFrames';
 import { timeOfDay } from './timeOfDay';
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -27,6 +28,7 @@ const presence = (p: number, from: number, to: number) => clamp01((p - from) / 0
 export const Descent: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const filmRef = useRef<HTMLCanvasElement>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
@@ -139,9 +141,32 @@ export const Descent: React.FC = () => {
       });
     };
     showClock();
+
+    // The rendered film for this time of day, when one exists.
+    const film = filmRef.current;
+    const filmCtx = film?.getContext('2d') ?? null;
+    let player: FramePlayer | null = null;
+    let playerKind = '';
+    const choosePlayer = () => {
+      const kind = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'sunset';
+      const count = FILM_SEQUENCES[kind];
+      if (kind === playerKind) return;
+      playerKind = kind;
+      player = count ? new FramePlayer(kind, count) : null;
+    };
+    choosePlayer();
+    const sizeFilm = () => {
+      if (!film) return;
+      const scale = Math.min(window.devicePixelRatio || 1, 2);
+      film.width = Math.round(film.clientWidth * scale);
+      film.height = Math.round(film.clientHeight * scale);
+    };
+    sizeFilm();
+    window.addEventListener('resize', sizeFilm);
     const clockTimer = window.setInterval(() => {
       sky = timeOfDay();
       showClock();
+      choosePlayer();
     }, 5000);
 
     let story = target();
@@ -188,7 +213,12 @@ export const Descent: React.FC = () => {
       look.x += (look.targetX - look.x) * 0.04;
       look.y += (look.targetY - look.y) * 0.04;
 
-      if (gl && program) {
+      // Play the rendered film once it has frames; until then, or if it has none, the still and live film stand in.
+      const playing = !!player && player.available && player.loaded > 0;
+      section.dataset.rendered = playing ? 'true' : 'false';
+      if (playing && player && filmCtx) {
+        player.draw(filmCtx, story);
+      } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
         gl.uniform1f(uniforms.uTime, still ? 12 : (performance.now() - started) / 1000);
         gl.uniform1f(uniforms.uP, story);
@@ -201,7 +231,8 @@ export const Descent: React.FC = () => {
       EPIC_BEATS.forEach((beat, index) => {
         const node = beatRefs.current[index];
         if (!node) return;
-        const shown = presence(story, beat.range[0], beat.range[1]);
+        const range: readonly number[] = playing ? beat.film : beat.range;
+        const shown = presence(story, range[0], range[1]);
         node.style.opacity = String(shown);
         node.style.transform = still ? '' : `translateY(${(1 - shown) * 18}px)`;
         node.style.visibility = shown > 0.02 ? 'visible' : 'hidden';
@@ -225,11 +256,12 @@ export const Descent: React.FC = () => {
       // The rendered still leads the opening and hands over to the live film as you descend.
       // The rendered shot carries the whole descent above the fog, and gives way
       // only inside the fog, where the frame is pale and no bridge is visible.
-      const opening = 1 - clamp01((story - 0.47) / 0.04);
+      const opening = playing ? 0 : 1 - clamp01((story - 0.47) / 0.04);
       Object.values(stillRefs.current).forEach((node) => {
         if (node) node.style.opacity = String(opening * Number(node.dataset.weight ?? 0));
       });
-      section.dataset.fog = story > 0.5 && story < 0.592 && sky.phase[2] < 0.5 ? 'true' : 'false';
+      const inFog = playing ? story > 0.57 && story < 0.66 : story > 0.5 && story < 0.592;
+      section.dataset.fog = inFog && sky.phase[2] < 0.5 ? 'true' : 'false';
     };
     frame = requestAnimationFrame(draw);
 
@@ -237,6 +269,7 @@ export const Descent: React.FC = () => {
       cancelAnimationFrame(frame);
       window.clearInterval(clockTimer);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', sizeFilm);
       window.removeEventListener('pointermove', onPointerMove);
     };
   }, []);
@@ -246,7 +279,9 @@ export const Descent: React.FC = () => {
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
-        <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100" />
+        <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100 group-data-[rendered=true]/film:hidden" />
+        {/* The rendered descent, played by scroll (film/descent.blend). */}
+        <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 hidden h-full w-full group-data-[rendered=true]/film:block" />
         {/* Path-traced stills of the opening shot, one per time of day (rendered in Blender, film/descent.blend). */}
         {(['sunset', 'day', 'night'] as const).map((kind) => (
           <img
@@ -282,7 +317,7 @@ export const Descent: React.FC = () => {
             <span aria-hidden="true" className="block w-9" />
           </p>
           <p aria-hidden="true" className="mb-5 flex items-center justify-end gap-3 text-[13px] tabular-nums tracking-[0.18em]">
-            <span ref={altitudeRef}>38,000 ft</span>
+            <span ref={altitudeRef}>2,950 ft</span>
             <span className="relative block h-px w-9">
               <span className="absolute inset-0 bg-current opacity-30" />
               <span ref={railRef} className="absolute inset-0 origin-left bg-current" />

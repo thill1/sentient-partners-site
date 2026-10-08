@@ -43,3 +43,6 @@ coverage/
 # Blender working files: test renders and autosaves
 film/test/
 film/*.blend1
+
+# Raw Blender frames (encoded copies live in public/film)
+film/frames/

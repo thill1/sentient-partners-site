@@ -13,49 +13,54 @@ export const EPIC_NAV = [
   { id: 'contact', label: 'Contact' },
 ] as const;
 
-/** Cruising altitude, and Auburn's elevation, in feet. */
-export const EPIC_ALTITUDE = { from: 38000, to: 1227 };
+/** The camera's height at the start and end of the rendered descent, in feet. */
+export const EPIC_ALTITUDE = { from: 2950, to: 130 };
 
 export const EPIC_BEATS = [
   {
     id: 'title',
     range: [-1, 0.13],
+    film: [-1, 0.12],
     heading: 'Global Experience. Local Impact.',
     body: 'Enterprise-caliber strategy, technology, and operational expertise for growing businesses.',
   },
   {
     id: 'founder',
     range: [0.17, 0.36],
+    film: [0.17, 0.4],
     heading: 'Decades of leadership at global scale.',
     body: 'Our founder led organizations of thousands and mission-critical operations across banking, brokerage, airlines, and healthcare.',
   },
   {
     id: 'fog',
     range: [0.5, 0.59],
+    film: [0.57, 0.66],
     heading: 'Perspective is the view from above. Impact happens on the ground.',
     body: '',
   },
   {
     id: 'thesis',
     range: [0.73, 0.86],
+    film: [0.72, 0.84],
     heading: 'Enterprise-caliber thinking. Small business practicality.',
     body: 'We bring the strategic perspective of global enterprise leadership and the hands-on commitment of a local partner.',
   },
   {
     id: 'home',
     range: [0.91, 2],
-    heading: 'Auburn, California.',
-    body: 'Local, reachable, and invested. Clients work directly with an accountable partner, not a distant ticket queue.',
+    film: [0.9, 2],
+    heading: 'Northern California, close to home.',
+    body: 'Based in Auburn. Local, reachable, and invested. Clients work directly with an accountable partner, not a distant ticket queue.',
   },
 ] as const;
 
 /** Where each chapter of the film sits, for the rail at the side. */
 export const EPIC_CHAPTERS = [
-  { at: 0, label: 'Cruising altitude' },
+  { at: 0, label: 'Above the fog' },
   { at: 0.27, label: 'The Golden Gate' },
   { at: 0.54, label: 'Through the fog' },
   { at: 0.67, label: 'Under the span' },
-  { at: 0.97, label: 'Auburn' },
+  { at: 0.97, label: 'The city' },
 ] as const;
 
 export const EPIC_SCROLL_CUE = 'Scroll to descend';
