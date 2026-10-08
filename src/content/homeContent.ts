@@ -129,6 +129,11 @@ export const HOME_FOUNDER = {
   imageAlt: 'Morning light and mist between the trunks of old-growth redwoods.',
 };
 
+export const HOME_FOUNDER_NAME = {
+  name: 'Troy Hill',
+  title: 'Founder and Principal Consultant',
+};
+
 export const HOME_AUBURN = {
   heading: 'Local, reachable, and invested.',
   body: [

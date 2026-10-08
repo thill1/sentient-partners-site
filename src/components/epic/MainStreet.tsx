@@ -200,8 +200,9 @@ export const MainStreet: React.FC = () => {
       id="capabilities"
       ref={sectionRef}
       aria-labelledby="capabilities-heading"
-      className="relative bg-[#060A1C] text-sp-ivory [--bw:86vw] lg:[--bw:min(36vw,calc((100svh-404px)/1.164),34rem)]"
-      style={held ? { height: `calc(100vh + ${(COUNT - 1) * STEP_VH}vh)` } : undefined}
+      className="relative bg-[#060A1C] text-sp-ivory [--bw:86vw] lg:[--bw:min(36vw,calc((100svh-470px)/1.22),34rem)]"
+      // The held scene has its own header room, so jumping here lands it flush.
+      style={{ scrollMarginTop: 0, ...(held ? { height: `calc(100vh + ${(COUNT - 1) * STEP_VH}vh)` } : {}) }}
     >
       <div
         className={`flex flex-col overflow-hidden bg-[linear-gradient(to_bottom,#060A1C_0%,#0B1132_30%,#2A2259_62%,#70487A_84%,#C4705A_100%)] ${
@@ -216,7 +217,7 @@ export const MainStreet: React.FC = () => {
               </h2>
               <div key={card.id} className="sp-fade mt-3" aria-live="polite">
                 <h3 className="font-editorial text-[clamp(2.25rem,1.3rem+3.4vw,4.25rem)] leading-[1] tracking-[-0.022em]">{card.title}</h3>
-                <p className="sp-lede mt-3 max-w-[38rem] text-sp-mist">{card.outcome}</p>
+                <p className="sp-lede mt-3 max-w-[40rem] text-sp-mist lg:min-h-[3.1em]">{card.outcome}</p>
               </div>
             </div>
             <div className="flex items-center justify-between gap-6 lg:col-span-4 lg:justify-end">
@@ -285,10 +286,10 @@ export const MainStreet: React.FC = () => {
                       >
                         {EPIC_SIGNS[id]}
                       </p>
-                      <div className="relative flex items-end gap-[3%] px-[5%] pt-[4.5%]">
+                      <div className={`relative flex items-end gap-[3%] px-[5%] ${awning ? 'pt-[9.5%]' : 'pt-[4.5%]'}`}>
                         {awning && <Awning pale={pale} />}
                         <div
-                          className={`sp-demo relative min-w-0 flex-1 rounded-t-[5px] bg-[#070C20] p-[6px] ring-1 transition-shadow duration-700 ${
+                          className={`sp-demo relative z-20 min-w-0 flex-1 rounded-t-[5px] bg-[#070C20] p-[6px] ring-1 transition-shadow duration-700 ${
                             lit ? 'shadow-[0_0_70px_4px_rgba(246,201,138,0.55)] ring-[#F6C98A]' : 'ring-[#C9A96F]/40'
                           }`}
                         >
@@ -326,7 +327,7 @@ export const MainStreet: React.FC = () => {
                   {/* The light a lit window throws onto the pavement. */}
                   <div
                     aria-hidden="true"
-                    className={`pointer-events-none absolute inset-x-[4%] bottom-[-14px] h-7 rounded-[50%] bg-[#F6C98A] blur-[14px] transition-opacity duration-700 ${
+                    className={`pointer-events-none absolute inset-x-[4%] bottom-[-22px] z-0 h-5 rounded-[50%] bg-[#F6C98A] blur-[12px] transition-opacity duration-700 ${
                       lit ? 'opacity-60' : 'opacity-0'
                     }`}
                   />

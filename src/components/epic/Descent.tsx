@@ -4,6 +4,7 @@ import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
+import { timeOfDay } from './timeOfDay';
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type);
@@ -31,6 +32,7 @@ export const Descent: React.FC = () => {
   const railRef = useRef<HTMLSpanElement>(null);
   const chapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const cueRef = useRef<HTMLParagraphElement>(null);
+  const clockRef = useRef<HTMLSpanElement>(null);
 
   const goTo = (at: number) => {
     const section = sectionRef.current;
@@ -67,7 +69,7 @@ export const Descent: React.FC = () => {
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
         uniforms = Object.fromEntries(
-          ['uRes', 'uTime', 'uP', 'uLook', 'uNoise'].map((name) => [name, gl.getUniformLocation(program as WebGLProgram, name)]),
+          ['uRes', 'uTime', 'uP', 'uLook', 'uNoise', 'uPhase', 'uLight'].map((name) => [name, gl.getUniformLocation(program as WebGLProgram, name)]),
         );
         // One small tile of random values feeds every cloud, ridge and light.
         const tile = new Uint8Array(256 * 256 * 4);
@@ -102,7 +104,8 @@ export const Descent: React.FC = () => {
     let quality = 1;
     const resize = () => {
       const phone = window.innerWidth < 768;
-      const scale = Math.min(window.devicePixelRatio || 1, phone ? 2 : 1.5) * (phone ? 0.5 : 0.75) * quality;
+      // Full CSS resolution, sharper still on high-density screens when there is room.
+      const scale = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.35) * (phone ? 0.8 : 1) * quality;
       canvas.width = Math.max(2, Math.round(canvas.clientWidth * scale));
       canvas.height = Math.max(2, Math.round(canvas.clientHeight * scale));
       gl?.viewport(0, 0, canvas.width, canvas.height);
@@ -123,9 +126,28 @@ export const Descent: React.FC = () => {
       return clamp01(-rect.top / Math.max(1, rect.height - window.innerHeight));
     };
 
+    // The light and the clock follow Pacific time, checked every few seconds.
+    let sky = timeOfDay();
+    const showClock = () => {
+      if (clockRef.current) clockRef.current.textContent = `${sky.clock} PT`;
+      section.dataset.phase = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'golden';
+    };
+    showClock();
+    const clockTimer = window.setInterval(() => {
+      sky = timeOfDay();
+      showClock();
+    }, 5000);
+
     let story = target();
     let frame = 0;
-    const started = performance.now();
+    // ?t=42 starts the film's own clock 42 s in, so a review can catch a moment.
+    let offset = 0;
+    try {
+      offset = Number(new URLSearchParams(window.location.search).get('t')) || 0;
+    } catch {
+      offset = 0;
+    }
+    const started = performance.now() - offset * 1000;
     let last = started;
     let slow = 0;
     let quick = 0;
@@ -142,8 +164,8 @@ export const Descent: React.FC = () => {
       if (program && elapsed < 250 && now - started > 2500) {
         slow = elapsed > 26 ? slow + 1 : Math.max(0, slow - 1);
         quick = elapsed < 18 ? quick + 1 : 0;
-        if (slow > 45 && quality > 0.42) {
-          quality = Math.max(0.42, quality * 0.85);
+        if (slow > 45 && quality > 0.74) {
+          quality = Math.max(0.74, quality * 0.9);
           slow = 0;
           quick = 0;
           resize();
@@ -165,6 +187,8 @@ export const Descent: React.FC = () => {
         gl.uniform1f(uniforms.uTime, still ? 12 : (performance.now() - started) / 1000);
         gl.uniform1f(uniforms.uP, story);
         gl.uniform2f(uniforms.uLook, still ? 0 : look.x, still ? 0 : look.y);
+        gl.uniform3f(uniforms.uPhase, sky.phase[0], sky.phase[1], sky.phase[2]);
+        gl.uniform3f(uniforms.uLight, sky.light[0], sky.light[1], sky.light[2]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
 
@@ -191,12 +215,14 @@ export const Descent: React.FC = () => {
         if (node) node.dataset.current = index === current ? 'true' : 'false';
       });
       // In the fog the frame is pale, so the instruments turn dark.
-      section.dataset.fog = story > 0.5 && story < 0.592 ? 'true' : 'false';
+      // At night the inside of the fog is dark, so the copy stays light.
+      section.dataset.fog = story > 0.5 && story < 0.592 && sky.phase[2] < 0.5 ? 'true' : 'false';
     };
     frame = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(frame);
+      window.clearInterval(clockTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onPointerMove);
     };
@@ -209,6 +235,8 @@ export const Descent: React.FC = () => {
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100" />
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#060A1C]/70 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
+        {/* By day the sky is bright, so the copy gets a little shade of its own. */}
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-[#0A1840]/75 via-[#0A1840]/45 to-transparent opacity-0 transition-opacity duration-700 group-data-[phase=day]/film:opacity-100 group-data-[fog=true]/film:!opacity-0" />
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#060A1C]/60 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
 
         {/* Chapters of the film. */}
@@ -217,6 +245,12 @@ export const Descent: React.FC = () => {
           className="absolute right-[var(--sp-gutter)] top-[72%] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[fog=true]/film:text-sp-navy md:block"
         >
           {/* Altitude: where you are in the story. */}
+          {/* The time in San Francisco, which also sets the light in the film. */}
+          <p className="mb-2 flex items-center justify-end gap-3 text-[13px] tabular-nums tracking-[0.18em]">
+            <span className="sr-only">Time in San Francisco: </span>
+            <span ref={clockRef} />
+            <span aria-hidden="true" className="block w-9" />
+          </p>
           <p aria-hidden="true" className="mb-5 flex items-center justify-end gap-3 text-[13px] tabular-nums tracking-[0.18em]">
             <span ref={altitudeRef}>38,000 ft</span>
             <span className="relative block h-px w-9">
@@ -267,7 +301,7 @@ export const Descent: React.FC = () => {
                 beatRefs.current[index] = node;
               }}
               className={`absolute inset-x-0 bottom-[clamp(5.5rem,13vh,8rem)] px-[var(--sp-gutter)] text-center will-change-[opacity,transform] lg:text-left ${
-                pale ? 'text-sp-navy' : 'text-sp-ivory'
+                pale ? 'text-sp-ivory group-data-[fog=true]/film:text-sp-navy' : 'text-sp-ivory'
               } ${index === 0 ? '' : 'invisible opacity-0'}`}
             >
               <Heading
@@ -280,7 +314,7 @@ export const Descent: React.FC = () => {
                 {beat.heading}
               </Heading>
               {beat.body && (
-                <p className={`mx-auto mt-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] lg:mx-0 ${pale ? 'text-sp-navy/85' : 'text-sp-ivory/90'}`}>
+                <p className={`mx-auto mt-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] lg:mx-0 ${pale ? 'text-sp-ivory/90 group-data-[fog=true]/film:text-sp-navy/85' : 'text-sp-ivory/90'}`}>
                   {beat.body}
                 </p>
               )}

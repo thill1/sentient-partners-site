@@ -52,7 +52,7 @@ export const ReputationDemo: React.FC = () => {
                   id="reputation-draft"
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  className="mt-1 min-h-0 flex-1 resize-none rounded-[3px] border border-sp-navy/25 p-2 text-[12.5px] leading-snug text-sp-ink"
+                  className="mt-1 min-h-0 flex-1 resize-none rounded-[3px] border border-sp-navy/25 bg-white p-2 text-[12.5px] leading-snug text-sp-ink"
                 />
                 <button
                   type="button"

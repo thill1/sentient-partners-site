@@ -12,7 +12,11 @@ interface PanelProps {
 }
 
 export const Panel: React.FC<PanelProps> = ({ tone, title, aside, children }) => (
-  <div className={`flex h-full flex-col ${tone === 'dark' ? 'bg-[#11244F] text-sp-ivory' : 'bg-white text-sp-ink'}`}>
+  <div
+    className={`flex h-full flex-col ${
+      tone === 'dark' ? 'bg-[#11244F] text-sp-ivory [color-scheme:dark]' : 'bg-white text-sp-ink [color-scheme:light]'
+    }`}
+  >
     <div
       className={`flex h-9 shrink-0 items-center justify-between gap-3 border-b px-3 ${
         tone === 'dark' ? 'border-white/10' : 'border-sp-line'

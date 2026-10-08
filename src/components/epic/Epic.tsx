@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { EPIC_NAV } from '../../content/epicContent';
-import { HOME_CLOSE, HOME_CONTACT, HOME_CTA, HOME_FOUNDER, HOME_META, HOME_PILLARS, HOME_PROCESS } from '../../content/homeContent';
+import { HOME_CLOSE, HOME_CONTACT, HOME_CTA, HOME_FOUNDER, HOME_FOUNDER_NAME, HOME_META, HOME_PILLARS, HOME_PROCESS } from '../../content/homeContent';
 import { bookIntroduction } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { SiteFooter } from '../home/Sections';
@@ -30,33 +30,58 @@ const Ways: React.FC = () => (
   </section>
 );
 
-/** The founder, in words only. Employer names stay in the full bio. */
-const Founder: React.FC = () => (
-  <section id="founder" aria-labelledby="founder-heading" className="sp-section bg-sp-deep text-sp-ivory">
-    <div className="sp-shell">
-      <h2 id="founder-heading" className={`${statement} max-w-[19ch]`}>
-        {HOME_FOUNDER.heading}
-      </h2>
-      <div className="mt-12 grid gap-10 lg:mt-20 lg:grid-cols-12 lg:gap-12">
-        <div className="space-y-5 lg:col-span-5">
-          {HOME_FOUNDER.body.map((paragraph) => (
-            <p key={paragraph} className="sp-lede text-sp-mist">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-        <dl className="border-t border-sp-ivory/20 lg:col-span-6 lg:col-start-7">
-          {HOME_FOUNDER.points.map((point) => (
-            <div key={point.name} className="border-b border-sp-ivory/20 py-6">
-              <dt className="font-editorial text-[clamp(1.375rem,1.2rem+0.6vw,1.75rem)] leading-snug text-sp-champagne">{point.name}</dt>
-              <dd className="sp-body mt-2 text-sp-mist">{point.detail}</dd>
+/** The founder, with a modest portrait. Employer names stay in the full bio. */
+const Founder: React.FC = () => {
+  const [portrait, setPortrait] = React.useState(true);
+  return (
+    <section id="founder" aria-labelledby="founder-heading" className="sp-section bg-sp-deep text-sp-ivory">
+      <div className="sp-shell">
+        <h2 id="founder-heading" className={`${statement} max-w-[19ch]`}>
+          {HOME_FOUNDER.heading}
+        </h2>
+        <div className="mt-12 grid gap-10 lg:mt-20 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-5">
+            <figure className="flex items-center gap-5">
+              {portrait && (
+                <img
+                  src="/home/troy-hill-480.jpg"
+                  srcSet="/home/troy-hill-240.jpg 240w, /home/troy-hill-480.jpg 480w"
+                  sizes="160px"
+                  width={480}
+                  height={480}
+                  alt="Troy Hill"
+                  loading="lazy"
+                  decoding="async"
+                  onError={() => setPortrait(false)}
+                  className="h-32 w-32 shrink-0 rounded-full object-cover object-[50%_22%] ring-1 ring-sp-ivory/20 sm:h-40 sm:w-40"
+                />
+              )}
+              <figcaption>
+                <span className="block font-editorial text-[1.625rem] leading-tight">{HOME_FOUNDER_NAME.name}</span>
+                <span className="mt-1 block text-[15px] text-sp-mist">{HOME_FOUNDER_NAME.title}</span>
+              </figcaption>
+            </figure>
+            <div className="mt-8 space-y-5">
+              {HOME_FOUNDER.body.map((paragraph) => (
+                <p key={paragraph} className="sp-lede text-sp-mist">
+                  {paragraph}
+                </p>
+              ))}
             </div>
-          ))}
-        </dl>
+          </div>
+          <dl className="border-t border-sp-ivory/20 lg:col-span-6 lg:col-start-7">
+            {HOME_FOUNDER.points.map((point) => (
+              <div key={point.name} className="border-b border-sp-ivory/20 py-6">
+                <dt className="font-editorial text-[clamp(1.375rem,1.2rem+0.6vw,1.75rem)] leading-snug text-sp-champagne">{point.name}</dt>
+                <dd className="sp-body mt-2 text-sp-mist">{point.detail}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /** Four steps, in order: the numerals are large because the order is the point. */
 const Approach: React.FC = () => (
