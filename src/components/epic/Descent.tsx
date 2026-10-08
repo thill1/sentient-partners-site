@@ -142,8 +142,8 @@ export const Descent: React.FC = () => {
       if (program && elapsed < 250 && now - started > 2500) {
         slow = elapsed > 26 ? slow + 1 : Math.max(0, slow - 1);
         quick = elapsed < 18 ? quick + 1 : 0;
-        if (slow > 45 && quality > 0.6) {
-          quality = Math.max(0.6, quality * 0.88);
+        if (slow > 45 && quality > 0.42) {
+          quality = Math.max(0.42, quality * 0.85);
           slow = 0;
           quick = 0;
           resize();

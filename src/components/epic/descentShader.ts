@@ -70,6 +70,8 @@ float fbm3(vec2 p) {
 }
 
 // The fog rolls in from the ocean: slowly, but always visibly moving.
+vec3 gCam;
+
 vec2 drift() { return vec2(uTime * 0.016, -uTime * 0.034); }
 
 // ---------------------------------------------------------------- fog
@@ -99,8 +101,15 @@ float fogDensity(vec3 q) {
   float wisp = n3(q * vec3(1.3, 2.6, 1.3) + vec3(drift().x * 5.0, uTime * 0.035, drift().y * 5.0)) * 0.62
              + n3(q * 3.7 + vec3(0.0, uTime * 0.06, uTime * 0.05)) * 0.38;
   float cling = exp(-towerReach(q.xz) * 1.3) * 0.85;
-  float d = (cloudLow(q.xz) + cling - q.y) * 1.7 + (wisp - 0.5) * 1.5;
-  d = clamp(d, 0.0, 1.0);
+  float surface = cloudLow(q.xz) + cling;
+  float d = clamp((surface - q.y) * 1.5 + (wisp - 0.5) * 2.1, 0.0, 1.0);
+  // Thin streamers torn off the top by the wind, drawn out along its direction.
+  vec2 wind = vec2(q.x * 0.5 - q.z * 0.86, q.x * 0.86 + q.z * 0.5);
+  float streamer = n3(vec3(wind.x * 0.55 + uTime * 0.05, q.y * 5.0 - uTime * 0.02, wind.y * 3.2));
+  float lift = clamp((q.y - surface) / 0.55, 0.0, 1.0);
+  // Only near the camera: at range they are finer than the samples and would sparkle.
+  float close = 1.0 - smoothstep(4.0, 10.0, length(q - gCam));
+  d = max(d, smoothstep(0.6, 0.86, streamer) * (1.0 - lift) * step(surface - 0.1, q.y) * 0.5 * close);
   return d * smoothstep(0.9, 1.14, q.y + (wisp - 0.5) * 0.3);
 }
 
@@ -224,12 +233,24 @@ vec3 bridgeColor(vec3 q, vec3 n, float kind, float above) {
     vec3 steel = mix(ORANGE * vec3(0.20, 0.17, 0.22), ORANGE * 0.5, above * (0.3 + 0.7 * facing));
     float truss = step(0.5, -n.y) * (0.5 + 0.5 * step(0.5, fract(q.z * 4.0)));
     steel *= 1.0 - truss * 0.45;
+    // The stiffening truss along each side: chords top and bottom, diagonals between.
+    float up = (q.y - (DECK - 0.045)) / 0.09;
+    float zig = abs(fract(q.z * 7.0) - 0.5) * 2.0;
+    float web = max(smoothstep(0.16, 0.06, abs(up - zig)), max(step(0.86, up), step(up, 0.14)));
+    steel *= mix(1.0, 0.45 + 0.95 * web, step(0.5, abs(n.x)));
     return steel + vec3(1.0, 0.78, 0.48) * lamp * 1.6;
   }
   vec3 day = mix(ORANGE * vec3(0.5, 0.36, 0.56), ORANGE * 1.18, 0.15 + 0.85 * facing) + vec3(1.0, 0.7, 0.45) * pow(facing, 6.0) * 0.22;
   float flood = max(exp(-max(q.y - 0.1, 0.0) * 1.0), exp(-abs(q.y - DECK - 0.2) * 1.5));
   vec3 night = ORANGE * (0.22 + 1.35 * flood) * (0.7 + 0.3 * abs(n.z));
-  return mix(night, day, above);
+  vec3 paint = mix(night, day, above);
+  // Art Deco detail: fluted legs, and stepped panels cut into the portal struts.
+  float leg = step(LEG - 0.07, abs(q.x));
+  float flute = 0.86 + 0.14 * smoothstep(0.25, 0.5, abs(fract((abs(n.z) > 0.5 ? q.x : q.z) * 34.0) - 0.5) * 2.0);
+  float panel = smoothstep(0.42, 0.36, abs(fract(q.x * 5.2 + 0.5) - 0.5)) * step(0.5, abs(n.z)) * (1.0 - leg);
+  paint *= mix(1.0, flute, leg);
+  paint *= 1.0 - panel * 0.38;
+  return paint;
 }
 
 // ---------------------------------------------------------------- ground
@@ -306,6 +327,7 @@ void main() {
   uv = mat2(cos(0.012 * sin(uTime * 0.17)), -sin(0.012 * sin(uTime * 0.17)), sin(0.012 * sin(uTime * 0.17)), cos(0.012 * sin(uTime * 0.17))) * uv;
   vec3 rd = normalize(vec3(uv.x + uLook.x * 0.025, uv.y + pitch + uLook.y * 0.018, FOCAL));
   rd.x = abs(rd.x) < 0.0002 ? 0.0002 : rd.x;
+  gCam = ro;
 
   float fogHere = cloudLow(ro.xz);
   // 1 while the camera is clear above the fog, 0 once it is in or under it.
@@ -368,6 +390,9 @@ void main() {
       col = mix(farHaze, upper, smoothstep(-0.02, 0.0, rd.y));
     }
   }
+
+  // As the camera sinks into the surface, the far fog gives way to the fog around the lens.
+  if (sea) col = mix(vec3(0.62, 0.61, 0.82), col, smoothstep(0.02, 0.7, above));
 
   vec3 bro = toLocal(ro - SPAN);
   vec3 brd = toLocal(rd);
@@ -475,7 +500,7 @@ void main() {
 
   // -------- the near fog, as a volume in front of everything
   {
-    float yTop = 2.5;
+    float yTop = 2.85;
     float yBase = 0.86;
     float t0 = 0.0;
     float t1 = min(tScene, 46.0);
@@ -524,6 +549,16 @@ void main() {
       }
       col = col * through + light;
     }
+  }
+
+  // Inside the fog: the sun is a soft glow somewhere ahead, and the fog itself
+  // streams past in sheets as you sink through it.
+  if (inside > 0.01) {
+    float sheets = fbm(vec2(uv.x * 1.6 + uTime * 0.03, uv.y * 0.9 - p * 46.0 + uTime * 0.07));
+    col *= mix(1.0, 0.8 + 0.42 * sheets, inside);
+    vec2 glowAt = SUN.xy / SUN.z * FOCAL - vec2(0.0, pitch);
+    float glow = exp(-length((uv - glowAt) * vec2(1.0, 1.5)) * 2.6);
+    col += vec3(1.0, 0.66, 0.46) * glow * 0.42 * inside * smoothstep(1.0, 1.9, h);
   }
 
   // The sun drawn out along the horizon, as a lens would.
