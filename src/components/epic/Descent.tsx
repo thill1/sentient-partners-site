@@ -4,7 +4,7 @@ import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
-import { FILM_SEQUENCES, FramePlayer } from './filmFrames';
+import { FILM_SEQUENCES, FramePlayer, focusAt } from './filmFrames';
 import { timeOfDay } from './timeOfDay';
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -146,6 +146,9 @@ export const Descent: React.FC = () => {
     const film = filmRef.current;
     const filmCtx = film?.getContext('2d') ?? null;
     let player: FramePlayer | null = null;
+    // Held-camera loops for when the visitor pauses at the start or the end.
+    let openLoop: FramePlayer | null = null;
+    let cityLoop: FramePlayer | null = null;
     let playerKind = '';
     const choosePlayer = () => {
       const kind = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'sunset';
@@ -153,6 +156,8 @@ export const Descent: React.FC = () => {
       if (kind === playerKind) return;
       playerKind = kind;
       player = count ? new FramePlayer(kind, count) : null;
+      openLoop = count ? new FramePlayer(`${kind}-open`, 48) : null;
+      cityLoop = count ? new FramePlayer(`${kind}-city`, 48) : null;
     };
     choosePlayer();
     const sizeFilm = () => {
@@ -218,6 +223,14 @@ export const Descent: React.FC = () => {
       section.dataset.rendered = playing ? 'true' : 'false';
       if (playing && player && filmCtx) {
         player.draw(filmCtx, story);
+        // At rest at either end, the scene keeps moving: fog rolls, aircraft
+        // pass, boats and traffic carry on. The loop shares the film's first
+        // and last camera, so it fades in over the film without doubling.
+        const seconds = still ? 0 : (performance.now() - started) / 1000;
+        const atOpen = 1 - clamp01(story / 0.02);
+        const atCity = clamp01((story - 0.975) / 0.02);
+        if (atOpen > 0 && openLoop?.available && openLoop.complete) openLoop.drawLoop(filmCtx, seconds, 12, atOpen, focusAt(0));
+        if (atCity > 0 && cityLoop?.available && cityLoop.complete) cityLoop.drawLoop(filmCtx, seconds, 12, atCity, focusAt(1));
       } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
         gl.uniform1f(uniforms.uTime, still ? 12 : (performance.now() - started) / 1000);
@@ -260,7 +273,7 @@ export const Descent: React.FC = () => {
       Object.values(stillRefs.current).forEach((node) => {
         if (node) node.style.opacity = String(opening * Number(node.dataset.weight ?? 0));
       });
-      const inFog = playing ? story > 0.57 && story < 0.66 : story > 0.5 && story < 0.592;
+      const inFog = playing ? story > 0.465 && story < 0.565 : story > 0.5 && story < 0.592;
       section.dataset.fog = inFog && sky.phase[2] < 0.5 ? 'true' : 'false';
     };
     frame = requestAnimationFrame(draw);
@@ -281,7 +294,7 @@ export const Descent: React.FC = () => {
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100 group-data-[rendered=true]/film:hidden" />
         {/* The rendered descent, played by scroll (film/descent.blend). */}
-        <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 hidden h-full w-full group-data-[rendered=true]/film:block" />
+        <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Path-traced stills of the opening shot, one per time of day (rendered in Blender, film/descent.blend). */}
         {(['sunset', 'day', 'night'] as const).map((kind) => (
           <img
@@ -295,7 +308,6 @@ export const Descent: React.FC = () => {
             alt=""
             aria-hidden="true"
             decoding="async"
-            fetchPriority={kind === 'sunset' ? 'high' : 'low'}
             className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[40%_42%] opacity-0 transition-opacity duration-700 lg:origin-[40%_42%] lg:scale-[1.06] lg:object-[34%_42%]"
           />
         ))}

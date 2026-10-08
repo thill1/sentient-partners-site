@@ -34,7 +34,7 @@ export const EPIC_BEATS = [
   {
     id: 'fog',
     range: [0.5, 0.59],
-    film: [0.57, 0.66],
+    film: [0.465, 0.565],
     heading: 'Perspective is the view from above. Impact happens on the ground.',
     body: '',
   },

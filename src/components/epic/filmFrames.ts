@@ -15,6 +15,30 @@ const small = () => typeof window !== 'undefined' && Math.max(window.innerWidth,
 export const frameUrl = (kind: string, index: number) =>
   `/film/${kind}/${small() ? 'm/' : ''}${String(index + 1).padStart(4, '0')}.webp`;
 
+/**
+ * Where the subject sits across the frame (0 left, 1 right) through the
+ * descent, so a tall phone crop keeps the bridge, then the city, in view.
+ */
+const FOCUS: [number, number][] = [
+  [0, 0.3],
+  [0.25, 0.5],
+  [0.42, 0.6],
+  [0.6, 0.5],
+  [0.85, 0.55],
+  [1, 0.68],
+];
+export function focusAt(t: number) {
+  for (let i = 1; i < FOCUS.length; i++) {
+    const [t1, f1] = FOCUS[i];
+    const [t0, f0] = FOCUS[i - 1];
+    if (t <= t1) {
+      const u = (t - t0) / (t1 - t0);
+      return f0 + (f1 - f0) * u * u * (3 - 2 * u);
+    }
+  }
+  return FOCUS[FOCUS.length - 1][1];
+}
+
 export class FramePlayer {
   readonly frames: (HTMLImageElement | null)[];
   private ready: boolean[];
@@ -71,29 +95,51 @@ export class FramePlayer {
     return -1;
   }
 
-  /** Draw the film at position t (0..1), blending the two nearest frames. */
-  draw(ctx: CanvasRenderingContext2D, t: number) {
+  private cover(ctx: CanvasRenderingContext2D, image: HTMLImageElement, alpha: number, focus = 0.5) {
     const { width, height } = ctx.canvas;
-    const position = Math.min(1, Math.max(0, t)) * (this.frames.length - 1);
-    const lo = Math.floor(position);
-    const hi = Math.min(this.frames.length - 1, lo + 1);
-    const mix = position - lo;
-    const cover = (image: HTMLImageElement, alpha: number) => {
-      const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
-      const w = image.naturalWidth * scale;
-      const h = image.naturalHeight * scale;
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(image, (width - w) / 2, (height - h) / 2, w, h);
-    };
-    if (this.ready[lo] && this.ready[hi]) {
-      cover(this.frames[lo] as HTMLImageElement, 1);
-      if (mix > 0.001) cover(this.frames[hi] as HTMLImageElement, mix);
-    } else {
-      const n = this.nearest(position);
-      if (n < 0) return false;
-      cover(this.frames[n] as HTMLImageElement, 1);
-    }
+    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+    const w = image.naturalWidth * scale;
+    const h = image.naturalHeight * scale;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(image, (width - w) * focus, (height - h) / 2, w, h);
     ctx.globalAlpha = 1;
+  }
+
+  /**
+   * Draw the film at position t (0..1). Always one whole frame: the camera
+   * moves between frames, so blending two of them would show double images.
+   */
+  draw(ctx: CanvasRenderingContext2D, t: number, alpha = 1) {
+    const n = this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1));
+    if (n < 0) return false;
+    this.cover(ctx, this.frames[n] as HTMLImageElement, alpha, focusAt(t));
+    return true;
+  }
+
+  /** True once every frame has arrived. */
+  get complete() {
+    return this.loaded === this.frames.length;
+  }
+
+  /**
+   * Play the sequence as a loop at fps frames a second. The camera is still
+   * in a loop, so the last frames can fade into the first without doubling.
+   */
+  drawLoop(ctx: CanvasRenderingContext2D, seconds: number, fps: number, alpha = 1, focus = 0.5) {
+    const count = this.frames.length;
+    const blend = Math.min(10, Math.floor(count / 4));
+    const span = count - blend;
+    const position = (seconds * fps) % span;
+    const index = Math.floor(position) + blend;
+    const near = this.nearest(index);
+    if (near < 0) return false;
+    this.cover(ctx, this.frames[near] as HTMLImageElement, alpha, focus);
+    // Over the last `blend` frames, the opening frames fade back in.
+    const into = index - span;
+    if (into >= 0) {
+      const head = this.nearest(into);
+      if (head >= 0) this.cover(ctx, this.frames[head] as HTMLImageElement, alpha * ((into + 1) / (blend + 1)), focus);
+    }
     return true;
   }
 }

@@ -15,7 +15,7 @@ kind = sys.argv[1]
 src = pathlib.Path("film/frames") / kind
 dst = pathlib.Path("public/film") / kind
 (dst / "m").mkdir(parents=True, exist_ok=True)
-frames = sorted(src.glob(f"{kind}-*.png"))
+frames = sorted(src.glob(f"{kind.split('-')[0]}-*.png"))
 done = 0
 for index, path in enumerate(frames, start=1):
     out = dst / f"{index:04d}.webp"
