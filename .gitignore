@@ -39,3 +39,7 @@ Thumbs.db
 coverage/
 .nyc_output/
 .playwright-cli/
+
+# Blender working files: test renders and autosaves
+film/test/
+film/*.blend1

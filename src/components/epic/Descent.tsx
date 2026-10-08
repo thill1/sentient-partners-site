@@ -33,6 +33,7 @@ export const Descent: React.FC = () => {
   const chapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const cueRef = useRef<HTMLParagraphElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
+  const stillRefs = useRef<Record<string, HTMLImageElement | null>>({});
 
   const goTo = (at: number) => {
     const section = sectionRef.current;
@@ -131,6 +132,11 @@ export const Descent: React.FC = () => {
     const showClock = () => {
       if (clockRef.current) clockRef.current.textContent = `${sky.clock} PT`;
       section.dataset.phase = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'golden';
+      // The rendered opening shot for this time of day.
+      const weights: Record<string, number> = { day: sky.phase[0], sunset: sky.phase[1], night: sky.phase[2] };
+      Object.entries(stillRefs.current).forEach(([kind, node]) => {
+        if (node) node.dataset.weight = String(weights[kind] ?? 0);
+      });
     };
     showClock();
     const clockTimer = window.setInterval(() => {
@@ -216,6 +222,11 @@ export const Descent: React.FC = () => {
       });
       // In the fog the frame is pale, so the instruments turn dark.
       // At night the inside of the fog is dark, so the copy stays light.
+      // The rendered still leads the opening and hands over to the live film as you descend.
+      const opening = 1 - clamp01((story - 0.03) / 0.14);
+      Object.values(stillRefs.current).forEach((node) => {
+        if (node) node.style.opacity = String(opening * Number(node.dataset.weight ?? 0));
+      });
       section.dataset.fog = story > 0.5 && story < 0.592 && sky.phase[2] < 0.5 ? 'true' : 'false';
     };
     frame = requestAnimationFrame(draw);
@@ -234,6 +245,23 @@ export const Descent: React.FC = () => {
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100" />
+        {/* Path-traced stills of the opening shot, one per time of day (rendered in Blender, film/descent.blend). */}
+        {(['sunset', 'day', 'night'] as const).map((kind) => (
+          <img
+            key={kind}
+            ref={(node) => {
+              stillRefs.current[kind] = node;
+            }}
+            src={`/home/hero-${kind}-1600.webp`}
+            srcSet={`/home/hero-${kind}-960.webp 960w, /home/hero-${kind}-1600.webp 1600w`}
+            sizes="100vw"
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            fetchPriority={kind === 'sunset' ? 'high' : 'low'}
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[40%_42%] opacity-0 transition-opacity duration-700 lg:origin-[40%_42%] lg:scale-[1.06] lg:object-[34%_42%]"
+          />
+        ))}
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#060A1C]/70 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
         {/* By day the sky is bright, so the copy gets a little shade of its own. */}
         <div aria-hidden="true" className="absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-[#0A1840]/75 via-[#0A1840]/45 to-transparent opacity-0 transition-opacity duration-700 group-data-[phase=day]/film:opacity-100 group-data-[fog=true]/film:!opacity-0" />
