@@ -10,6 +10,9 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Playfair Display"', 'Georgia', 'serif'],
+        // Homepage (Global Experience. Local Impact.)
+        editorial: ['Newsreader', 'Georgia', '"Times New Roman"', 'serif'],
+        ui: ['"DM Sans"', 'system-ui', '-apple-system', '"Segoe UI"', 'sans-serif'],
       },
       colors: {
         brand: {
@@ -26,6 +29,20 @@ export default {
           950: '#071331',
         },
         ivory: '#F7F5F0',
+        // Homepage palette: navy, champagne, ivory, charcoal
+        sp: {
+          navy: '#0D1F4E',
+          deep: '#081433',
+          ink: '#1E2430',       // charcoal body text on light
+          slate: '#566072',     // secondary text on light (AA on ivory and cream)
+          ivory: '#F7F5F0',
+          cream: '#FCFBF8',
+          line: '#E3DED3',
+          champagne: '#DDBF8C',
+          'champagne-deep': '#CBA96F',
+          bronze: '#7A5C2E',    // champagne as text and linework on light (AA)
+          mist: '#C9D3E6',      // body text on navy
+        },
         // California Intelligence concept (/#/california) — additive only
         ca: {
           navy: '#0D1F4E',     // Pacific Navy (brand)

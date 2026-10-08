@@ -23,10 +23,10 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
  * production FrontDeskDemo and the California concept's call console, so both
  * run the same call.
  */
-export function useFrontDeskDemo() {
+export function useFrontDeskDemo(initialScenarioId?: string) {
   const [scenario, setScenario] = useState<Scenario>(() => {
-    const remembered = getVisitorMemory().industryId;
-    return SCENARIOS.find((s) => s.id === remembered) ?? SCENARIOS[0];
+    const preferred = initialScenarioId ?? getVisitorMemory().industryId;
+    return SCENARIOS.find((s) => s.id === preferred) ?? SCENARIOS[0];
   });
   const [phase, setPhase] = useState<DemoPhase>('idle');
   const [lines, setLines] = useState<TranscriptLine[]>([]);
@@ -195,6 +195,17 @@ export function useFrontDeskDemo() {
     setSpeaking(null);
   };
 
+  const stop = () => {
+    generationRef.current += 1;
+    stopAudio();
+    setPhase('idle');
+    setLines([]);
+    setDoneIds([]);
+    setActiveLedgerId(null);
+    setRevenueShown(0);
+    setSpeaking(null);
+  };
+
   const tryItYourself = () => {
     rememberIndustry(scenario.id, scenario.industry);
     openSentientChat({
@@ -218,6 +229,7 @@ export function useFrontDeskDemo() {
     muted,
     setMuted,
     play: () => void run(scenario),
+    stop,
     selectScenario,
     tryItYourself,
     bookCall,

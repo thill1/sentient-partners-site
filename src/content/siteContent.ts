@@ -1,5 +1,5 @@
 export const BOOKING_URL =
-  "https://cal.com/sentient-partners-strategy/20-minute-ai-discovery-call";
+  "https://cal.com/sentient-partners-strategy/introductory-call";
 
 export const NAV_LINKS = [
   { id: "services", label: "Services", href: "#services" },

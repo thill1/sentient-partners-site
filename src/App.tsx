@@ -1,39 +1,30 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminPanel } from './components/AdminPanel';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { Services } from './components/Services';
-import { DemoSection } from './components/DemoSection';
-import { BlueprintEngine } from './components/BlueprintEngine';
 import { VoiceCommand } from './components/VoiceCommand';
-import { Testimonials } from './components/Testimonials';
-import { Pricing } from './components/Pricing';
-import { FAQ } from './components/FAQ';
-import { Footer } from './components/Footer';
-import { CTASection } from './components/CTASection';
-import { Process } from './components/Process';
 import { ChatInterface } from './components/ChatInterface';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { Toast } from './components/Toast';
-import { IntroSplash } from './components/IntroSplash';
+import { HomePage } from './components/home/HomePage';
 import { rememberVisit } from './lib/visitorMemory';
-import { WhySentient } from './components/WhySentient';
-import { HOME_SECTION_ORDER } from './content/siteContent';
 import { getAdminSettings, loginAdmin, logoutAdmin, updateAdminSettings } from './lib/adminApi';
 import type { SiteSettings } from './lib/siteSettingsSchema';
 import { useSiteSettings } from './hooks/useSiteSettings';
 import type { AppRoute } from './types';
 
-// Concept route is code-split so production visitors never download it.
+// The earlier designs are code-split so homepage visitors never download them.
 const CaliforniaConcept = lazy(() =>
   import('./components/california/CaliforniaConcept').then((m) => ({ default: m.CaliforniaConcept })),
+);
+const ClassicHome = lazy(() =>
+  import('./components/ClassicHome').then((m) => ({ default: m.ClassicHome })),
 );
 
 function getCurrentRoute(hash: string): AppRoute {
   if (hash === '#/admin') return 'admin';
   if (hash === '#/california') return 'california';
+  if (hash === '#/classic') return 'classic';
   return 'home';
 }
 
@@ -108,24 +99,6 @@ function App() {
       void loadAdminSettings();
     }
   }, [loadAdminSettings, route]);
-
-  const sectionComponents: Record<(typeof HOME_SECTION_ORDER)[number], React.ReactNode> = {
-    hero: <Hero key="hero" />,
-    why: <WhySentient key="why" />,
-    services: <Services key="services" />,
-    demo: <DemoSection key="demo" />,
-    diagnosis: <BlueprintEngine key="diagnosis" />,
-    testimonials: <Testimonials key="testimonials" />,
-    process: <Process key="process" />,
-    pricing: <Pricing key="pricing" />,
-    faq: <FAQ key="faq" />,
-    cta: <CTASection key="cta" />,
-  };
-
-  const homeMainPaddingClasses = useMemo(
-    () => (siteSettings.bannerState.visible ? 'pt-32 md:pt-36' : 'pt-20 md:pt-24'),
-    [siteSettings.bannerState.visible],
-  );
 
   const handleAdminLogin = useCallback(async (username: string, password: string) => {
     setIsLoggingIn(true);
@@ -214,23 +187,25 @@ function App() {
     );
   }
 
+  // The previous homepage, kept reachable while the redesign is reviewed.
+  if (route === 'classic') {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-dark-bg" />}>
+        <ClassicHome banner={siteSettings.bannerState} />
+      </Suspense>
+    );
+  }
+
+  // Homepage: Global Experience. Local Impact. Booking, contact and the
+  // Concierge are the same shared components the other routes use.
   return (
-    <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
-      <IntroSplash />
-      <Header banner={siteSettings.bannerState} />
-
-      <main id="main-content" className={homeMainPaddingClasses}>
-        {HOME_SECTION_ORDER.map((section) => sectionComponents[section])}
-      </main>
-
-      <Footer />
-
-      <ChatInterface />
-      <VoiceCommand />
-      <BookingModal />
-      <ContactModal />
+    <>
+      <HomePage />
+      <ChatInterface launcher="concept" />
+      <BookingModal variant="concept" />
+      <ContactModal variant="concept" />
       <Toast />
-    </div>
+    </>
   );
 }
 
