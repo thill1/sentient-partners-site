@@ -107,11 +107,12 @@ export const HOME_PILLARS = {
 } as const;
 
 export const HOME_FOUNDER = {
-  heading: 'From global enterprise leadership to the businesses that shape our community.',
+  heading: 'Experience That Makes a Difference.',
   body: [
-    'Founder and Principal Consultant Troy Hill spent decades in senior executive leadership with global enterprises, responsible for organizations of thousands of professionals and for mission-critical business and technology initiatives across banking, brokerage, airlines, healthcare, and other industries.',
-    'Today he brings that experience directly to business owners in Auburn, Placer County, and Greater Sacramento, with practical recommendations, direct access to leadership, and personal accountability.',
+    'Founder and Principal Consultant Troy Hill brings decades of senior executive leadership across global enterprises, diverse industries, and mission-critical operations.',
+    'Today, he brings that experience home to Auburn, working directly with local business owners to connect strategy with execution, simplify complexity, and build stronger businesses.',
   ],
+  closing: 'Global perspective. Personal commitment. Practical results.',
   points: [
     {
       name: 'Executive perspective, without the bureaucracy',

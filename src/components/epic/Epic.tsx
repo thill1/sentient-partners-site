@@ -44,8 +44,8 @@ const Founder: React.FC = () => {
             <figure className="flex items-center gap-5">
               {portrait && (
                 <img
-                  src="/home/troy-hill-480.jpg"
-                  srcSet="/home/troy-hill-240.jpg 240w, /home/troy-hill-480.jpg 480w"
+                  src="/home/troy-hill-480.webp"
+                  srcSet="/home/troy-hill-240.webp 240w, /home/troy-hill-480.webp 480w"
                   sizes="160px"
                   width={480}
                   height={480}
@@ -53,7 +53,7 @@ const Founder: React.FC = () => {
                   loading="lazy"
                   decoding="async"
                   onError={() => setPortrait(false)}
-                  className="h-32 w-32 shrink-0 rounded-full object-cover object-[50%_22%] ring-1 ring-sp-ivory/20 sm:h-40 sm:w-40"
+                  className="h-32 w-32 shrink-0 rounded-full object-cover ring-1 ring-sp-ivory/20 sm:h-40 sm:w-40"
                 />
               )}
               <figcaption>
@@ -69,14 +69,9 @@ const Founder: React.FC = () => {
               ))}
             </div>
           </div>
-          <dl className="border-t border-sp-ivory/20 lg:col-span-6 lg:col-start-7">
-            {HOME_FOUNDER.points.map((point) => (
-              <div key={point.name} className="border-b border-sp-ivory/20 py-6">
-                <dt className="font-editorial text-[clamp(1.375rem,1.2rem+0.6vw,1.75rem)] leading-snug text-sp-champagne">{point.name}</dt>
-                <dd className="sp-body mt-2 text-sp-mist">{point.detail}</dd>
-              </div>
-            ))}
-          </dl>
+          <p className="font-editorial text-[clamp(1.75rem,1.3rem+1.6vw,2.75rem)] leading-[1.15] tracking-[-0.015em] text-sp-champagne lg:col-span-6 lg:col-start-7 lg:self-start lg:pt-10">
+            {HOME_FOUNDER.closing}
+          </p>
         </div>
       </div>
     </section>

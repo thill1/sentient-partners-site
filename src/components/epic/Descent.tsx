@@ -223,7 +223,9 @@ export const Descent: React.FC = () => {
       // In the fog the frame is pale, so the instruments turn dark.
       // At night the inside of the fog is dark, so the copy stays light.
       // The rendered still leads the opening and hands over to the live film as you descend.
-      const opening = 1 - clamp01((story - 0.03) / 0.14);
+      // The rendered shot carries the whole descent above the fog, and gives way
+      // only inside the fog, where the frame is pale and no bridge is visible.
+      const opening = 1 - clamp01((story - 0.47) / 0.04);
       Object.values(stillRefs.current).forEach((node) => {
         if (node) node.style.opacity = String(opening * Number(node.dataset.weight ?? 0));
       });
