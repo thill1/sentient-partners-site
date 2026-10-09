@@ -96,7 +96,8 @@ export class SurfaceTraffic {
     };
     const url = (index: number) => `/film/traffic/mask-sunset/${String(index + 1).padStart(4, '0')}.png`;
     if (typeof shot === 'number') {
-      for (let ahead = -2; ahead <= 4; ahead++) if (shot + ahead >= 0) load(`frame-${shot + ahead}`, url(shot + ahead));
+      // One mask either side is enough; unpacking seven at once added a stall.
+      for (let ahead = -1; ahead <= 1; ahead++) if (shot + ahead >= 0) load(`frame-${shot + ahead}`, url(shot + ahead));
     } else {
       load(shot, `/film/traffic/mask-${shot}-sunset.png`);
     }

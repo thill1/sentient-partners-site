@@ -48,9 +48,26 @@ export class FramePlayer {
   lastIndex = 0;
   /** False once the first frame has failed to load: there is no sequence to play. */
   available = true;
+  // Frames decoded off the main thread around the one on screen. Drawing a
+  // merely loaded image made the browser decode 1600x900 pixels inside the
+  // animation frame, freezing the page (and the aircraft) for up to 300 ms
+  // whenever scrolling reached a new frame. Only decoded frames are drawn.
+  private decoded = new Map<number, ImageBitmap>();
+  private decoding = new Set<number>();
+  private static readonly AHEAD = 5;
+  private static readonly BEHIND = 3;
+  // Recently requested positions. A loop's cross-fade draws its last frames
+  // and its first frames together; both windows must stay decoded, or each
+  // fade frame decodes two full images in the animation frame (the regular
+  // ~70 ms hitches, every loop, that made the aircraft stop and start).
+  private centers: number[] = [];
 
-  constructor(kind: string, count: number, source?: (index: number) => string) {
+  /** A seamless loop has its cross-fade baked in (film/seamless_loop.py). */
+  private seamless: boolean;
+
+  constructor(kind: string, count: number, source?: (index: number) => string, seamless = false) {
     this.kind = kind;
+    this.seamless = seamless;
     this.frames = new Array(count).fill(null);
     this.ready = new Array(count).fill(false);
     // Every 16th frame first, then every 8th, 4th, 2nd, and the rest.
@@ -87,6 +104,50 @@ export class FramePlayer {
     return this.ready.filter(Boolean).length;
   }
 
+  /** Decode the frames around `center` in the background; release far ones. */
+  private warm(center: number, wrap = false) {
+    const count = this.frames.length;
+    const distance = (a: number, b: number) => {
+      const d = Math.abs(a - b);
+      return wrap ? Math.min(d, count - d) : d;
+    };
+    for (let k = -FramePlayer.BEHIND; k <= FramePlayer.AHEAD; k++) {
+      let index = center + k;
+      if (wrap) index = ((index % count) + count) % count;
+      if (index < 0 || index >= count || !this.ready[index] || this.decoded.has(index) || this.decoding.has(index)) continue;
+      const image = this.frames[index];
+      if (!image || typeof createImageBitmap !== 'function') continue;
+      this.decoding.add(index);
+      createImageBitmap(image)
+        .then((bitmap) => { this.decoding.delete(index); this.decoded.set(index, bitmap); })
+        .catch(() => { this.decoding.delete(index); });
+    }
+    if (!this.centers.includes(center)) this.centers.push(center);
+    for (const [index, bitmap] of this.decoded) {
+      if (this.centers.every((c) => distance(index, c) > FramePlayer.AHEAD + 4)) { bitmap.close(); this.decoded.delete(index); }
+    }
+  }
+
+  /** The decoded frame nearest `index` (falls back to the loaded image only before any decode). */
+  private drawable(index: number, wrap = false, warm = true): [ImageBitmap | HTMLImageElement, number] | null {
+    if (index < 0) return null;
+    if (warm) this.warm(index, wrap);
+    const count = this.frames.length;
+    for (let d = 0; d <= FramePlayer.AHEAD + 4; d++) {
+      for (const candidate of d ? [index - d, index + d] : [index]) {
+        const i = wrap ? ((candidate % count) + count) % count : candidate;
+        const bitmap = this.decoded.get(i);
+        if (bitmap) return [bitmap, i];
+      }
+    }
+    const image = this.frames[index];
+    return this.decoded.size === 0 && image ? [image, index] : null;
+  }
+
+  private blendStart(into: number, blend: number) {
+    return Math.max(0, Math.min(blend - 1, into));
+  }
+
   /** The nearest loaded frame at or around a fractional index. */
   private nearest(index: number) {
     for (let d = 0; d < this.frames.length; d++) {
@@ -98,11 +159,13 @@ export class FramePlayer {
     return -1;
   }
 
-  private cover(ctx: CanvasRenderingContext2D, image: HTMLImageElement, alpha: number, focus = 0.5) {
+  private cover(ctx: CanvasRenderingContext2D, image: ImageBitmap | HTMLImageElement, alpha: number, focus = 0.5) {
     const { width, height } = ctx.canvas;
-    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
-    const w = image.naturalWidth * scale;
-    const h = image.naturalHeight * scale;
+    const iw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
+    const ih = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
+    const scale = Math.max(width / iw, height / ih);
+    const w = iw * scale;
+    const h = ih * scale;
     ctx.globalAlpha = alpha;
     this.lastRect = { x: (width - w) * focus, y: (height - h) / 2, w, h };
     ctx.drawImage(image, this.lastRect.x, this.lastRect.y, w, h);
@@ -114,10 +177,11 @@ export class FramePlayer {
    * moves between frames, so blending two of them would show double images.
    */
   draw(ctx: CanvasRenderingContext2D, t: number, alpha = 1) {
-    const n = this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1));
-    if (n < 0) return false;
-    this.lastIndex = n;
-    this.cover(ctx, this.frames[n] as HTMLImageElement, alpha, focusAt(t));
+    this.centers = [];
+    const pick = this.drawable(this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1)));
+    if (!pick) return false;
+    this.lastIndex = pick[1];
+    this.cover(ctx, pick[0], alpha, focusAt(t));
     return true;
   }
 
@@ -128,15 +192,18 @@ export class FramePlayer {
 
   /** Identify the exact loaded images/crop a draw would use. */
   paintKey(t: number) {
-    return `${this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1))}:${focusAt(t)}`;
+    const pick = this.drawable(this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1)), false, false);
+    return `${pick ? pick[1] : -1}:${pick && pick[0] instanceof HTMLImageElement ? 'i' : 'b'}:${focusAt(t)}`;
   }
 
   loopPaintKey(seconds: number, fps: number) {
-    const blend = Math.min(10, Math.floor(this.frames.length / 4));
+    const blend = this.seamless ? 0 : Math.min(10, Math.floor(this.frames.length / 4));
     const span = this.frames.length - blend;
     const index = Math.floor((seconds * fps) % span) + blend;
     const into = index - span;
-    return `${index}:${this.nearest(index)}:${into >= 0 ? this.nearest(into) : -1}`;
+    const pick = this.drawable(this.nearest(index), true, false);
+    const head = into >= 0 ? this.drawable(this.nearest(into), true, false) : null;
+    return `${index}:${pick ? pick[1] : -1}:${head ? head[1] : -1}`;
   }
 
   /**
@@ -145,18 +212,21 @@ export class FramePlayer {
    */
   drawLoop(ctx: CanvasRenderingContext2D, seconds: number, fps: number, alpha = 1, focus = 0.5) {
     const count = this.frames.length;
-    const blend = Math.min(10, Math.floor(count / 4));
+    const blend = this.seamless ? 0 : Math.min(10, Math.floor(count / 4));
     const span = count - blend;
     const position = (seconds * fps) % span;
     const index = Math.floor(position) + blend;
-    const near = this.nearest(index);
-    if (near < 0) return false;
-    this.cover(ctx, this.frames[near] as HTMLImageElement, alpha, focus);
-    // Over the last `blend` frames, the opening frames fade back in.
+    this.centers = [];
+    // Keep the cross-fade's first frames decoded before the fade begins.
     const into = index - span;
-    if (into >= 0) {
-      const head = this.nearest(into);
-      if (head >= 0) this.cover(ctx, this.frames[head] as HTMLImageElement, alpha * ((into + 1) / (blend + 1)), focus);
+    if (blend && index >= span - FramePlayer.AHEAD) this.warm(this.blendStart(into, blend), true);
+    const near = this.drawable(this.nearest(index), true);
+    if (!near) return false;
+    this.cover(ctx, near[0], alpha, focus);
+    // Over the last `blend` frames, the opening frames fade back in.
+    if (blend && into >= 0) {
+      const head = this.drawable(this.nearest(into), true);
+      if (head) this.cover(ctx, head[0], alpha * ((into + 1) / (blend + 1)), focus);
     }
     return true;
   }
