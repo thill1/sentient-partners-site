@@ -44,7 +44,22 @@ const norm = (a: Vec): Vec => {
   return [a[0] / l, a[1] / l, a[2] / l];
 };
 
+type AircraftType = 'airliner' | 'cessna' | 'helicopter';
+
+/**
+ * How each type flies: distance from the camera, cruise speed (m/s), the
+ * lowest it may be (m), climb rate range and how hard it may turn. A mix of
+ * airliners on approach, Cessna-class light aircraft and helicopters.
+ */
+const TYPES: Record<AircraftType, { share: number; near: number; far: number; speed: [number, number]; floor: number; ceiling: number; climb: number; turn: number }> = {
+  airliner: { share: 0.5, near: 1400, far: 8900, speed: [70, 105], floor: 350, ceiling: 4000, climb: 0.035, turn: 0.002 },
+  cessna: { share: 0.3, near: 700, far: 4200, speed: [48, 62], floor: 250, ceiling: 900, climb: 0.02, turn: 0.004 },
+  helicopter: { share: 0.2, near: 500, far: 3000, speed: [28, 45], floor: 120, ceiling: 450, climb: 0, turn: 0.004 },
+};
+const ROTOR_SPIN = 32; // rad/s, close to a real main rotor; reads as motion, not a frozen cross
+
 interface Flight extends FlightMotion {
+  type: AircraftType;
   start: Vec;
   born: number;
   life: number;
@@ -60,8 +75,12 @@ export class AirTraffic {
   private random = Math.random;
   private anchors: AircraftAnchors | null = null;
   private renderer: AircraftRenderer | null = null;
+  /** Review only: ?aircraft=cessna|helicopter|airliner makes every flight that type. */
+  private forced: AircraftType | null = null;
 
   constructor(directCanvas?: HTMLCanvasElement) {
+    const forced = new URLSearchParams(window.location.search).get('aircraft');
+    if (forced && forced in TYPES) this.forced = forced as AircraftType;
     if (!new URLSearchParams(window.location.search).has('aircraftSprites')) this.renderer = new AircraftRenderer('/film/aircraft/airliner.json', directCanvas);
     fetch('/film/camera.json')
       .then((response) => (response.ok ? response.json() : null))
@@ -116,27 +135,30 @@ export class AirTraffic {
     for (let attempt = 0; attempt < 16; attempt++) {
       // Enter from beyond a side edge and leave beyond an edge. The previous
       // arbitrary life timer faded aircraft out while they were still in view.
+      const pick = r();
+      const type: AircraftType = this.forced ?? (pick < TYPES.airliner.share ? 'airliner' : pick < TYPES.airliner.share + TYPES.cessna.share ? 'cessna' : 'helicopter');
+      const t = TYPES[type];
       const side = r() < .5 ? -1 : 1;
       const sx = side * 1.3;
-      const sy = .05 + r() * .65;
-      const distance = 1400 + r() * 7500;
+      const sy = (type === 'airliner' ? .05 : -.25) + r() * .65;
+      const distance = t.near + r() * (t.far - t.near);
       const start = add(add(add(pose.p, pose.f, distance), pose.r, sx * tanX * distance), pose.u, sy * tanY * distance);
-      start[2] = Math.max(start[2], 350);
+      start[2] = Math.min(t.ceiling, Math.max(start[2], t.floor));
       const crossingHeading = Math.atan2(pose.r[1], pose.r[0]) + (side > 0 ? Math.PI : 0);
       const heading = crossingHeading + (r() - .5) * .3;
-      const climb = (r() - .45) * .035;
-      const speed = 70 + r() * 35;
+      const climb = (r() - .45) * t.climb;
+      const speed = t.speed[0] + r() * (t.speed[1] - t.speed[0]);
       const life = (distance * tanX * 3.8) / speed + 15;
-      const turnRate = (r() < .5 ? -1 : 1) * (.001 + r() * .002);
+      const turnRate = (r() < .5 ? -1 : 1) * (t.turn / 2 + r() * t.turn / 2);
       const motion = { heading, turnRate, climb, speed };
       const end = add(start, flightDisplacement(motion, life));
       const relative = sub(end, pose.p);
       const depth = dot(relative, pose.f);
-      if (depth < 600 || end[2] < 280) continue;
+      if (depth < Math.min(600, t.near * .6) || end[2] < t.floor * .8) continue;
       const endX = dot(relative, pose.r) / (depth * tanX);
       const endY = dot(relative, pose.u) / (depth * tanY);
       if (Math.abs(endX) < 1.5 && Math.abs(endY) < 1.5) continue;
-      const candidate: Flight = { start, ...motion, born: now, life, phase: r() };
+      const candidate: Flight = { type, start, ...motion, born: now, life, phase: r() };
       if (this.flights.every((other) => routesStaySeparated(candidate, other, now, 650))) {
         this.flights.push(candidate);
         return;
@@ -163,7 +185,7 @@ export class AirTraffic {
       if (stillInView) flight.life = age + 15;
       return stillInView;
     });
-    if (now > this.nextSpawn && this.flights.length < 3) {
+    if (now > this.nextSpawn && this.flights.length < 4) {
       this.spawn(now, pose);
       this.nextSpawn = now + 3 + this.random() * 9;
     }
@@ -188,7 +210,18 @@ export class AirTraffic {
         const haze = Math.exp(-screen.z / (this.kind === 'day' ? 26000 : 34000));
         const nearCamera = Math.max(0, Math.min(1, (screen.z - 80) / 420));
         const opacity = alpha * edge * haze * nearCamera;
-        return opacity < .02 ? [] : [{ position, motion: flight, age, alpha: opacity, flash: ((now + flight.phase) % 1.2) < .08 }];
+        if (opacity < .02) return [];
+        const body: AircraftInstance = { model: flight.type, position, motion: flight, age, alpha: opacity, flash: ((now + flight.phase) % 1.2) < .08 };
+        if (flight.type !== 'helicopter') return [body];
+        // The main rotor spins about the mast as its own instance, a little
+        // transparent so the blades read as a blur rather than a fixed cross.
+        const rotor: AircraftInstance = { model: 'helirotor', position, motion: { heading: flight.heading, turnRate: ROTOR_SPIN, climb: 0, speed: 0 }, age, alpha: opacity * .55, flash: false };
+        return [body, rotor];
+      });
+      // Review only: with ?aircraft= set, expose where each aircraft is drawn.
+      if (this.forced) (window as unknown as { __aircraft?: unknown }).__aircraft = this.flights.map((flight) => {
+        const screen = project(add(flight.start, flightDisplacement(flight, now - flight.born)));
+        return screen && { type: flight.type, x: screen.x / (window.devicePixelRatio || 1), y: screen.y / (window.devicePixelRatio || 1), z: screen.z };
       });
       if (this.renderer.draw(ctx, camera, pose, rect, instances, this.kind)) {
         ctx.canvas.dataset.aircraft = '3d';
@@ -200,6 +233,8 @@ export class AirTraffic {
     const day = this.kind === 'day';
 
     for (const flight of this.flights) {
+      // The sprite atlas is airliner-only; other types need the 3D renderer.
+      if (flight.type !== 'airliner') continue;
       const age = now - flight.born;
       const at = add(flight.start, flightDisplacement(flight, age));
       const dir = flightDirection(flight, age);
