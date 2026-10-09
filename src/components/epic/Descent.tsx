@@ -175,7 +175,11 @@ export const Descent: React.FC = () => {
     // Fog-free plates and geometry depth, one matched pair per film frame
     // (film/export_depth.py, render.py NOFOG=1). Frames that have a pair get
     // live volumetric fog; frames without one keep their baked fog.
-    const plates = new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120);
+    // One loader per time of day that has its fog-free pairs rendered.
+    const plateSets: Record<string, CleanPlates> = {
+      sunset: new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120),
+      day: new CleanPlates('day', FILM_SEQUENCES.day ?? 120),
+    };
     let platePair: PlatePair | null = null;
     let fogAlpha = 0;
     // ?fogDebug: a small readout of the fog engine's state, for real devices.
@@ -318,12 +322,13 @@ export const Descent: React.FC = () => {
         // Live fog replaces the baked fog only where the frame on screen has
         // its own plate and depth, both loaded: never another frame's depth.
         const shown = Number(player.paintKey(story).split(':')[0]);
-        platePair = playerKind === 'sunset' && liveFog && shown >= 0 ? plates.get(shown) : null;
+        const plates = plateSets[playerKind];
+        platePair = plates && liveFog && shown >= 0 ? plates.get(shown) : null;
         if (platePair && liveFog) liveFog.setDepth(platePair.depthUrl, platePair.depth);
         fogAlpha = platePair && liveFog?.ready && liveFog.depthKey === platePair.depthUrl ? 1 : 0;
         if (fogDebug && now - debugAt > 250) {
           debugAt = now;
-          fogDebug.textContent = `fog: ${liveFog?.status ?? 'none'}\nkind ${playerKind} frame ${shown} pair ${platePair ? 'yes' : 'no'} depth ${liveFog?.ready ? 'yes' : 'no'}\nalpha ${fogAlpha} t ${fogSeconds.toFixed(1)}s still ${still}\ncanvas ${fogRef.current?.width}x${fogRef.current?.height} dpr ${window.devicePixelRatio}`;
+          fogDebug.textContent = `fog: ${liveFog?.status ?? 'none'}\nkind ${playerKind} frame ${shown} pair ${platePair ? 'yes' : 'no'} depth ${liveFog?.ready ? 'yes' : 'no'}\nalpha ${fogAlpha} t ${fogSeconds.toFixed(1)}s still ${still}\ncanvas ${fogRef.current?.width}x${fogRef.current?.height} dpr ${window.devicePixelRatio} lost ${liveFog?.lost}`;
         }
         const paintKey = `${playerKind}:${filmCtx.canvas.width}:${filmCtx.canvas.height}:${player.paintKey(story)}:${atOpen}:${atCity}:${fogAlpha}:${opening?.loopPaintKey(seconds, 12) ?? ''}:${ending?.loopPaintKey(seconds, 12) ?? ''}`;
         // Repaint the full background composition only when an image/crop
@@ -436,7 +441,7 @@ export const Descent: React.FC = () => {
     return () => {
       cancelAnimationFrame(frame);
       traffic.dispose();
-      plates.dispose();
+      Object.values(plateSets).forEach((set) => set.dispose());
       liveFog?.dispose();
       surfaceTraffic.dispose();
       motionPreference.removeEventListener('change', onMotionChange);

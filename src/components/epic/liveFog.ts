@@ -30,7 +30,7 @@ uniform vec2 uCanvas, uTan;
 uniform vec4 uRect;
 uniform vec3 uCamP, uCamR, uCamU, uCamF, uSun, uSunCol, uAmbient, uDeep;
 uniform vec2 uWind;
-uniform float uTime, uAlpha, uSeed;
+uniform float uTime, uAlpha, uSeed, uProbe;
 
 // Smoothstepped texel coordinates: the hardware's bilinear filter becomes C1,
 // which removes the faceted, speckled look plain bilinear noise gives.
@@ -92,6 +92,7 @@ void main() {
   vec2 frag = vec2(gl_FragCoord.x, uCanvas.y - gl_FragCoord.y);
   vec2 uv = (frag - uRect.xy) / uRect.zw;
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { gl_FragColor = vec4(0.0); return; }
+  if (uProbe > 0.5) { float d = sceneDistance(uv); gl_FragColor = vec4(uv.x, uv.y, d > 1.0e5 ? 1.0 : 0.0, 1.0) * 0.9; return; }
   vec2 ndc = vec2(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
   vec3 dir = normalize(uCamF + uCamR * ndc.x * uTan.x + uCamU * ndc.y * uTan.y);
   // The fog is coarser than the screen: a fog pixel landing on a thin cable
@@ -217,7 +218,7 @@ export class LiveFog {
     const position = gl.getAttribLocation(program, 'aPos');
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    for (const name of ['Noise', 'Depth', 'Canvas', 'Tan', 'Rect', 'CamP', 'CamR', 'CamU', 'CamF', 'Sun', 'SunCol', 'Ambient', 'Deep', 'Wind', 'Time', 'Alpha', 'Seed']) {
+    for (const name of ['Noise', 'Depth', 'Canvas', 'Tan', 'Rect', 'CamP', 'CamR', 'CamU', 'CamF', 'Sun', 'SunCol', 'Ambient', 'Deep', 'Wind', 'Time', 'Alpha', 'Seed', 'Probe']) {
       this.uniforms[name] = gl.getUniformLocation(program, `u${name}`);
     }
     const size = NOISE_SIZE;
@@ -265,6 +266,8 @@ export class LiveFog {
 
   get ready() { return !!this.program && this.depthReady; }
 
+  get lost() { return this.gl ? this.gl.isContextLost() : 'no gl'; }
+
   clear() {
     const gl = this.gl;
     if (gl && this.visible) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); this.visible = false; }
@@ -276,7 +279,8 @@ export class LiveFog {
     if (!gl || !this.program || !this.depthReady || alpha <= 0.01) { this.clear(); return; }
     // 1x CSS was fine on desktop but stretched 3x on phones, staircasing the
     // fog edges against land and bridge; dense small screens render at 2x.
-    const density = 1; // 2x on phones drew the fog in the sky in WebKit (unresolved); keep 1x
+    const params = new URLSearchParams(window.location.search);
+    const density = params.has('fog2x') ? 2 : 1;
     const width = Math.max(2, Math.round(this.canvas.clientWidth * density));
     const height = Math.max(2, Math.round(this.canvas.clientHeight * density));
     if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
@@ -299,6 +303,7 @@ export class LiveFog {
     gl.uniform1f(u.Time, seconds * (this.canvas.clientWidth < 700 ? 1.8 : 1));
     gl.uniform1f(u.Alpha, alpha);
     gl.uniform1f(u.Seed, this.shaderSeed);
+    gl.uniform1f(u.Probe, params.has('fogProbe') ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.noise); gl.uniform1i(u.Noise, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.depth); gl.uniform1i(u.Depth, 1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
