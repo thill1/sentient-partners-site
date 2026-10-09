@@ -28,8 +28,8 @@ export const EPIC_BEATS = [
     id: 'founder',
     range: [0.17, 0.36],
     film: [0.17, 0.4],
-    heading: 'Decades of leadership at global scale.',
-    body: 'Our founder led organizations of thousands and mission-critical operations across banking, brokerage, airlines, and healthcare.',
+    heading: 'Experience earned globally. Applied locally.',
+    body: 'Decades of experience leading teams of thousands and mission-critical operations worldwide. Today, we bring that expertise, perspective, and discipline to the businesses we serve.',
   },
   {
     id: 'fog',
