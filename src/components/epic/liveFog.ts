@@ -166,6 +166,8 @@ export const FOG_LOOKS: Record<'sunset' | 'day' | 'night', FogLook> = {
 export const FOG_WIND: [number, number] = [40, -7];
 
 export class LiveFog {
+  /** Why the fog is or is not drawing, for ?fogDebug on a real device. */
+  status = 'starting';
   private gl: WebGLRenderingContext | null;
   private program: WebGLProgram | null = null;
   private noise: WebGLTexture | null = null;
@@ -183,13 +185,13 @@ export class LiveFog {
     this.seed = Number.isFinite(forced) && forced > 0 ? forced : Math.floor(Math.random() * 1e6) + 1;
     this.gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false });
     const gl = this.gl;
-    if (!gl) return;
+    if (!gl) { this.status = 'no WebGL context'; return; }
     const compile = (type: number, source: string) => {
       const shader = gl.createShader(type);
       if (!shader) return null;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { console.warn('liveFog shader:', gl.getShaderInfoLog(shader)); return null; }
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { this.status = 'shader failed: ' + (gl.getShaderInfoLog(shader) || '').slice(0, 160); console.warn('liveFog shader:', gl.getShaderInfoLog(shader)); return null; }
       return shader;
     };
     const vertex = compile(gl.VERTEX_SHADER, VERTEX);
@@ -199,7 +201,8 @@ export class LiveFog {
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) { this.status = 'link failed: ' + (gl.getProgramInfoLog(program) || '').slice(0, 160); return; }
+    this.status = 'compiled';
     this.program = program;
     gl.useProgram(program);
     const buffer = gl.createBuffer();
@@ -265,15 +268,21 @@ export class LiveFog {
   draw(filmCanvas: HTMLCanvasElement, rect: FrameRect, camera: CameraData, pose: Pose, seconds: number, alpha: number, look: FogLook) {
     const gl = this.gl;
     if (!gl || !this.program || !this.depthReady || alpha <= 0.01) { this.clear(); return; }
-    const width = Math.max(2, Math.round(this.canvas.clientWidth));
-    const height = Math.max(2, Math.round(this.canvas.clientHeight));
+    // 1x CSS was fine on desktop but stretched 3x on phones, staircasing the
+    // fog edges against land and bridge; dense small screens render at 2x.
+    const density = 1; // 2x on phones drew the fog in the sky in WebKit (unresolved); keep 1x
+    const width = Math.max(2, Math.round(this.canvas.clientWidth * density));
+    const height = Math.max(2, Math.round(this.canvas.clientHeight * density));
     if (this.canvas.width !== width || this.canvas.height !== height) { this.canvas.width = width; this.canvas.height = height; }
-    const scale = width / Math.max(1, filmCanvas.width);
+    // Position maths uses the drawing buffer the browser actually allocated,
+    // which can differ from the requested canvas size.
+    const bufferWidth = gl.drawingBufferWidth, bufferHeight = gl.drawingBufferHeight;
+    const scale = bufferWidth / Math.max(1, filmCanvas.width);
     const tanX = Math.tan(camera.fov / 2);
-    gl.viewport(0, 0, width, height);
+    gl.viewport(0, 0, bufferWidth, bufferHeight);
     gl.useProgram(this.program);
     const u = this.uniforms;
-    gl.uniform2f(u.Canvas, width, height);
+    gl.uniform2f(u.Canvas, bufferWidth, bufferHeight);
     gl.uniform2f(u.Tan, tanX, tanX / camera.aspect);
     gl.uniform4f(u.Rect, rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale);
     gl.uniform3fv(u.CamP, pose.p); gl.uniform3fv(u.CamR, pose.r); gl.uniform3fv(u.CamU, pose.u); gl.uniform3fv(u.CamF, pose.f);
@@ -281,7 +290,7 @@ export class LiveFog {
     gl.uniform2fv(u.Wind, FOG_WIND);
     // Small screens show the same drift in far fewer pixels; evolve the bank
     // a little faster there so motion reads at a glance on a phone.
-    gl.uniform1f(u.Time, seconds * (width < 700 ? 1.8 : 1));
+    gl.uniform1f(u.Time, seconds * (this.canvas.clientWidth < 700 ? 1.8 : 1));
     gl.uniform1f(u.Alpha, alpha);
     gl.uniform1f(u.Seed, this.shaderSeed);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.noise); gl.uniform1i(u.Noise, 0);

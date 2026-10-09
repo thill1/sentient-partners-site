@@ -178,6 +178,13 @@ export const Descent: React.FC = () => {
     const plates = new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120);
     let platePair: PlatePair | null = null;
     let fogAlpha = 0;
+    // ?fogDebug: a small readout of the fog engine's state, for real devices.
+    const fogDebug = new URLSearchParams(window.location.search).has('fogDebug') ? document.createElement('pre') : null;
+    if (fogDebug) {
+      fogDebug.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99;margin:0;padding:6px 8px;font:11px/1.35 ui-monospace,monospace;color:#0f0;background:rgba(0,0,0,.75);white-space:pre-wrap;max-width:94vw;pointer-events:none';
+      document.body.appendChild(fogDebug);
+    }
+    let debugAt = 0;
     // The live fog's density on the CPU, for traffic visibility (same seed).
     const fogField = liveFog ? new FogField(FOG_WIND, liveFog.shaderSeed) : null;
     const onMotionChange = () => {
@@ -314,6 +321,10 @@ export const Descent: React.FC = () => {
         platePair = playerKind === 'sunset' && liveFog && shown >= 0 ? plates.get(shown) : null;
         if (platePair && liveFog) liveFog.setDepth(platePair.depthUrl, platePair.depth);
         fogAlpha = platePair && liveFog?.ready && liveFog.depthKey === platePair.depthUrl ? 1 : 0;
+        if (fogDebug && now - debugAt > 250) {
+          debugAt = now;
+          fogDebug.textContent = `fog: ${liveFog?.status ?? 'none'}\nkind ${playerKind} frame ${shown} pair ${platePair ? 'yes' : 'no'} depth ${liveFog?.ready ? 'yes' : 'no'}\nalpha ${fogAlpha} t ${fogSeconds.toFixed(1)}s still ${still}\ncanvas ${fogRef.current?.width}x${fogRef.current?.height} dpr ${window.devicePixelRatio}`;
+        }
         const paintKey = `${playerKind}:${filmCtx.canvas.width}:${filmCtx.canvas.height}:${player.paintKey(story)}:${atOpen}:${atCity}:${fogAlpha}:${opening?.loopPaintKey(seconds, 12) ?? ''}:${ending?.loopPaintKey(seconds, 12) ?? ''}`;
         // Repaint the full background composition only when an image/crop
         // changes. Aircraft still advance every animation frame. Redrawing
