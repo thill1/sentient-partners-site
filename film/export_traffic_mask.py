@@ -56,7 +56,8 @@ except Exception as error:  # noqa: BLE001
     print("GPU unavailable:", error)
 
 for obj in bpy.data.objects:
-    if obj.type == "LIGHT":
+    # Lights off; the thin haze volume would only dim every target evenly.
+    if obj.type == "LIGHT" or obj.name == "Haze":
         obj.hide_render = True
 for node in s.world.node_tree.nodes:
     if node.type == "BACKGROUND":

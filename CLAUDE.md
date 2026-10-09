@@ -28,6 +28,22 @@ If something seen while scrolling would look wrong to a Bay Area local, it is a 
 
 **The bar is recognisable and believable, not photo-matching** (owner, 2026-10-08): a plane must read as a plane, a boat as a boat, a building as a building, and a local must recognise San Francisco at a glance. It does not need to pass as a photograph or be pixel-perfect. Real photos are used as references for shape, placement, colour and light, not as a pass/fail match.
 
+## Visual references and fog direction (owner-supplied 2026-10-09)
+
+Owner reference photos live in `design-foundation/references/bay-area/` (reference only, never published). What they show: fog tops lit warm by a low sun with deep blue-grey shadows; Golden Gate towers with their stepped Art Deco portals and struts in saturated International Orange; Marin Headlands golden-brown grass with dark green scrub in the folds; crisp skies; Transamerica and Salesforce as the skyline's two signatures.
+
+Fog direction from the owner, the starting point for all fog work:
+
+| Property | Direction |
+|---|---|
+| Wind direction | West to east, consistent with coastal fog |
+| Primary drift | Very slow, around 5-12 px/sec on screen |
+| Wispy turbulence | Subtle, continuous deformation |
+| Density | Variable, with transparent openings |
+| Fog colour | Cool silver, blue-grey, soft white |
+| Lighting | Warm champagne highlights from the sun |
+| Scroll interaction | Fog passes the camera, revealing successive layers |
+
 ## Film render pipeline: locked plan (owner-approved 2026-10-08)
 
 Read this before touching any render. The owner has lost a day to duplicated renders; follow it exactly.

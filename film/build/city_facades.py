@@ -109,9 +109,16 @@ roof_col = node("ShaderNodeMix", data_type="RGBA")
 links.new(rnd, roof_col.inputs["Factor"])
 roof_col.inputs["A"].default_value = (0.16, 0.16, 0.155, 1)
 roof_col.inputs["B"].default_value = (0.3, 0.29, 0.27, 1)
+# Landmarks in their real pale finish (Transamerica's white quartz, the
+# Salesforce Tower's pale fins, the Ferry Building): stone with rnd > 0.9.
+landmark = math("MULTIPLY", is_stone, math("GREATER_THAN", rnd, 0.9))
+pale = node("ShaderNodeMix", data_type="RGBA")
+links.new(landmark, pale.inputs["Factor"])
+links.new(wall.outputs["Result"], pale.inputs["A"])
+pale.inputs["B"].default_value = (0.74, 0.72, 0.67, 1)
 colour = node("ShaderNodeMix", data_type="RGBA")
 links.new(roof, colour.inputs["Factor"])
-links.new(wall.outputs["Result"], colour.inputs["A"])
+links.new(pale.outputs["Result"], colour.inputs["A"])
 links.new(roof_col.outputs["Result"], colour.inputs["B"])
 
 bsdf = node("ShaderNodeBsdfPrincipled")
@@ -127,7 +134,9 @@ building = bpy.data.materials.get("Building")
 source = building.node_tree.nodes.get("WindowGlow") if building else None
 share.outputs[0].default_value = source.outputs[0].default_value if source else 0.35
 links.new(lit, bsdf.inputs["Emission Color"])
-links.new(math("MULTIPLY", math("SUBTRACT", 1.0, roof), math("MULTIPLY", share.outputs[0], 3.0)), bsdf.inputs["Emission Strength"])
+# Fewer, dimmer lit windows: at golden hour most offices read as glass.
+walls_only = math("MULTIPLY", math("SUBTRACT", 1.0, roof), math("SUBTRACT", 1.0, landmark))
+links.new(math("MULTIPLY", walls_only, math("MULTIPLY", share.outputs[0], 1.2)), bsdf.inputs["Emission Strength"])
 links.new(bsdf.outputs[0], node("ShaderNodeOutputMaterial").inputs["Surface"])
 
 sky = bpy.data.objects["Skyline"]

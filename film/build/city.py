@@ -146,8 +146,9 @@ for name, u, v, h in LANDMARKS:
     if name == "salesforce":
         # Pale rounded-square shaft tapering gently, and the open crown above
         # the top floor that reads lighter than the shaft.
-        skyline.cylinder(u, v, 27, gz - 3, gz + h * 0.84, 1, 0.97, segments=32, taper=0.84)
-        skyline.cylinder(u, v, 27 * 0.84, gz + h * 0.84, gz + h, 1, 1.0, segments=32, taper=0.6)
+        skyline.cylinder(u, v, 26, gz - 3, gz + h * 0.88, 1, 0.97, segments=32, taper=0.9)
+        skyline.cylinder(u, v, 26 * 0.9, gz + h * 0.88, gz + h * 0.97, 1, 1.0, segments=32, taper=0.8)
+        skyline.cylinder(u, v, 26 * 0.72, gz + h * 0.97, gz + h, 1, 1.0, segments=32, taper=0.5)
     elif name == "rincon":
         skyline.prism(u, v, 34, 34, gz - 3, gz + h * 0.93, 0, 0.55)
         skyline.prism(u, v, 30, 30, gz + h * 0.93, gz + h, 1, 0.8, taper=0.8)
@@ -191,6 +192,10 @@ for i in range(-11, 12):
                 v = bv - BLOCK / 2 + ld * (b + 0.5)
                 if any(math.hypot(u - lu, v - lv) < (230 if n == "embarcadero" else 70) for n, lu, lv, _h in LANDMARKS):
                     continue
+                # Telegraph Hill, under Coit Tower, has no towers.
+                wx, wy = to_world(u, v)
+                if math.hypot(wx - 5675.0, wy + 3300.0) < 380:
+                    continue
                 gz = ground(*to_world(u, v))
                 if gz is None or gz < 0.3:
                     continue
@@ -200,9 +205,9 @@ for i in range(-11, 12):
                 h = min(185.0, max(18.0, rng.gauss(40 + 150 * core, 20 + 35 * core)))
                 w, d = lw * rng.uniform(0.7, 0.92), ld * rng.uniform(0.7, 0.92)
                 if h > 85:
-                    tower(skyline, u, v, h, min(w, 48), min(d, 44), 0 if rng.random() < 0.5 else 1, rng.random(), gz)
+                    tower(skyline, u, v, h, min(w, 48), min(d, 44), 0 if rng.random() < 0.5 else 1, rng.random() * 0.88, gz)
                 else:
-                    skyline.prism(u, v, w, d, gz - 3, gz + h, 1, rng.random())
+                    skyline.prism(u, v, w, d, gz - 3, gz + h, 1, rng.random() * 0.88)
                     if rng.random() < 0.5:
                         skyline.prism(u, v, w * 0.4, d * 0.3, gz + h, gz + h + 4, 1, 0.5)
                 count += 1
@@ -294,7 +299,7 @@ n.links.new(stone_ramp.outputs["Color"], wall.inputs["A"])
 n.links.new(house_ramp.outputs["Color"], wall.inputs["B"])
 dark_window = n.new("ShaderNodeMix")
 dark_window.data_type = "RGBA"
-n.set(dark_window.inputs["Factor"], window)
+n.set(dark_window.inputs["Factor"], n.math("MULTIPLY", window, n.math("MULTIPLY_ADD", is_house, -0.55, 1.0)))
 n.links.new(wall.outputs["Result"], dark_window.inputs["A"])
 dark_window.inputs["B"].default_value = (0.12, 0.13, 0.14, 1)
 base = n.new("ShaderNodeMix")
