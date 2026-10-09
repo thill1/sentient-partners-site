@@ -193,16 +193,13 @@ export const Descent: React.FC = () => {
       // Sunset's loops have their cross-fade baked in (film/seamless_loop.py):
       // one image a frame, so the loop never hitches the live aircraft.
       const pad = (index: number) => String(index + 1).padStart(4, '0');
-      openLoop = count
-        ? hasCleanSunsetOpening
-          ? new FramePlayer(`${kind}-open`, 38, (index) => `/film/sunset-open-seamless/${pad(index)}.webp`, true)
-          : new FramePlayer(`${kind}-open`, 48)
-        : null;
-      cityLoop = count
-        ? kind === 'sunset'
-          ? new FramePlayer('sunset-city-seamless', 38, undefined, true)
-          : new FramePlayer(`${kind}-city`, 48)
-        : null;
+      // The v2 sunset has no held-camera loop clips: at rest the page holds
+      // the descent's first or last frame (the old loops were a different,
+      // earlier scene and repeated every 3.2 s). Other phases keep theirs
+      // until they are re-rendered.
+      void pad; void hasCleanSunsetOpening;
+      openLoop = count && kind !== 'sunset' ? new FramePlayer(`${kind}-open`, 48) : null;
+      cityLoop = count && kind !== 'sunset' ? new FramePlayer(`${kind}-city`, 48) : null;
     };
     choosePlayer();
     const sizeFilm = () => {

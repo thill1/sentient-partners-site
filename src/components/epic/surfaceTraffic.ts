@@ -251,7 +251,8 @@ export class SurfaceTraffic {
         point[1] -= Math.sin(heading) * item.vessel.length / 2;
         points.push(point); widths.push(beam * .4 + step / 16 * duration * item.vessel.speed * .08);
       }
-      return [{ points, widths, alpha: alpha * haze(item.screen.depth) * item.seen * (night ? .08 : .4) }];
+      const near = Math.max(0, Math.min(1, (item.screen.depth - item.vessel.length * 1.5) / (item.vessel.length * 2)));
+      return [{ points, widths, alpha: alpha * haze(item.screen.depth) * item.seen * near * (night ? .08 : .4) }];
     });
     for (const item of projectedVessels) {
       const screen = item.screen;
@@ -259,7 +260,11 @@ export class SurfaceTraffic {
       const size = (item.vessel.length / (screen.depth * tanX * 2)) * rect.w;
       if (size < 0.7) continue;
       const pitch = Math.sin(item.age * .8 + item.vessel.bobPhase) * (item.vessel.type === 'ship' ? .002 : .012);
-      instances.push({ model: item.vessel.type, position: item.point, motion: { heading: item.heading, climb: pitch, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * item.seen, flash: false });
+      // Fade a vessel out before it passes unrealistically close to the
+      // camera (a container ship once filled the frame near the city).
+      const near = Math.max(0, Math.min(1, (screen.depth - item.vessel.length * 1.5) / (item.vessel.length * 2)));
+      if (near < .02) continue;
+      instances.push({ model: item.vessel.type, position: item.point, motion: { heading: item.heading, climb: pitch, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * item.seen * near, flash: false });
     }
     ctx.globalAlpha = 1;
     // Review only: ?review exposes where each visible vessel is drawn.
