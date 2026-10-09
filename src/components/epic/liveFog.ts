@@ -94,7 +94,13 @@ void main() {
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { gl_FragColor = vec4(0.0); return; }
   vec2 ndc = vec2(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
   vec3 dir = normalize(uCamF + uCamR * ndc.x * uTan.x + uCamU * ndc.y * uTan.y);
-  float hit = sceneDistance(uv);
+  // The fog is coarser than the screen: a fog pixel landing on a thin cable
+  // or suspender stopped at the cable for its whole area, punching a clear
+  // square through the fog. Use the farthest surface across the footprint.
+  vec2 foot = 0.5 / uRect.zw;
+  float hit = max(max(sceneDistance(uv + vec2(-foot.x, -foot.y)), sceneDistance(uv + vec2(foot.x, -foot.y))),
+                  max(sceneDistance(uv + vec2(-foot.x, foot.y)), sceneDistance(uv + vec2(foot.x, foot.y))));
+  hit = max(hit, sceneDistance(uv));
 
   // Only the slab that holds fog (sea level to 900 m) is marched.
   float t0 = 0.0, t1 = hit;

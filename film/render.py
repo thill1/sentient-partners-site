@@ -96,6 +96,18 @@ s.cycles.volume_bounces = 1
 s.cycles.volume_step_rate = 5.0
 s.cycles.volume_max_steps = 128
 s.render.resolution_x, s.render.resolution_y = 1600, 900
+# PORTRAIT=1: the phone film, 9:16, same camera position and heading. The
+# vertical field of view matches the landscape film's horizontal one, so the
+# tall frame holds sky, subject and foreground instead of a cropped slice.
+if os.environ.get("PORTRAIT"):
+    s.render.resolution_x, s.render.resolution_y = 1080, 1920
+    s.camera.data.sensor_fit = "VERTICAL"
+    s.camera.data.sensor_height = s.camera.data.sensor_width
+    pitch = float(os.environ.get("PORTRAIT_PITCH", "0"))
+    if pitch:
+        from mathutils import Matrix
+        s.camera.animation_data_clear()
+        s.camera.matrix_world = s.camera.matrix_world @ Matrix.Rotation(math.radians(pitch), 4, "X")
 s.render.resolution_percentage = percent
 s.render.image_settings.file_format = "PNG"
 try:
