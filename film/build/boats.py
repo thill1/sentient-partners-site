@@ -25,8 +25,9 @@ def get(name, maker):
 
 hull_black = principled("HullBlack", (0.025, 0.028, 0.032), roughness=0.5)
 hull_red = principled("HullRed", (0.32, 0.04, 0.03), roughness=0.6)
-hull_white = principled("HullWhite", (0.18, 0.24, 0.27), roughness=0.52, Coat_Weight=0.2)
-super_white = principled("Superstructure", (0.24, 0.3, 0.32), roughness=0.56)
+# Bay ferries, yachts and ship accommodation blocks are painted white.
+hull_white = principled("HullWhite", (0.72, 0.73, 0.72), roughness=0.4, Coat_Weight=0.3)
+super_white = principled("Superstructure", (0.68, 0.69, 0.68), roughness=0.5)
 hull_navy = principled("HullNavy", (0.025, 0.055, 0.085), roughness=0.52)
 deck_grey = principled("DeckGrey", (0.18, 0.19, 0.2), roughness=0.8)
 funnel = principled("Funnel", (0.06, 0.12, 0.3), roughness=0.5)
@@ -174,10 +175,11 @@ class Builder:
         return obj
 
 
-def nav_lights(b, L, B, z, mast_z):
-    b.box(-B / 2 - 0.3, -B / 2, L * 0.05 - 0.3, L * 0.05 + 0.3, z, z + 0.5, nav_red)
-    b.box(B / 2, B / 2 + 0.3, L * 0.05 - 0.3, L * 0.05 + 0.3, z, z + 0.5, nav_green)
-    b.box(-0.35, 0.35, L * 0.3, L * 0.3 + 0.7, mast_z, mast_z + 0.7, nav_white)
+def nav_lights(b, half, y, z, mast_y, mast_z):
+    """Side lights on the structure's own sides at `y`, masthead light on the mast."""
+    b.box(-half - 0.3, -half, y - 0.3, y + 0.3, z, z + 0.5, nav_red)
+    b.box(half, half + 0.3, y - 0.3, y + 0.3, z, z + 0.5, nav_green)
+    b.box(-0.3, 0.3, mast_y - 0.3, mast_y + 0.3, mast_z, mast_z + 0.6, nav_white)
 
 
 def container_ship(name):
@@ -193,7 +195,7 @@ def container_ship(name):
     b.box(-20.05, 20.05, yb + 9.0, yb + 9.06, 41, 43, window)
     b.box(-3.5, 3.5, yb - 20, yb - 12, 14, 46, funnel)
     b.cyl(0, yb + 2, 44, 58, 0.5, mast_mat)
-    nav_lights(b, L, B, 41, 58)
+    nav_lights(b, 20.0, yb + 6, 41, yb + 2, 58)
     b.box(-0.3, 0.3, L / 2 - 6, L / 2 - 5.4, 28, 28.6, nav_white)
     # Container bays forward and aft of the house.
     bays = [y for y in range(int(-L / 2 + 14), int(yb - 22), 13)] + [y for y in range(int(yb + 12), int(L / 2 - 30), 13)]
@@ -225,7 +227,7 @@ def ferry(name):
         x = sx * (B / 2 - 1.19)
         b.box(min(x, x + sx * 0.05), max(x, x + sx * 0.05), -L / 2 + 9, L / 2 - 14, 6.2, 7.4, window)
     b.box(-2.4, 2.4, L / 2 - 12.05, L / 2 - 12, 8.4, 9.4, window)
-    nav_lights(b, L, B, 8.2, 11.5)
+    nav_lights(b, B / 2 - 1.2, L / 2 - 14, 7.0, L / 2 - 14, 11.5)
     b.cyl(0, L / 2 - 14, 9.8, 11.5, 0.12, mast_mat)
     return b.finish(name)
 
@@ -238,7 +240,7 @@ def tug(name):
     b.box(-3, 3, 0, 5.5, 6.5, 9.2, super_white)
     b.box(-3.05, 3.05, 5.45, 5.5, 7.3, 8.6, window)
     b.box(-1.0, 1.0, -5, -3, 3.2, 10.5, hull_black)
-    nav_lights(b, L, B, 9.0, 12.5)
+    nav_lights(b, 3.0, 3, 8.4, 3, 12.5)
     b.cyl(0, 3, 9.2, 12.5, 0.1, mast_mat)
     return b.finish(name)
 
@@ -249,7 +251,7 @@ def pilot_boat(name):
     b.hull(L, B, 2.0, -1.4, pilot_orange, hull_black, bow=0.4, stern=0.06, boot=0.4)
     b.box(-2.0, 2.0, -3, 3, 2.0, 4.6, super_white)
     b.box(-2.05, 2.05, 2.95, 3.0, 3.2, 4.2, window)
-    nav_lights(b, L, B, 4.6, 6.6)
+    nav_lights(b, 2.0, 1.5, 3.9, 0, 6.6)
     b.cyl(0, 0, 4.6, 6.6, 0.08, mast_mat)
     return b.finish(name)
 

@@ -18,6 +18,18 @@ const VEHICLES = [
   { type: 'sedan', length: 4.72 }, { type: 'suv', length: 4.92 },
   { type: 'truck', length: 7.22 }, { type: 'coach', length: 12.02 },
 ] as const;
+// Body colours in roughly the mix seen on Bay Area roads (linear RGB):
+// white, black, grey and silver dominate; some blue, red, green and beige.
+const PAINTS: [number, number[]][] = [
+  [24, [.72, .72, .7]], [20, [.02, .022, .025]], [16, [.16, .165, .17]], [15, [.42, .43, .44]],
+  [10, [.03, .07, .2]], [8, [.38, .03, .025]], [4, [.04, .1, .06]], [3, [.45, .38, .26]],
+];
+const paintFor = (seed: number) => {
+  let pick = (Math.sin(seed * 12.9898) * 43758.5453 % 1 + 1) % 1 * 100;
+  for (const [share, colour] of PAINTS) { if ((pick -= share) < 0) return colour; }
+  return PAINTS[0][1];
+};
+
 const BOATS = [
   { type: 'pilot', start: [3300, -250, 0] as Vec, rotation: 1.471, speed: 7.2, turn: 0.00025, length: 19 },
   { type: 'ship', start: [1350, 420, 0] as Vec, rotation: -1.69, speed: 4.8, turn: -0.00012, length: 300 },
@@ -57,6 +69,7 @@ export class SurfaceTraffic {
   // at every time of day, so the sunset masks serve all three. Until a mask
   // has loaded nothing is drawn: the layer cannot know where the fog is.
   private masks = new Map<string, Mask | 'loading'>();
+  private static readonly review = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('review');
   private static readonly sailStarts = [
     [2650, -560, 0], [3050, 60, 0], [3700, -700, 0], [4250, -1150, 0],
     [4900, -1900, 0], [5100, -2050, 0], [5700, -2550, 0],
@@ -182,12 +195,15 @@ export class SurfaceTraffic {
         const screen = project(point);
         if (!screen) continue;
         const heading = lane.direction === 1 ? Math.PI / 2 : -Math.PI / 2;
-        const type = VEHICLES[(slot * 7 + laneIndex * 3) % VEHICLES.length];
+        // Mostly cars and SUVs, some trucks, the occasional bus (equal shares
+        // made a quarter of the traffic red coaches).
+        const roll = ((Math.sin((slot * 17 + laneIndex * 5 + 3) * 78.233) * 43758.5453) % 1 + 1) % 1;
+        const type = VEHICLES[roll < .55 ? 0 : roll < .86 ? 1 : roll < .97 ? 2 : 3];
         const size = (type.length / (screen.depth * tanX * 2)) * rect.w;
         if (size < 0.6) continue;
         const deck = this.seen(screen.u, screen.v, 1, mask);
         if (deck < .02) continue;
-        instances.push({ model: type.type, position: point, motion: { heading, climb: 0, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * deck, flash: false });
+        instances.push({ model: type.type, position: point, motion: { heading, climb: 0, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * deck, flash: false, paint: type.type === 'coach' ? undefined : paintFor(slot * 31 + laneIndex * 7 + 1) });
       }
     });
 
@@ -234,6 +250,10 @@ export class SurfaceTraffic {
       instances.push({ model: item.vessel.type, position: item.point, motion: { heading: item.heading, climb: pitch, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * item.seen, flash: false });
     }
     ctx.globalAlpha = 1;
+    // Review only: ?review exposes where each visible vessel is drawn.
+    if (SurfaceTraffic.review) (window as unknown as { __vessels?: unknown }).__vessels = projectedVessels.map((item) => item.screen && {
+      type: item.vessel.type, x: item.screen.x / (window.devicePixelRatio || 1), y: item.screen.y / (window.devicePixelRatio || 1), depth: item.screen.depth, seen: item.seen,
+    });
     this.renderer.draw(ctx, camera, pose, rect, instances, this.phase, wakes, seconds);
     ctx.canvas.dataset.traffic = '3d';
   }

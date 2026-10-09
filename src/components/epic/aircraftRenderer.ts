@@ -22,6 +22,8 @@ export interface AircraftInstance {
   alpha: number;
   flash: boolean;
   model?: string;
+  /** Body colour for this instance (meshes named CarPaint*), so traffic is not one colour per model. */
+  paint?: number[];
   basis?: ReturnType<typeof flightBasis>;
 }
 export interface ModelWake { points: FlightVector[]; widths: number[]; alpha: number }
@@ -174,10 +176,12 @@ export class AircraftRenderer {
     const tanX = Math.tan(camera.fov / 2);
     gl.uniform2f(this.uniforms.Tan, tanX, tanX / camera.aspect);
     const day = phase === 'day', night = phase === 'night';
-    const azimuth = (day ? 200 : 262) * Math.PI / 180, elevation = (day ? 34 : night ? 9 : 2.2) * Math.PI / 180;
+    // Matches film/render.py: golden-hour sunset (sun 6.5 degrees up, warm
+    // gold) with a cool blue sky fill, so live traffic sits in the film's light.
+    const azimuth = (day ? 200 : 262) * Math.PI / 180, elevation = (day ? 34 : night ? 9 : 6.5) * Math.PI / 180;
     vector('SunDirection', [Math.sin(azimuth)*Math.cos(elevation), Math.cos(azimuth)*Math.cos(elevation), Math.sin(elevation)]);
-    vector('SunColor', day ? [2.5, 2.4, 2.25] : night ? [.08, .1, .17] : [3.2, 1.6, .8]);
-    vector('SkyColor', day ? [.26, .32, .43] : night ? [.012, .023, .045] : [.16, .12, .17]);
+    vector('SunColor', day ? [2.5, 2.4, 2.25] : night ? [.08, .1, .17] : [3.0, 1.85, .95]);
+    vector('SkyColor', day ? [.26, .32, .43] : night ? [.012, .023, .045] : [.42, .42, .52]);
     gl.uniform1f(this.uniforms.Exposure, day ? .9 : night ? 1.6 : .85);
     gl.uniform1f(this.uniforms.Foam, 0); gl.uniform1f(this.uniforms.Time, seconds);
     gl.disableVertexAttribArray(this.attributes.opacity); gl.vertexAttrib1f(this.attributes.opacity, 1);
@@ -229,10 +233,14 @@ export class AircraftRenderer {
       for (const mesh of this.models.get(instance.model ?? 'airliner') ?? []) {
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.positions); gl.enableVertexAttribArray(this.attributes.position); gl.vertexAttribPointer(this.attributes.position, 3, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normals); gl.enableVertexAttribArray(this.attributes.normal); gl.vertexAttribPointer(this.attributes.normal, 3, gl.FLOAT, false, 0, 0);
-        vector('Color', mesh.color);
+        // Cabin and passenger windows are dark tinted glass by day and glow
+        // only from dusk; exported as always-lit, they read as white bands.
+        const window = mesh.name === 'CabinLight' || mesh.name === 'AirlinerWindow';
+        const glow = window ? (day ? 0 : night ? 1 : 0.15) : 1;
+        vector('Color', window ? [.03, .035, .04] : instance.paint && mesh.name.startsWith('CarPaint') ? instance.paint : mesh.color);
         // Lights are actual housing geometry and share the airframe transform
         // and depth buffer. No independently placed screen-space light dots.
-        vector('Emission', mesh.name === 'Strobe' && !instance.flash ? [0, 0, 0] : mesh.emission);
+        vector('Emission', mesh.name === 'Strobe' && !instance.flash ? [0, 0, 0] : mesh.emission.map((c) => c * glow));
         gl.uniform1f(this.uniforms.Roughness, mesh.roughness);
         gl.uniform1f(this.uniforms.Metallic, mesh.metallic);
         gl.drawArrays(gl.TRIANGLES, 0, mesh.count);
