@@ -38,9 +38,11 @@ def emission(material, value):
 # and colour, window glow, deck lamps, how bright vehicle and vessel lights
 # are, and the fog's stand-in for multiple scattering (glow and its colour).
 CONFIG = {
-    "sunset": dict(el=2.2, az=262, sky=0.35, sun=8.0, col=(1.0, 0.5, 0.26), exposure=-0.7, air=2.6,
-                   fill=18.0, fill_col=(1.0, 0.74, 0.66), windows=0.18, deck=3.0, lights=1.0, stars=0.0, night_sky=0.0,
-                   fog_glow=0.3, fog_col=(1.0, 0.8, 0.76)),
+    # Golden hour from the owner's references: sun a few degrees up, warm
+    # gold rather than red, blue sky above, cool blue-grey fog shadows.
+    "sunset": dict(el=6.5, az=262, sky=0.42, sun=10.0, col=(1.0, 0.62, 0.32), exposure=-1.9, air=1.4,
+                   fill=5.0, fill_col=(0.7, 0.8, 1.0), windows=0.18, deck=3.0, lights=1.0, stars=0.0, night_sky=0.0,
+                   fog_glow=0.1, fog_col=(0.7, 0.78, 0.95)),
     "day": dict(el=34, az=200, sky=0.18, sun=4.2, col=(1.0, 0.96, 0.9), exposure=-2.5, air=1.0,
                 fill=14.0, fill_col=(0.85, 0.9, 1.0), windows=0.0, deck=0.0, lights=0.15, stars=0.0, night_sky=0.0,
                 fog_glow=1.2, fog_col=(0.92, 0.95, 1.0)),

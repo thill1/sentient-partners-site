@@ -5,7 +5,7 @@
 #   zsh film/finish_v2.sh sunset
 #
 # 1. encode PNGs to WebP (1600 and 768 wide) for the descent and both loops
-# 2. bake the loops' cross-fades (film/seamless_loop.py)
+# 2. (no loop clips: the live fog engine animates the held first/last frame)
 # 3. re-render the traffic fog masks from the v2 scene (its fog has openings)
 # 4. build, then deploy to the redesign-cinematic preview alias
 set -e
@@ -38,18 +38,11 @@ PY
 WEB=$RUN/web-v2
 rm -rf $WEB && mkdir -p $WEB
 encode $RUN/frames/$KIND-v2 $WEB/$KIND
-encode $RUN/frames/$KIND-v2-open $WEB/$KIND-open
-encode $RUN/frames/$KIND-v2-city $WEB/$KIND-city
 
 # Keep what the site had, then swap in the new frames and loops.
 mkdir -p film/frames/site-before-v2-$STAMP
-cp -R public/film/$KIND public/film/$KIND-open-seamless public/film/$KIND-city-seamless film/frames/site-before-v2-$STAMP/ 2>/dev/null || true
+cp -R public/film/$KIND film/frames/site-before-v2-$STAMP/
 rm -rf public/film/$KIND && cp -R $WEB/$KIND public/film/$KIND
-python3 -I film/seamless_loop.py $WEB/$KIND-open public/film/$KIND-open-seamless.new
-python3 -I film/seamless_loop.py $WEB/$KIND-city public/film/$KIND-city-seamless.new
-rm -rf public/film/$KIND-open-seamless public/film/$KIND-city-seamless
-mv public/film/$KIND-open-seamless.new public/film/$KIND-open-seamless
-mv public/film/$KIND-city-seamless.new public/film/$KIND-city-seamless
 
 # Traffic masks from the new fog.
 T=$PWD/public/film/traffic

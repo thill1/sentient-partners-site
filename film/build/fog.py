@@ -62,6 +62,12 @@ depth_in = n.map_range(n.math("SUBTRACT", top, Z), 0.0, 45.0)
 texture = n.math("MULTIPLY", erode, depth_in, name="Texture")
 body = n.math("MULTIPLY", body, texture)
 
+# Openings: the bank is not one blanket. Broad, soft-edged gaps let the water
+# show through (the owner's references), drifting with the rest of the bank.
+gaps = n.noise(flat, 0.0016, detail=2.0, name="Openings").outputs[0]
+open_mask = n.map_range(gaps, 0.43, 0.53, 0.0, 1.0, name="OpenMask")
+body = n.math("MULTIPLY", body, open_mask)
+
 # Wisps: thin streamers drawn out along the wind, just above the top.
 wind = n.new("ShaderNodeMapping", Vector=P)
 wind.inputs["Scale"].default_value = (0.3, 1.0, 2.4)

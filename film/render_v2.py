@@ -20,6 +20,12 @@ RUN = ROOT / "film/frames/live-background-20261008-134539"
 BLENDER = "/opt/homebrew/bin/blender"
 kind = sys.argv[1] if len(sys.argv) > 1 else "sunset"
 
+# A short job (e.g. a single clean-plate render) can hold the queue between
+# sequences: while <run>/pause.lock exists, the next sequence waits to start.
+import time
+while (RUN / "pause.lock").exists():
+    time.sleep(30)
+
 scene = RUN / f"descent-{kind}-v2.blend"
 if not scene.exists():
     shutil.copy2(ROOT / "film/test/city.blend", scene)   # frozen copy of the approved scene
@@ -34,7 +40,11 @@ def valid(path):
         return False
 
 
-for suffix, first, last, hold in (("-open", 1, 95, 1), ("", 1, 239, None), ("-city", 146, 240, 240)):
+# The descent only: when the visitor stops scrolling, the page holds the
+# first or last frame and the live fog engine (src/components/epic/liveFog.ts)
+# animates the fog. Held-camera loop clips repeated every 3.2 s and drifted
+# ~70 m/s, which read as artificial.
+for suffix, first, last, hold in (("", 1, 239, None),):
     name = f"{kind}-v2{suffix}"
     out = RUN / "frames" / name
     out.mkdir(parents=True, exist_ok=True)
