@@ -72,6 +72,8 @@ for f in floods:
     f.data.energy = 2.5e6 if kind == "night" else 0.0
 
 bpy.data.materials["Building"].node_tree.nodes["WindowGlow"].outputs[0].default_value = CONFIG["windows"]
+if "Downtown" in bpy.data.materials:
+    bpy.data.materials["Downtown"].node_tree.nodes["WindowGlow"].outputs[0].default_value = CONFIG["windows"]
 bpy.data.materials["DeckLamp"].node_tree.nodes["Lamp"].inputs["Emission Strength"].default_value = CONFIG["deck"]
 # The Bay Lights on the Bay Bridge's cables: on from dusk.
 emission("BayLights", {"sunset": 1.5, "day": 0.0, "night": 5.0}[kind])
