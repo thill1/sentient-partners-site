@@ -63,11 +63,12 @@ export class FogField {
     const wy = this.tex(qx / 8300 + 0.37 + s, qy / 8300 + 0.37 + s, 3) - 0.5;
     const x = qx + wx * 1100 + time * 0.6, y = qy + wy * 1100 - time * 0.4;
     const bank = this.tex(x / 6200 + s * 0.71, y / 6200 + s * 0.71, 0) * 0.7 + this.tex(x / 2350 + 0.19, y / 2350 + 0.19, 0) * 0.3;
-    const open = this.tex(x / 7900 + s * 1.3 + 0.53, y / 7900 + s * 1.3 + 0.53, 1);
+    const open = this.tex(x / 7900 + s * 1.3 + 0.53, y / 7900 + s * 1.3 + 0.53, 1) * 0.6 + this.tex(x / 2100 + s * 0.9 + 0.29, y / 2100 + s * 0.9 + 0.29, 1) * 0.4;
     const detail = this.tex(x / 760 + p[2] / 640 + 0.11, y / 760 - p[2] / 910 + 0.11, 2);
     const near = 1 - smoothstep(1500, 6000, t);
     const fine = 0.5 + (detail - 0.5) * near;
-    const top = 148 + 82 * bank + 22 * (fine - 0.5);
+    const dome = this.tex(x / 1300 + 0.47, y / 1300 + 0.47, 3);
+    const top = 140 + 82 * bank + 48 * (dome - 0.5) + 22 * (fine - 0.5);
     const base = 104 + 18 * open;
     const upper = smoothstep(base, base + 28, p[2]) * (1 - smoothstep(top - 38, top, p[2]));
     const cover = smoothstep(0.3, 0.55, bank * 0.82 + fine * 0.18) * smoothstep(0.26, 0.46, open);

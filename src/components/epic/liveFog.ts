@@ -56,7 +56,9 @@ float density(vec3 p, float t, out float cover) {
   vec2 w = vec2(tex(q / 9100.0 + uSeed, 3), tex(q / 8300.0 + 0.37 + uSeed, 3)) - 0.5;
   vec2 xy = q + w * 1100.0 + vec2(uTime * 0.6, -uTime * 0.4);
   float bank = tex(xy / 6200.0 + uSeed * 0.71, 0) * 0.7 + tex(xy / 2350.0 + 0.19, 0) * 0.3;
-  float open = tex(xy / 7900.0 + uSeed * 1.3 + 0.53, 1);
+  // Openings at two scales: broad clearings, and smaller holes and lanes
+  // that read from close by (one broad field left the near top flat).
+  float open = tex(xy / 7900.0 + uSeed * 1.3 + 0.53, 1) * 0.6 + tex(xy / 2100.0 + uSeed * 0.9 + 0.29, 1) * 0.4;
   float detail = tex(xy / 760.0 + vec2(p.z / 640.0, -p.z / 910.0) + 0.11, 2);
   // Main marine layer: base ~105-120 m, a rolling top between ~150 and 230 m.
   float top = 148.0 + 82.0 * bank + 22.0 * (detail - 0.5);
@@ -64,7 +66,9 @@ float density(vec3 p, float t, out float cover) {
   // Fine detail fades with distance so far banks stay smooth, not speckled.
   float near = 1.0 - smoothstep(1500.0, 6000.0, t);
   detail = mix(0.5, detail, near);
-  top = 148.0 + 82.0 * bank + 22.0 * (detail - 0.5);
+  // Rolling relief on the top: domes and troughs that catch the low sun.
+  float dome = tex(xy / 1300.0 + 0.47, 3);
+  top = 140.0 + 82.0 * bank + 48.0 * (dome - 0.5) + 22.0 * (detail - 0.5);
   float upper = smoothstep(base, base + 28.0, p.z) * (1.0 - smoothstep(top - 38.0, top, p.z));
   cover = smoothstep(0.3, 0.55, bank * 0.82 + detail * 0.18) * smoothstep(0.26, 0.46, open);
   float d = upper * cover * (0.62 + 0.38 * detail);
