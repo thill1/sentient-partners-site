@@ -275,6 +275,15 @@ is_house = n.math("GREATER_THAN", kind, 1.5)
 # Stone and houses have punched windows (smaller panes); glass is all pane.
 punched = n.math("MULTIPLY", n.math("GREATER_THAN", fx, 0.32), n.math("GREATER_THAN", fz, 0.38))
 window = n.math("ADD", n.math("MULTIPLY", is_glass, pane), n.math("MULTIPLY", n.math("SUBTRACT", 1.0, is_glass), punched))
+# Rowhouses share their side walls: windows only on the street and garden
+# faces (normal along the grid's v axis), and roofs are tar and gravel, not
+# wall paint. Windows on all four sides and pastel roofs read as dice.
+face_n = n.new("ShaderNodeNewGeometry").outputs["Normal"]
+along_v = n.math("ABSOLUTE", n.vmath("DOT_PRODUCT", face_n, (-sa, ca, 0.0)))
+roof = n.math("GREATER_THAN", n.new("ShaderNodeSeparateXYZ", Vector=face_n).outputs["Z"], 0.7)
+street_face = n.math("GREATER_THAN", along_v, 0.7)
+house_window_ok = n.math("MULTIPLY", street_face, n.math("SUBTRACT", 1.0, roof))
+window = n.math("MULTIPLY", window, n.math("ADD", n.math("SUBTRACT", 1.0, is_house), n.math("MULTIPLY", is_house, house_window_ok)))
 
 # Colours.
 glass_col = n.new("ShaderNodeMix")
@@ -297,6 +306,17 @@ wall.data_type = "RGBA"
 n.set(wall.inputs["Factor"], is_house)
 n.links.new(stone_ramp.outputs["Color"], wall.inputs["A"])
 n.links.new(house_ramp.outputs["Color"], wall.inputs["B"])
+roof_col = n.new("ShaderNodeMix")
+roof_col.data_type = "RGBA"
+n.set(roof_col.inputs["Factor"], n.math("MULTIPLY", roof, is_house))
+n.links.new(wall.outputs["Result"], roof_col.inputs["A"])
+roof_tone = n.new("ShaderNodeMix")
+roof_tone.data_type = "RGBA"
+n.set(roof_tone.inputs["Factor"], rnd)
+roof_tone.inputs["A"].default_value = (0.16, 0.155, 0.15, 1)
+roof_tone.inputs["B"].default_value = (0.3, 0.27, 0.23, 1)
+n.links.new(roof_tone.outputs["Result"], roof_col.inputs["B"])
+wall = roof_col
 dark_window = n.new("ShaderNodeMix")
 dark_window.data_type = "RGBA"
 n.set(dark_window.inputs["Factor"], n.math("MULTIPLY", window, n.math("MULTIPLY_ADD", is_house, -0.55, 1.0)))

@@ -157,7 +157,7 @@ export const HOME_PROCESS = {
 
 export const HOME_CLOSE = {
   heading: 'Let’s identify one meaningful improvement and build from there.',
-  body: 'You do not need a large corporate budget to benefit from enterprise-level thinking. Start with a 20-minute introduction.',
+  body: 'You do not need a large corporate budget to benefit from enterprise-level thinking. Start with a 20‑minute introduction.',
 };
 
 /* ------------------------------------------------------------------ */
