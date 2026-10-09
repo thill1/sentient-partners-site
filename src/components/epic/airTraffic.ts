@@ -154,7 +154,10 @@ export class AirTraffic {
       const start = add(add(add(pose.p, pose.f, distance), pose.r, sx * tanX * distance), pose.u, sy * tanY * distance);
       start[2] = Math.min(t.ceiling, Math.max(start[2], t.floor));
       const crossingHeading = Math.atan2(pose.r[1], pose.r[0]) + (side > 0 ? Math.PI : 0);
-      const heading = crossingHeading + (r() - .5) * .3;
+      // Any direction across the view: mostly crossing, often diagonal, some
+      // heading away into the distance or coming toward the camera.
+      const spread = r() < .25 ? (r() < .5 ? -1 : 1) * (1.0 + r() * .45) : (r() - .5) * 1.4;
+      const heading = crossingHeading + spread;
       const climb = (r() - .45) * t.climb;
       const speed = t.speed[0] + r() * (t.speed[1] - t.speed[0]);
       const life = (distance * tanX * 3.8) / speed + 15;

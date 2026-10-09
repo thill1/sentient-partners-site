@@ -68,9 +68,13 @@ float density(vec3 p, float t, out float cover) {
   detail = mix(0.5, detail, near);
   // Rolling relief on the top: domes and troughs that catch the low sun.
   float dome = tex(xy / 1300.0 + 0.47, 3);
-  top = 140.0 + 82.0 * bank + 48.0 * (dome - 0.5) + 22.0 * (detail - 0.5);
+  // The marine layer blankets the whole Bay; its top (~150-205 m) buries the
+  // city and leaves only the icons above it: the Golden Gate towers (227 m),
+  // Transamerica (260), 181 Fremont (245), Salesforce (326), Sutro.
+  top = 160.0 + 34.0 * bank + 26.0 * (dome - 0.5) + 14.0 * (detail - 0.5);
   float upper = smoothstep(base, base + 28.0, p.z) * (1.0 - smoothstep(top - 38.0, top, p.z));
-  cover = smoothstep(0.3, 0.55, bank * 0.82 + detail * 0.18) * smoothstep(0.26, 0.46, open);
+  // A near-continuous blanket: openings are occasional, not the rule.
+  cover = smoothstep(0.18, 0.42, bank * 0.82 + detail * 0.18) * smoothstep(0.14, 0.32, open);
   float d = upper * cover * (0.62 + 0.38 * detail);
   // A separate lower bank beneath the 67.6 m roadway.
   float lowCover = smoothstep(0.44, 0.7, tex(xy / 3300.0 + 0.61, 0));
@@ -81,9 +85,7 @@ float density(vec3 p, float t, out float cover) {
   float strand = smoothstep(0.58, 0.82, tex(xy / 1450.0 + vec2(p.z / 520.0, p.z / 770.0) + 0.83, 2));
   float high = smoothstep(260.0, 330.0, p.z) * (1.0 - smoothstep(620.0, 860.0, p.z)) * strand * (1.0 - smoothstep(600.0, 1800.0, t));
   d += high * 0.12;
-  // The marine layer stops short of the city, east of the Bay.
-  float east = 1.0 - smoothstep(2300.0, 4600.0, p.x + 1400.0 * (open - 0.5));
-  return d * east;
+  return d;
 }
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
