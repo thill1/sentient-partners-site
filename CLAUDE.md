@@ -27,6 +27,8 @@ The homepage descent must read as the real San Francisco Bay to people who live 
 
 If something seen while scrolling would look wrong to a Bay Area local, it is a defect.
 
+**Mobile first** (owner, 2026-10-09): most visitors arrive on a phone, so the iPhone experience is the primary one. Every visual and performance change is judged on a phone first (Safari/WebKit at iPhone size, and the owner's own iPhone, whose observations are the truth), then desktop.
+
 **The bar is recognisable and believable, not photo-matching** (owner, 2026-10-08): a plane must read as a plane, a boat as a boat, a building as a building, and a local must recognise San Francisco at a glance. It does not need to pass as a photograph or be pixel-perfect. Real photos are used as references for shape, placement, colour and light, not as a pass/fail match.
 
 ## Visual references and fog direction (owner-supplied 2026-10-09)
