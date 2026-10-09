@@ -290,15 +290,16 @@ export const Descent: React.FC = () => {
         // until it is out from under it, east of the Gate.
         if (airCtx && !still) {
           const visible = 1 - clamp01((story - 0.43) / 0.035) + clamp01((story - 0.76) / 0.05);
-          const pose = traffic.pose(opening && atOpen > .5 ? 'open' : ending && atCity > .5 ? 'city' : player.lastIndex);
+          const shot = opening && atOpen > .5 ? 'open' as const : ending && atCity > .5 ? 'city' as const : player.lastIndex;
+          const pose = traffic.pose(shot);
           const frameRect = opening && atOpen > .5 ? opening.lastRect : ending && atCity > .5 ? ending.lastRect : player.lastRect;
           traffic.draw(airCtx, pose, frameRect, seconds, clamp01(visible));
-          // The reviewed opening loop has no baked vehicles, so this layer
-          // can move freely without doubling the old traffic in site frames.
-          if (surfaceCtx) {
-            const surfaceAlpha = playerKind === 'sunset' && opening && atOpen > .5 ? clamp01(atOpen) : 0;
-            surfaceTraffic.draw(surfaceCtx, pose, frameRect, seconds, surfaceAlpha);
-          }
+          // Boats and bridge traffic are live through the whole film (the
+          // frames have none baked in), shown only where that shot's fog mask
+          // says water or deck is visible. They are below the fog, so unlike
+          // the aircraft they hide only while the camera is inside it.
+          const belowFog = 1 - clamp01((story - 0.44) / 0.03) + clamp01((story - 0.555) / 0.03);
+          if (surfaceCtx) surfaceTraffic.draw(surfaceCtx, pose, frameRect, seconds, clamp01(belowFog), shot);
         }
       } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);

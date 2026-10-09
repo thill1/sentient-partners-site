@@ -32,6 +32,8 @@ const BOATS = [
 const add = (a: Vec, b: TrafficVector): Vec => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const sub = (a: Vec, b: Vec): Vec => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot = (a: Vec, b: Vec) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+interface Mask { width: number; height: number; data: Uint8ClampedArray }
+
 interface Vessel extends TrafficMotion {
   type: string;
   start: Vec;
@@ -49,6 +51,12 @@ export class SurfaceTraffic {
   private renderer = new AircraftRenderer('/film/traffic/models.json');
   private vessels: Vessel[] = [];
   private water: WaterGrid | null = null;
+  // Where each shot's camera can actually see water (red) and the bridge
+  // deck (green) through the fog (film/export_traffic_mask.py): one per
+  // descent frame plus the held opening and city loops. The fog is the same
+  // at every time of day, so the sunset masks serve all three. Until a mask
+  // has loaded nothing is drawn: the layer cannot know where the fog is.
+  private masks = new Map<string, Mask | 'loading'>();
   private static readonly sailStarts = [
     [2650, -560, 0], [3050, 60, 0], [3700, -700, 0], [4250, -1150, 0],
     [4900, -1900, 0], [5100, -2050, 0], [5700, -2550, 0],
@@ -67,6 +75,41 @@ export class SurfaceTraffic {
 
   setPhase(phase: Phase) {
     this.phase = phase;
+  }
+
+  /** The mask for a shot, loading it (and the next descent frames) on first use. */
+  private mask(shot: number | 'open' | 'city') {
+    const load = (key: string, url: string) => {
+      if (this.masks.has(key)) return;
+      this.masks.set(key, 'loading');
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) return;
+        context.drawImage(image, 0, 0);
+        this.masks.set(key, { width: canvas.width, height: canvas.height, data: context.getImageData(0, 0, canvas.width, canvas.height).data });
+      };
+      image.onerror = () => this.masks.delete(key);
+      image.src = url;
+    };
+    const url = (index: number) => `/film/traffic/mask-sunset/${String(index + 1).padStart(4, '0')}.png`;
+    if (typeof shot === 'number') {
+      for (let ahead = -2; ahead <= 4; ahead++) if (shot + ahead >= 0) load(`frame-${shot + ahead}`, url(shot + ahead));
+    } else {
+      load(shot, `/film/traffic/mask-${shot}-sunset.png`);
+    }
+    const mask = this.masks.get(typeof shot === 'number' ? `frame-${shot}` : shot);
+    return mask && mask !== 'loading' ? mask : null;
+  }
+
+  /** How visible water (channel 0) or deck (channel 1) is at a frame position (0-1). */
+  private seen(u: number, v: number, channel: 0 | 1, mask: Mask | null) {
+    if (!mask || u < 0 || u > 1 || v < 0 || v > 1) return 0;
+    const x = Math.min(mask.width - 1, Math.round(u * (mask.width - 1)));
+    const y = Math.min(mask.height - 1, Math.round(v * (mask.height - 1)));
+    return mask.data[(y * mask.width + x) * 4 + channel] / 255;
   }
 
   private buildFleet() {
@@ -106,10 +149,12 @@ export class SurfaceTraffic {
 
   dispose() { this.renderer.dispose(); }
 
-  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number) {
+  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number, shot: number | 'open' | 'city') {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     const camera = this.camera;
     if (!camera || !pose || alpha <= 0.01 || !this.renderer.ready) return;
+    const mask = this.mask(shot);
+    if (!mask) { this.renderer.clear(); return; }
     const instances: AircraftInstance[] = [];
     const tanX = Math.tan(camera.fov / 2);
     const tanY = tanX / camera.aspect;
@@ -120,7 +165,7 @@ export class SurfaceTraffic {
       const nx = dot(relative, pose.r) / (depth * tanX);
       const ny = dot(relative, pose.u) / (depth * tanY);
       if (Math.abs(nx) > 1.2 || Math.abs(ny) > 1.2) return null;
-      return { x: rect.x + (nx * 0.5 + 0.5) * rect.w, y: rect.y + (0.5 - ny * 0.5) * rect.h, depth };
+      return { x: rect.x + (nx * 0.5 + 0.5) * rect.w, y: rect.y + (0.5 - ny * 0.5) * rect.h, u: nx * 0.5 + 0.5, v: 0.5 - ny * 0.5, depth };
     };
     const night = this.phase === 'night';
     const haze = (depth: number) => Math.exp(-depth / (this.phase === 'day' ? 23000 : 31000));
@@ -139,7 +184,9 @@ export class SurfaceTraffic {
         const type = VEHICLES[(slot * 7 + laneIndex * 3) % VEHICLES.length];
         const size = (type.length / (screen.depth * tanX * 2)) * rect.w;
         if (size < 0.6) continue;
-        instances.push({ model: type.type, position: point, motion: { heading, climb: 0, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth), flash: false });
+        const deck = this.seen(screen.u, screen.v, 1, mask);
+        if (deck < .02) continue;
+        instances.push({ model: type.type, position: point, motion: { heading, climb: 0, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * deck, flash: false });
       }
     });
 
@@ -148,8 +195,20 @@ export class SurfaceTraffic {
       const age = seconds + vessel.phase;
       const point = add(vessel.start, trafficDisplacement(vessel, age));
       const screen = project(point);
-      return { vessel, age, point, screen, heading: trafficHeading(vessel, age) };
-    }).filter((vessel) => vessel.screen);
+      const heading = trafficHeading(vessel, age);
+      // Bow, midships and stern must all be in clear air; a hull fades as
+      // it sails into the bank rather than showing through the fog.
+      let seen = 0;
+      if (screen) {
+        seen = 1;
+        for (const along of [-.5, .5]) {
+          const end = project([point[0] + Math.cos(heading) * vessel.length * along, point[1] + Math.sin(heading) * vessel.length * along, 0]);
+          seen = Math.min(seen, end ? this.seen(end.u, end.v, 0, mask) : 0);
+        }
+        seen = Math.min(seen, this.seen(screen.u, screen.v, 0, mask));
+      }
+      return { vessel, age, point, screen, heading, seen };
+    }).filter((vessel) => vessel.screen && vessel.seen > .02);
     const wakes: ModelWake[] = projectedVessels.flatMap(item => {
       if (!item.screen) return [];
       const duration = Math.min(22, item.vessel.length / item.vessel.speed * 1.7);
@@ -163,7 +222,7 @@ export class SurfaceTraffic {
         point[1] -= Math.sin(heading) * item.vessel.length / 2;
         points.push(point); widths.push(beam * .4 + step / 16 * duration * item.vessel.speed * .08);
       }
-      return [{ points, widths, alpha: alpha * haze(item.screen.depth) * (night ? .08 : .4) }];
+      return [{ points, widths, alpha: alpha * haze(item.screen.depth) * item.seen * (night ? .08 : .4) }];
     });
     for (const item of projectedVessels) {
       const screen = item.screen;
@@ -171,7 +230,7 @@ export class SurfaceTraffic {
       const size = (item.vessel.length / (screen.depth * tanX * 2)) * rect.w;
       if (size < 0.7) continue;
       const pitch = Math.sin(item.age * .8 + item.vessel.bobPhase) * (item.vessel.type === 'ship' ? .002 : .012);
-      instances.push({ model: item.vessel.type, position: item.point, motion: { heading: item.heading, climb: pitch, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth), flash: false });
+      instances.push({ model: item.vessel.type, position: item.point, motion: { heading: item.heading, climb: pitch, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * item.seen, flash: false });
     }
     ctx.globalAlpha = 1;
     this.renderer.draw(ctx, camera, pose, rect, instances, this.phase, wakes, seconds);
