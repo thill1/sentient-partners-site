@@ -247,7 +247,7 @@ export class AircraftRenderer {
       }
     }
     if (!this.direct) ctx.drawImage(this.canvas, 0, 0);
-    this.canvas.dataset.modelRenderer = '3d';
+    if (this.canvas.dataset.modelRenderer !== '3d') this.canvas.dataset.modelRenderer = '3d';
     return true;
   }
 

@@ -35,6 +35,7 @@ export const Descent: React.FC = () => {
   const airRef = useRef<HTMLCanvasElement>(null);
   const airModelRef = useRef<HTMLCanvasElement>(null);
   const surfaceRef = useRef<HTMLCanvasElement>(null);
+  const surfaceModelRef = useRef<HTMLCanvasElement>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
@@ -143,12 +144,13 @@ export const Descent: React.FC = () => {
     // The light and the clock follow Pacific time, checked every few seconds.
     let sky = timeOfDay();
     const showClock = () => {
-      if (clockRef.current) clockRef.current.textContent = `${sky.clock} PT`;
-      section.dataset.phase = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'golden';
+      if (clockRef.current && clockRef.current.textContent !== `${sky.clock} PT`) clockRef.current.textContent = `${sky.clock} PT`;
+      const phase = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'golden';
+      if (section.dataset.phase !== phase) section.dataset.phase = phase;
       // The rendered opening shot for this time of day.
       const weights: Record<string, number> = { day: sky.phase[0], sunset: sky.phase[1], night: sky.phase[2] };
       Object.entries(stillRefs.current).forEach(([kind, node]) => {
-        if (node) node.dataset.weight = String(weights[kind] ?? 0);
+        if (node && node.dataset.weight !== String(weights[kind] ?? 0)) node.dataset.weight = String(weights[kind] ?? 0);
       });
     };
     showClock();
@@ -161,7 +163,7 @@ export const Descent: React.FC = () => {
     const surface = surfaceRef.current;
     const surfaceCtx = surface?.getContext('2d') ?? null;
     const traffic = new AirTraffic(airModelRef.current ?? undefined);
-    const surfaceTraffic = new SurfaceTraffic();
+    const surfaceTraffic = new SurfaceTraffic(surfaceModelRef.current ?? undefined);
     const onMotionChange = () => {
       still = motionPreference.matches;
       if (still) {
@@ -239,6 +241,12 @@ export const Descent: React.FC = () => {
     let last = started;
     let slow = 0;
     let quick = 0;
+    // Touch the page only when a value actually changes. Rewriting the same
+    // text, styles and attributes 60 times a second made the browser redo
+    // style and layout work every frame for the whole page.
+    const setText = (node: HTMLElement | null, value: string) => { if (node && node.textContent !== value) node.textContent = value; };
+    const setStyle = (node: HTMLElement | null, key: 'opacity' | 'transform' | 'visibility', value: string) => { if (node && node.style[key] !== value) node.style[key] = value; };
+    const setData = (node: HTMLElement | null, key: string, value: string) => { if (node && node.dataset[key] !== value) node.dataset[key] = value; };
     const draw = () => {
       frame = requestAnimationFrame(draw);
       const rect = section.getBoundingClientRect();
@@ -272,7 +280,7 @@ export const Descent: React.FC = () => {
 
       // Play the rendered film once it has frames; until then, or if it has none, the still and live film stand in.
       const playing = !!player && player.available && player.loaded > 0;
-      section.dataset.rendered = playing ? 'true' : 'false';
+      setData(section, 'rendered', playing ? 'true' : 'false');
       if (playing && player && filmCtx) {
         // At rest at either end, the scene keeps moving: fog rolls, aircraft
         // pass, boats and traffic carry on. The loop shares the film's first
@@ -323,37 +331,37 @@ export const Descent: React.FC = () => {
         if (!node) return;
         const range: readonly number[] = playing ? beat.film : beat.range;
         const shown = presence(story, range[0], range[1]);
-        node.style.opacity = String(shown);
-        node.style.transform = still ? '' : `translateY(${(1 - shown) * 18}px)`;
-        node.style.visibility = shown > 0.02 ? 'visible' : 'hidden';
+        const rounded = Math.round(shown * 1000) / 1000;
+        setStyle(node, 'opacity', String(rounded));
+        setStyle(node, 'transform', still ? '' : `translateY(${Math.round((1 - rounded) * 180) / 10}px)`);
+        setStyle(node, 'visibility', shown > 0.02 ? 'visible' : 'hidden');
       });
       const eased = story * story * (3 - 2 * story);
       const feet = EPIC_ALTITUDE.from + (EPIC_ALTITUDE.to - EPIC_ALTITUDE.from) * eased;
-      if (altitudeRef.current) {
-        altitudeRef.current.textContent = `${(story > 0.985 ? EPIC_ALTITUDE.to : Math.round(feet / 10) * 10).toLocaleString('en-US')} ft`;
-      }
-      if (railRef.current) railRef.current.style.transform = `scaleX(${story})`;
-      if (cueRef.current) cueRef.current.style.opacity = String(clamp01(1 - story * 14));
+      setText(altitudeRef.current, `${(story > 0.985 ? EPIC_ALTITUDE.to : Math.round(feet / 10) * 10).toLocaleString('en-US')} ft`);
+      setStyle(railRef.current, 'transform', `scaleX(${Math.round(story * 1000) / 1000})`);
+      setStyle(cueRef.current, 'opacity', String(Math.round(clamp01(1 - story * 14) * 100) / 100));
       let current = 0;
       EPIC_CHAPTERS.forEach((chapter, index) => {
         if (story >= chapter.at - 0.06) current = index;
       });
       chapterRefs.current.forEach((node, index) => {
         if (!node) return;
-        node.dataset.current = index === current ? 'true' : 'false';
-        if (index === current) node.setAttribute('aria-current', 'step');
-        else node.removeAttribute('aria-current');
+        setData(node, 'current', index === current ? 'true' : 'false');
+        if (index === current) { if (node.getAttribute('aria-current') !== 'step') node.setAttribute('aria-current', 'step'); }
+        else if (node.hasAttribute('aria-current')) node.removeAttribute('aria-current');
       });
-      if (chapterLabelRef.current) chapterLabelRef.current.textContent = EPIC_CHAPTERS[current].label;
-      if (chapterCountRef.current) chapterCountRef.current.textContent = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
+      const count = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
+      setText(chapterLabelRef.current, EPIC_CHAPTERS[current].label);
+      setText(chapterCountRef.current, count);
       mobileChapterRefs.current.forEach((node, index) => {
         if (!node) return;
-        node.dataset.current = index === current ? 'true' : 'false';
-        if (index === current) node.setAttribute('aria-current', 'step');
-        else node.removeAttribute('aria-current');
+        setData(node, 'current', index === current ? 'true' : 'false');
+        if (index === current) { if (node.getAttribute('aria-current') !== 'step') node.setAttribute('aria-current', 'step'); }
+        else if (node.hasAttribute('aria-current')) node.removeAttribute('aria-current');
       });
-      if (mobileChapterLabelRef.current) mobileChapterLabelRef.current.textContent = EPIC_CHAPTERS[current].label;
-      if (mobileChapterCountRef.current) mobileChapterCountRef.current.textContent = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
+      setText(mobileChapterLabelRef.current, EPIC_CHAPTERS[current].label);
+      setText(mobileChapterCountRef.current, count);
       // In the fog the frame is pale, so the instruments turn dark.
       // At night the inside of the fog is dark, so the copy stays light.
       // The rendered still leads the opening and hands over to the live film as you descend.
@@ -361,10 +369,10 @@ export const Descent: React.FC = () => {
       // only inside the fog, where the frame is pale and no bridge is visible.
       const opening = playing ? 0 : 1 - clamp01((story - 0.47) / 0.04);
       Object.values(stillRefs.current).forEach((node) => {
-        if (node) node.style.opacity = String(opening * Number(node.dataset.weight ?? 0));
+        setStyle(node, 'opacity', String(Math.round(opening * Number(node?.dataset.weight ?? 0) * 1000) / 1000));
       });
       const inFog = playing ? story > 0.465 && story < 0.565 : story > 0.5 && story < 0.592;
-      section.dataset.fog = inFog && sky.phase[2] < 0.5 ? 'true' : 'false';
+      setData(section, 'fog', inFog && sky.phase[2] < 0.5 ? 'true' : 'false');
     };
     frame = requestAnimationFrame(draw);
 
@@ -390,6 +398,7 @@ export const Descent: React.FC = () => {
         <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Independent road and water traffic over the clean review sequence. */}
         <canvas ref={surfaceRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
+        <canvas ref={surfaceModelRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Live air traffic, drawn over the film in its own 3D space. */}
         <canvas ref={airRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         <canvas ref={airModelRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />

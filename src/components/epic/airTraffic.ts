@@ -77,6 +77,7 @@ export class AirTraffic {
   private renderer: AircraftRenderer | null = null;
   /** Review only: ?aircraft=cessna|helicopter|airliner makes every flight that type. */
   private forced: AircraftType | null = null;
+  private spritesDrawn = true;
 
   constructor(directCanvas?: HTMLCanvasElement) {
     const forced = new URLSearchParams(window.location.search).get('aircraft');
@@ -168,8 +169,9 @@ export class AirTraffic {
 
   /** Draw every flight for this frame. alpha fades the whole layer (in and under the fog). */
   draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, now: number, alpha: number) {
-    const { width, height } = ctx.canvas;
-    ctx.clearRect(0, 0, width, height);
+    // The 2D canvas only carries the sprite fallback; clearing a blank
+    // full-screen canvas every frame was wasted GPU work.
+    if (this.spritesDrawn) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); this.spritesDrawn = false; }
     const camera = this.camera;
     if (!camera || !pose || alpha <= 0.01) { this.renderer?.clear(); return; }
 
@@ -224,11 +226,12 @@ export class AirTraffic {
         return screen && { type: flight.type, x: screen.x / (window.devicePixelRatio || 1), y: screen.y / (window.devicePixelRatio || 1), z: screen.z };
       });
       if (this.renderer.draw(ctx, camera, pose, rect, instances, this.kind)) {
-        ctx.canvas.dataset.aircraft = '3d';
+        if (ctx.canvas.dataset.aircraft !== '3d') ctx.canvas.dataset.aircraft = '3d';
         return;
       }
     }
-    ctx.canvas.dataset.aircraft = 'sprites';
+    if (ctx.canvas.dataset.aircraft !== 'sprites') ctx.canvas.dataset.aircraft = 'sprites';
+    this.spritesDrawn = true;
     const night = this.kind === 'night';
     const day = this.kind === 'day';
 

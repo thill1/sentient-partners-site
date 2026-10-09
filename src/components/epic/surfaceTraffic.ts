@@ -60,7 +60,7 @@ interface Vessel extends TrafficMotion {
 export class SurfaceTraffic {
   private camera: CameraData | null = null;
   private phase: Phase = 'sunset';
-  private renderer = new AircraftRenderer('/film/traffic/models.json');
+  private renderer: AircraftRenderer;
   private vessels: Vessel[] = [];
   private water: WaterGrid | null = null;
   // Where each shot's camera can actually see water (red) and the bridge
@@ -75,7 +75,13 @@ export class SurfaceTraffic {
     [4900, -1900, 0], [5100, -2050, 0], [5700, -2550, 0],
   ] as Vec[];
 
-  constructor() {
+  /**
+   * Draw straight into `directCanvas` (WebGL). Rendering offscreen and then
+   * copying the full-screen result into a 2D canvas every frame forced a GPU
+   * sync point that stalled every layer (fog, boats, cars, aircraft) together.
+   */
+  constructor(directCanvas?: HTMLCanvasElement) {
+    this.renderer = new AircraftRenderer('/film/traffic/models.json', directCanvas);
     fetch('/film/camera.json')
       .then((response) => response.ok ? response.json() as Promise<CameraData> : null)
       .then((camera) => { this.camera = camera; })
@@ -164,9 +170,8 @@ export class SurfaceTraffic {
   dispose() { this.renderer.dispose(); }
 
   draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number, shot: number | 'open' | 'city') {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     const camera = this.camera;
-    if (!camera || !pose || alpha <= 0.01 || !this.renderer.ready) return;
+    if (!camera || !pose || alpha <= 0.01 || !this.renderer.ready) { this.renderer.clear(); return; }
     const mask = this.mask(shot);
     if (!mask) { this.renderer.clear(); return; }
     const instances: AircraftInstance[] = [];
@@ -255,6 +260,6 @@ export class SurfaceTraffic {
       type: item.vessel.type, x: item.screen.x / (window.devicePixelRatio || 1), y: item.screen.y / (window.devicePixelRatio || 1), depth: item.screen.depth, seen: item.seen,
     });
     this.renderer.draw(ctx, camera, pose, rect, instances, this.phase, wakes, seconds);
-    ctx.canvas.dataset.traffic = '3d';
+    if (ctx.canvas.dataset.traffic !== '3d') ctx.canvas.dataset.traffic = '3d';
   }
 }
