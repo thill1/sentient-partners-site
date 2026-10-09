@@ -24,7 +24,7 @@ const FOCUS: [number, number][] = [
   [0.25, 0.5],
   [0.42, 0.6],
   [0.6, 0.5],
-  [0.85, 0.55],
+  [0.85, 0.7],
   [1, 0.68],
 ];
 export function focusAt(t: number) {

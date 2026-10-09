@@ -46,6 +46,7 @@ export const Descent: React.FC = () => {
   const chapterCountRef = useRef<HTMLSpanElement>(null);
   const mobileChapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const mobileChapterLabelRef = useRef<HTMLSpanElement>(null);
+  const mobileChaptersRef = useRef<HTMLElement>(null);
   const mobileChapterCountRef = useRef<HTMLSpanElement>(null);
   const cueRef = useRef<HTMLParagraphElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
@@ -383,6 +384,7 @@ export const Descent: React.FC = () => {
         if (index === current) { if (node.getAttribute('aria-current') !== 'step') node.setAttribute('aria-current', 'step'); }
         else if (node.hasAttribute('aria-current')) node.removeAttribute('aria-current');
       });
+      setStyle(mobileChaptersRef.current, 'opacity', story > 0.05 ? '1' : '0');
       setText(mobileChapterLabelRef.current, EPIC_CHAPTERS[current].label);
       setText(mobileChapterCountRef.current, count);
       // In the fog the frame is pale, so the instruments turn dark.
@@ -448,9 +450,12 @@ export const Descent: React.FC = () => {
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#060A1C]/60 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
 
         {/* Chapters of the film. */}
+        {/* Phones: a slim progress row on the bottom edge, clear of the image
+            and the headlines; hidden at the start, where the scroll cue leads. */}
         <nav
+          ref={mobileChaptersRef}
           aria-label="Film chapters"
-          className="absolute right-[var(--sp-gutter)] top-[32%] z-30 -translate-y-1/2 text-right text-sp-ivory group-data-[phase=day]/film:text-sp-navy md:hidden"
+          className="absolute bottom-3 right-[var(--sp-gutter)] z-30 text-right text-sp-ivory opacity-0 transition-opacity duration-500 group-data-[phase=day]/film:text-sp-navy md:hidden"
         >
           <p className="mb-2 inline-flex items-center gap-2 whitespace-nowrap border border-white/20 bg-[#060A1C]/70 px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-sp-ivory shadow-sm backdrop-blur-md">
             <span ref={mobileChapterLabelRef} aria-live="polite">Above the fog</span>
