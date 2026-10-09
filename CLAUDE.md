@@ -46,6 +46,8 @@ Fog direction from the owner, the starting point for all fog work:
 
 ## Film render pipeline: locked plan (owner-approved 2026-10-08)
 
+> **Current (2026-10-09): the v2 scene is rendering.** Owner-approved v2 scene (full Bay Bridge, Coit Tower, trees, photo facades, golden hour, fog openings) is frozen at `<run>/descent-sunset-v2.blend` and rendered by `film/render_v2.py` (resumable, same run folder, frames in `frames/sunset-v2*`). `film/finish_v2.sh` waits for it, then encodes, bakes loops, regenerates fog masks and deploys to the **preview** alias `redesign-cinematic.sentient-partners-site.pages.dev` (never production; `main` serves sentientpartners.ai). Do not start other renders or touch these while they run. While Blender renders, this 16 GB Mac has little memory for Chrome; the site can drop frames or a tab can crash. That is the render, not the site.
+
 Read this before touching any render. The owner has lost a day to duplicated renders; follow it exactly.
 
 - **One run folder only:** `film/frames/live-background-20261008-134539`. Never create a new run folder, never start a fresh queue, never delete or "clean up" this folder. All remaining frames go here.
