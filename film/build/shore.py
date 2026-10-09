@@ -60,7 +60,7 @@ both.use_clamp = True
 nt.links.new(dim.outputs["Result"], both.inputs[0])
 nt.links.new(pr.outputs["Result"], both.inputs[1])
 nt.links.new(both.outputs[0], mix.inputs["Factor"])
-mix.inputs["A"].default_value = (0.06, 0.08, 0.045, 1)
+mix.inputs["A"].default_value = (0.1, 0.12, 0.065, 1)
 nt.links.new(ramp.outputs["Color"], mix.inputs["B"])
 nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
 bsdf.inputs["Roughness"].default_value = 0.97

@@ -120,21 +120,46 @@ def tower(m, u, v, height, w, d, kind, rnd, base_z):
 
 
 skyline = Mesh()
-# Landmarks, placed in grid units (metres) around the centre.
-LANDMARKS = [
-    ("salesforce", 260, -120, 326),
-    ("fremont", 140, -10, 245),
-    ("transamerica", -330, 360, 260),
-    ("california555", -180, 210, 237),
-    ("millennium", 330, -40, 197),
-    ("embarcadero", 120, 260, 172),
+
+
+def to_grid(x, y):
+    return (x - CX) * ca + (y - CY) * sa, -(x - CX) * sa + (y - CY) * ca
+
+
+# Landmarks at their real positions: metres east and north of Salesforce
+# Tower, from their latitude and longitude, around the modelled Salesforce
+# site. Heights are the real ones.
+SALESFORCE = (6440.0, -4455.0)
+REAL = [
+    ("salesforce", 0, 0, 326),
+    ("fremont", 167, 11, 245),
+    ("millennium", 79, 89, 197),
+    ("transamerica", -493, 611, 260),
+    ("california555", -581, 256, 237),
+    ("rincon", 413, -489, 188),
+    ("embarcadero", 0, 570, 172),
+    ("ferry", 308, 645, 75),
 ]
+LANDMARKS = [(name, *to_grid(SALESFORCE[0] + e, SALESFORCE[1] + n), h) for name, e, n, h in REAL]
 for name, u, v, h in LANDMARKS:
     gz = ground(*to_world(u, v)) or 4.0
     if name == "salesforce":
-        # Rounded square plan tapering gently, with a lattice crown.
-        skyline.cylinder(u, v, 30, gz - 3, gz + h * 0.9, 0, 0.12, segments=28, taper=0.86)
-        skyline.cylinder(u, v, 30 * 0.86, gz + h * 0.9, gz + h, 0, 0.95, segments=28, taper=0.55)
+        # Pale rounded-square shaft tapering gently, and the open crown above
+        # the top floor that reads lighter than the shaft.
+        skyline.cylinder(u, v, 27, gz - 3, gz + h * 0.84, 1, 0.97, segments=32, taper=0.84)
+        skyline.cylinder(u, v, 27 * 0.84, gz + h * 0.84, gz + h, 1, 1.0, segments=32, taper=0.6)
+    elif name == "rincon":
+        skyline.prism(u, v, 34, 34, gz - 3, gz + h * 0.93, 0, 0.55)
+        skyline.prism(u, v, 30, 30, gz + h * 0.93, gz + h, 1, 0.8, taper=0.8)
+    elif name == "embarcadero":
+        # Four slab towers in a row running east-west, stepping in height.
+        for k, (du, hh) in enumerate(((-160, 172), (-50, 150), (60, 140), (170, 130))):
+            skyline.prism(u + du, v, 46, 16, gz - 3, gz + hh, 1, 0.85 - k * 0.03)
+    elif name == "ferry":
+        # The long low terminal on the waterfront and its clock tower.
+        skyline.prism(u, v, 26, 200, gz - 3, gz + 14, 1, 0.95, rot=math.radians(40))
+        skyline.prism(u, v, 12, 12, gz + 14, gz + 62, 1, 0.98)
+        skyline.prism(u, v, 9, 9, gz + 62, gz + h, 1, 0.98, taper=0.2)
     elif name == "fremont":
         skyline.prism(u, v, 34, 34, gz - 3, gz + h * 0.85, 0, 0.3, taper=0.62)
         skyline.prism(u, v, 34 * 0.62, 34 * 0.62, gz + h * 0.85, gz + h, 0, 0.3, taper=0.08)
@@ -164,16 +189,18 @@ for i in range(-11, 12):
                 lw, ld = BLOCK / lots[0], BLOCK / lots[1]
                 u = bu - BLOCK / 2 + lw * (a + 0.5)
                 v = bv - BLOCK / 2 + ld * (b + 0.5)
-                if any(math.hypot(u - lu, v - lv) < 70 for _n, lu, lv, _h in LANDMARKS):
+                if any(math.hypot(u - lu, v - lv) < (230 if n == "embarcadero" else 70) for n, lu, lv, _h in LANDMARKS):
                     continue
                 gz = ground(*to_world(u, v))
-                if gz is None or gz < 1.0:
+                if gz is None or gz < 0.3:
                     continue
                 core = math.exp(-r * r * 2.6)
-                h = max(18.0, rng.gauss(40 + 180 * core, 22 + 40 * core))
+                # Apart from the landmarks, San Francisco towers top out
+                # around 185 m; uncapped, random towers outgrew Salesforce.
+                h = min(185.0, max(18.0, rng.gauss(40 + 150 * core, 20 + 35 * core)))
                 w, d = lw * rng.uniform(0.7, 0.92), ld * rng.uniform(0.7, 0.92)
                 if h > 85:
-                    tower(skyline, u, v, h, min(w, 48), min(d, 44), 0 if rng.random() < 0.7 else 1, rng.random(), gz)
+                    tower(skyline, u, v, h, min(w, 48), min(d, 44), 0 if rng.random() < 0.5 else 1, rng.random(), gz)
                 else:
                     skyline.prism(u, v, w, d, gz - 3, gz + h, 1, rng.random())
                     if rng.random() < 0.5:
@@ -185,34 +212,41 @@ for i in range(-11, 12):
 # every 8 m, set back either side of the street.
 homes = Mesh()
 houses = 0
-park = lambda u, v: (math.sin(u * 0.0021 + 1.3) + math.sin(v * 0.0017 - 0.4) + math.sin((u + v) * 0.0013)) > 1.55
-for dv in range(-5200, 4200, 40):
+# Occasional small parks only; a looser threshold left Telegraph Hill and
+# North Beach, in front of downtown, as bare ground.
+park = lambda u, v: (math.sin(u * 0.0021 + 1.3) + math.sin(v * 0.0017 - 0.4) + math.sin((u + v) * 0.0013)) > 2.55
+# Streets every 44 m; a continuous row of 8 m lots faces each side of the
+# street, so the backs of neighbouring rows meet mid-block as in the city.
+for dv in range(-5200, 4200, 44):
     for du in range(-7600, 4400, 8):
         if math.hypot(du / 1350, dv / 1050) < 1:
             continue
-        if park(du, dv) or rng.random() < 0.08:
+        if park(du, dv):
             continue
-        side = 7.0 if (du // 8) % 2 else -7.0
-        x, y = to_world(du, dv + side)
-        # San Francisco only: Marin's headlands are open land.
-        if y > -900:
-            continue
-        # The Presidio and Lands End, either side of the Gate, are wooded parkland.
-        if x < 2700 and y > -3300:
-            continue
-        gz = ground(x, y)
-        if gz is None or gz < 3.0:
-            continue
-        # Lots vary: narrow Victorians, wider flats, the odd apartment block.
-        roll = rng.random()
-        if roll < 0.7:
-            w, d, h = rng.uniform(5.5, 7.6), rng.uniform(10, 14), rng.choice((7.5, 9.0, 10.5, 12.0))
-        elif roll < 0.93:
-            w, d, h = rng.uniform(7.6, 8.0), rng.uniform(14, 20), rng.uniform(10, 15)
-        else:
-            w, d, h = 8.0, rng.uniform(18, 26), rng.uniform(16, 24)
-        homes.prism(du + rng.uniform(-0.4, 0.4), dv + side, w, d, gz - 2, gz + h, 2, rng.random())
-        houses += 1
+        for side in (-1, 1):
+            if rng.random() < 0.04:
+                continue
+            # Lots vary: narrow Victorians, wider flats, the odd apartment block.
+            roll = rng.random()
+            if roll < 0.7:
+                d, h = rng.uniform(15, 18), rng.choice((7.5, 9.0, 10.5, 12.0))
+            elif roll < 0.93:
+                d, h = rng.uniform(16, 19), rng.uniform(10, 15)
+            else:
+                d, h = rng.uniform(17, 19), rng.uniform(16, 24)
+            off = side * (5.5 + d / 2)
+            x, y = to_world(du, dv + off)
+            # San Francisco only: Marin's headlands are open land.
+            if y > -900:
+                continue
+            # The Presidio and Lands End, either side of the Gate, are wooded parkland.
+            if x < 2700 and y > -3300:
+                continue
+            gz = ground(x, y)
+            if gz is None or gz < 0.5:
+                continue
+            homes.prism(du, dv + off, 8.0, d, gz - 2, gz + h, 2, rng.random())
+            houses += 1
 
 material, n = fresh_material("Building")
 attr_kind = n.new("ShaderNodeAttribute")
@@ -248,7 +282,7 @@ stone_ramp.color_ramp.elements[0].color = (0.42, 0.39, 0.34, 1)
 stone_ramp.color_ramp.elements[1].color = (0.74, 0.7, 0.62, 1)
 n.links.new(rnd, stone_ramp.inputs["Fac"])
 house_ramp = n.new("ShaderNodeValToRGB")
-for pos, c in ((0.0, (0.46, 0.43, 0.38)), (0.25, (0.4, 0.43, 0.45)), (0.5, (0.5, 0.45, 0.36)), (0.75, (0.36, 0.4, 0.37)), (1.0, (0.52, 0.5, 0.47))):
+for pos, c in ((0.0, (0.66, 0.64, 0.6)), (0.2, (0.62, 0.57, 0.46)), (0.4, (0.66, 0.6, 0.4)), (0.6, (0.5, 0.56, 0.6)), (0.8, (0.52, 0.57, 0.48)), (1.0, (0.7, 0.68, 0.64))):
     el = house_ramp.color_ramp.elements.new(pos) if pos not in (0.0, 1.0) else house_ramp.color_ramp.elements[0 if pos == 0.0 else 1]
     el.position = pos
     el.color = (*c, 1)
