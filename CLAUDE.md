@@ -2,6 +2,22 @@
 
 Vite + React + TypeScript + Tailwind, with Cloudflare Pages Functions under `functions/` for booking, chat, voice, leads and admin settings. See `README.md` for install, local development and deploy commands.
 
+## Film render pipeline: locked plan (owner-approved 2026-10-08)
+
+Read this before touching any render. The owner has lost a day to duplicated renders; follow it exactly.
+
+- **One run folder only:** `film/frames/live-background-20261008-134539`. Never create a new run folder, never start a fresh queue, never delete or "clean up" this folder. All remaining frames go here.
+- **Resume, don't restart:** `nohup python3 -I film/queue-quality.py film/frames/live-background-20261008-134539 >> film/frames/live-background-20261008-134539/queue.log 2>&1 < /dev/null & disown`. It keeps every validated frame and renders only what is missing. Launch it detached (nohup) or it dies when the session ends. Check it's not already running first (`pgrep -f queue-quality`); never run two render queues at once.
+- **Status:** `queue.log` and `render-<sequence>.log` in the run folder; finished web frames land in `web/<sequence>/`.
+- **Sequences and their scenes:**
+  - Sunset opening loop, sunset descent: done. Sunset city loop: rendering. All from `descent-sunset.blend` (the 13:45 scene).
+  - Day and night: `descent-day.blend` and `descent-night.blend` in the run folder are the complete current scene (full Bay Bridge to Oakland, refined coastline, fog wind, golden-tan land). Do not rebuild or replace them.
+- **Sunset gets the eastern Bay Bridge by compositing, not re-rendering:** render only the eastern span in the same camera with everything else as a holdout, then composite onto the finished sunset frames (held loops need one render each; the descent needs one per frame). The sunset coastline stays as rendered.
+- **Quality:** 1600x900, 32 samples. Do not lower it without the owner's approval.
+- **Scene rebuilds:** `film/rebuild.py` must keep `fog_motion.py` after `fog.py` (fog.py alone renders frozen fog). Build with `--python-exit-code 1` so a failed script can never save over a scene.
+- **Site assets:** copy a sequence from `web/<sequence>/` into `public/film/` only after reviewing it in the browser.
+- **Priority while day and night render:** move the site onto the finished sunset frames, then fix the interface and live layer (aircraft, cars, boats, layout). Rendering is background work; it must not block design fixes.
+
 ## Design foundation (approved)
 
 The approved brand and design context lives in `design-foundation/`. Read it before changing the homepage:

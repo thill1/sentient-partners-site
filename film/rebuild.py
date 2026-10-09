@@ -23,6 +23,10 @@ PASSES = (
     "water.py",
     "shore.py",
     "fog.py",
+    # fog.py rebuilds the fog material from scratch; the wind must be re-keyed
+    # after it, or the fog renders frozen.
+    "fog_motion.py",
+    "bridge_bevel.py",
     "camera.py",
 )
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

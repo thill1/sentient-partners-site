@@ -9,8 +9,8 @@ import bpy
 # Golden dry grass over olive scrub, as the Marin Headlands and San Francisco's
 # open slopes look in late summer.
 _ramp = next(n for n in bpy.data.materials["Hills"].node_tree.nodes if n.type == "VALTORGB")
-_ramp.color_ramp.elements[0].color = (0.18, 0.19, 0.13, 1)
-_ramp.color_ramp.elements[1].color = (0.43, 0.35, 0.2, 1)
+_ramp.color_ramp.elements[0].color = (0.12, 0.13, 0.07, 1)
+_ramp.color_ramp.elements[1].color = (0.34, 0.27, 0.14, 1)
 
 nt = bpy.data.materials["Hills"].node_tree
 for name in ("ShoreZ", "ShoreDim", "ShoreMix", "ShorePatch", "ShorePatchRange", "ShoreBoth"):
@@ -60,7 +60,7 @@ both.use_clamp = True
 nt.links.new(dim.outputs["Result"], both.inputs[0])
 nt.links.new(pr.outputs["Result"], both.inputs[1])
 nt.links.new(both.outputs[0], mix.inputs["Factor"])
-mix.inputs["A"].default_value = (0.14, 0.17, 0.11, 1)
+mix.inputs["A"].default_value = (0.06, 0.08, 0.045, 1)
 nt.links.new(ramp.outputs["Color"], mix.inputs["B"])
 nt.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
 bsdf.inputs["Roughness"].default_value = 0.97
