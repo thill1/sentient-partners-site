@@ -251,7 +251,7 @@ export const MainStreet: React.FC = () => {
                 className="inline-flex h-11 min-w-11 items-center justify-center gap-2 border border-sp-ivory/35 px-3 text-sm text-sp-ivory transition-colors hover:border-sp-champagne hover:text-sp-champagne focus:outline-none focus-visible:ring-2 focus-visible:ring-sp-champagne"
               >
                 <MessageSquare aria-hidden="true" className="h-4 w-4 shrink-0" />
-                <span className="hidden min-[1280px]:inline">Ask the Concierge</span>
+                <span className="hidden whitespace-nowrap min-[1024px]:inline">Ask the Concierge</span>
               </button>
             </div>
           </div>

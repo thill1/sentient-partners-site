@@ -279,7 +279,9 @@ export class LiveFog {
     gl.uniform3fv(u.CamP, pose.p); gl.uniform3fv(u.CamR, pose.r); gl.uniform3fv(u.CamU, pose.u); gl.uniform3fv(u.CamF, pose.f);
     gl.uniform3fv(u.Sun, look.sun); gl.uniform3fv(u.SunCol, look.sunColour); gl.uniform3fv(u.Ambient, look.ambient); gl.uniform3fv(u.Deep, look.deep);
     gl.uniform2fv(u.Wind, FOG_WIND);
-    gl.uniform1f(u.Time, seconds);
+    // Small screens show the same drift in far fewer pixels; evolve the bank
+    // a little faster there so motion reads at a glance on a phone.
+    gl.uniform1f(u.Time, seconds * (width < 700 ? 1.8 : 1));
     gl.uniform1f(u.Alpha, alpha);
     gl.uniform1f(u.Seed, this.shaderSeed);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.noise); gl.uniform1i(u.Noise, 0);

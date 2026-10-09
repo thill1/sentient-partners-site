@@ -341,7 +341,7 @@ export const Descent: React.FC = () => {
           // between it and the camera, not by the baked masks.
           const camera = pose ? pose.p : null;
           const fogVisibility = fogAlpha > 0 && fogField && camera
-            ? (point: [number, number, number]) => fogField.transmittance(camera, point, fogSeconds)
+            ? (point: [number, number, number]) => fogField.transmittance(camera, point, fogSeconds * (window.innerWidth < 700 ? 1.8 : 1))
             : undefined;
           traffic.draw(airCtx, pose, frameRect, seconds, clamp01(visible), fogVisibility);
           // Boats and bridge traffic are live through the whole film (the
@@ -437,7 +437,7 @@ export const Descent: React.FC = () => {
   }, []);
 
   return (
-    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[440vh] bg-[#060A1C] lg:h-[500vh]">
+    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[720vh] bg-[#060A1C] lg:h-[500vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
@@ -582,11 +582,11 @@ export const Descent: React.FC = () => {
                     <span className="absolute inset-x-0 top-[clamp(5.75rem,11vh,7.5rem)] mx-auto block max-w-[12ch] lg:inset-x-[var(--sp-gutter)] lg:mx-0">
                       Global Experience.
                     </span>
-                    <span className="sp-hero-local-impact absolute inset-x-0 bottom-[clamp(20rem,39vh,21rem)] mx-auto block max-w-[12ch] translate-y-8 lg:inset-x-[var(--sp-gutter)] lg:bottom-[clamp(13.5rem,26vh,17.5rem)] lg:mx-0">
+                    <span className="sp-hero-local-impact absolute inset-x-0 bottom-[clamp(17.5rem,34vh,19rem)] mx-auto block max-w-[12ch] translate-y-8 lg:inset-x-[var(--sp-gutter)] lg:bottom-[clamp(12rem,23vh,16rem)] lg:mx-0">
                       Local Impact.
                     </span>
                   </h1>
-                  <div className="absolute inset-x-[var(--sp-gutter)] bottom-[clamp(5rem,12vh,7.5rem)] translate-y-6">
+                  <div className="absolute inset-x-[var(--sp-gutter)] bottom-[clamp(4.25rem,8.5vh,5.5rem)] translate-y-6 lg:bottom-[clamp(4.5rem,10vh,6.5rem)]">
                     <p className="mx-auto mb-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] text-sp-ivory/90 lg:mx-0">
                       {beat.body}
                     </p>
