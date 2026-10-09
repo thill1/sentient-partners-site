@@ -43,6 +43,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
+  // Past the opening, the launcher shrinks to its monogram so it never sits
+  // on top of section content; the label returns on hover and focus.
+  const [compactLauncher, setCompactLauncher] = useState(false);
+  useEffect(() => {
+    const update = () => setCompactLauncher(window.scrollY > window.innerHeight * 0.6);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
   const [capabilitiesVisible, setCapabilitiesVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -882,12 +891,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             : mobileInlineOnly
               ? 'hidden sm:inline-flex'
               : 'inline-flex'
-        } items-center gap-3 border border-white/15 bg-ca-deep/90 p-1.5 text-white shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors hover:border-white/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-ca-orange sm:pr-4`}
+        } group items-center gap-3 border border-white/15 bg-ca-deep/90 p-1.5 text-white shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors hover:border-white/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-ca-orange ${compactLauncher ? 'hover:pr-4 focus-visible:pr-4' : 'sm:pr-4'}`}
       >
         <span className="flex h-9 w-9 items-center justify-center bg-ca-navy p-1.5">
           <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
         </span>
-        <span className="hidden text-[14px] font-medium text-white/90 sm:inline">Talk to the Concierge</span>
+        <span className={`hidden text-[14px] font-medium text-white/90 ${compactLauncher ? 'sm:group-hover:inline sm:group-focus-visible:inline' : 'sm:inline'}`}>Talk to the Concierge</span>
       </button>
     );
   }

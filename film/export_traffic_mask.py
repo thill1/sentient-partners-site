@@ -59,9 +59,15 @@ for obj in bpy.data.objects:
     # Lights off; the thin haze volume would only dim every target evenly.
     if obj.type == "LIGHT" or obj.name == "Haze":
         obj.hide_render = True
+# Every surface and the sky glow pure blue, so the blue channel is the fog's
+# transmittance along each ray: where it falls, there is fog (blue = coverage
+# after inversion). Water and deck add red and green on top of the blue.
 for node in s.world.node_tree.nodes:
     if node.type == "BACKGROUND":
-        node.inputs["Strength"].default_value = 0
+        node.inputs["Color"].default_value = (0, 0, 1, 1)
+        node.inputs["Strength"].default_value = 1
+        for link in list(node.inputs["Color"].links):
+            s.world.node_tree.links.remove(link)
 # Fog as pure extinction at its real density: it hides what is behind it but
 # neither glows nor scatters the targets back into the mask.
 fog = bpy.data.materials["Marine Fog"].node_tree
@@ -84,16 +90,17 @@ def emitter(name, colour):
     return material
 
 
-TARGETS = {"Water": emitter("MaskWater", (1, 0, 0, 1)),
-           "Roadway": emitter("MaskDeck", (0, 1, 0, 1))}
+TARGETS = {"Water": emitter("MaskWater", (1, 0, 1, 1)),
+           "Roadway": emitter("MaskDeck", (0, 1, 1, 1))}
+OTHER = emitter("MaskOther", (0, 0, 1, 1))
 TARGETS["DeckSurface"] = TARGETS["Roadway"]
 for obj in bpy.data.objects:
     if obj.type not in {"MESH", "CURVE"}:
         continue
-    obj.is_holdout = obj.name not in TARGETS and obj.name != "Fog"
-    if obj.name in TARGETS:
-        for slot in obj.material_slots:
-            slot.material = TARGETS[obj.name]
+    if obj.name == "Fog":
+        continue
+    for slot in obj.material_slots:
+        slot.material = TARGETS.get(obj.name, OTHER)
 
 
 def visibility(frame, scratch):
@@ -119,12 +126,17 @@ def visibility(frame, scratch):
     for dy in (-2, -1, 0, 1, 2):
         for dx in (-2, -1, 0, 1, 2):
             grown = np.maximum(grown, np.roll(np.roll(deck, dy, 0), dx, 1))
-    return water, grown
+    # Fog coverage: transmittance below ~0.95 reads as solid fog on screen.
+    # The sky renders transparent: treat it as clear air, not as fog.
+    through = np.clip(pixels[..., 2] * alpha + (1 - alpha), 0, 1)
+    fog_edge = np.clip((0.995 - through) / 0.12, 0, 1)
+    fog = fog_edge * fog_edge * (3 - 2 * fog_edge)
+    return water, grown, fog
 
 
-def save(water, deck, path):
+def save(water, deck, fog, path):
     rgba = np.zeros((360, 640, 4), dtype=np.float32)
-    rgba[..., 0], rgba[..., 1], rgba[..., 3] = water, deck, 1
+    rgba[..., 0], rgba[..., 1], rgba[..., 2], rgba[..., 3] = water, deck, fog, 1
     image = bpy.data.images.new("TrafficMask", 640, 360, alpha=True)
     image.pixels = rgba.ravel()
     image.filepath_raw = str(path)
@@ -136,7 +148,7 @@ def save(water, deck, path):
 
 if hold != "-":
     masks = [visibility(frame, out.with_name(f".{out.stem}-{frame}.png")) for frame in frames]
-    save(sum(m[0] for m in masks) / len(masks), sum(m[1] for m in masks) / len(masks), out)
+    save(*(sum(m[k] for m in masks) / len(masks) for k in range(3)), out)
 else:
     out.mkdir(parents=True, exist_ok=True)
     for frame in frames:

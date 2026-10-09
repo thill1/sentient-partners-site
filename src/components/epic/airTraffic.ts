@@ -114,6 +114,11 @@ export class AirTraffic {
     return !!this.camera;
   }
 
+  /** The film camera's field of view and aspect, for layers drawn in its space. */
+  get lens(): { fov: number; aspect: number } | null {
+    return this.camera ? { fov: this.camera.fov, aspect: this.camera.aspect } : null;
+  }
+
   pose(index: number | 'open' | 'city'): Pose | null {
     if (!this.camera) return null;
     if (index === 'open') return this.camera.open;

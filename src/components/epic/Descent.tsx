@@ -6,6 +6,7 @@ import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
 import { AirTraffic } from './airTraffic';
 import { SurfaceTraffic } from './surfaceTraffic';
+import { FOG_LOOKS, LiveFog } from './liveFog';
 import { FILM_SEQUENCES, FramePlayer, focusAt } from './filmFrames';
 import { followTarget } from './scrollEasing';
 import { timeOfDay } from './timeOfDay';
@@ -36,6 +37,7 @@ export const Descent: React.FC = () => {
   const airModelRef = useRef<HTMLCanvasElement>(null);
   const surfaceRef = useRef<HTMLCanvasElement>(null);
   const surfaceModelRef = useRef<HTMLCanvasElement>(null);
+  const fogRef = useRef<HTMLCanvasElement>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
@@ -164,6 +166,8 @@ export const Descent: React.FC = () => {
     const surfaceCtx = surface?.getContext('2d') ?? null;
     const traffic = new AirTraffic(airModelRef.current ?? undefined);
     const surfaceTraffic = new SurfaceTraffic(surfaceModelRef.current ?? undefined);
+    // The fog is the same at every time of day, so one coverage map serves all.
+    const liveFog = fogRef.current ? new LiveFog(fogRef.current, '/film/traffic/mask-open-sunset.png') : null;
     const onMotionChange = () => {
       still = motionPreference.matches;
       if (still) {
@@ -198,8 +202,8 @@ export const Descent: React.FC = () => {
       // earlier scene and repeated every 3.2 s). Other phases keep theirs
       // until they are re-rendered.
       void pad; void hasCleanSunsetOpening;
-      openLoop = count && kind !== 'sunset' ? new FramePlayer(`${kind}-open`, 48) : null;
-      cityLoop = count && kind !== 'sunset' ? new FramePlayer(`${kind}-city`, 48) : null;
+      openLoop = null;
+      cityLoop = null;
     };
     choosePlayer();
     const sizeFilm = () => {
@@ -315,6 +319,24 @@ export const Descent: React.FC = () => {
           // says water or deck is visible. They are below the fog, so unlike
           // the aircraft they hide only while the camera is inside it.
           const belowFog = 1 - clamp01((story - 0.44) / 0.03) + clamp01((story - 0.555) / 0.03);
+          // Live fog over the held opening frame, fading out as the descent
+          // begins (its coverage map belongs to the opening camera).
+          const openPose = traffic.pose('open');
+          const lens = traffic.lens;
+          if (liveFog && openPose && lens && film) {
+            const tanY = Math.tan(lens.fov / 2) / lens.aspect;
+            // Where a level line of sight meets the frame: the horizon.
+            const level = [openPose.f[0], openPose.f[1], 0];
+            const len = Math.hypot(level[0], level[1]) || 1;
+            const depth = (level[0] * openPose.f[0] + level[1] * openPose.f[1]) / len;
+            const up = (level[0] * openPose.u[0] + level[1] * openPose.u[1]) / len;
+            const horizon = 0.5 - 0.5 * (up / (depth * tanY));
+            // West to east, as the camera sees it across the fog surface.
+            const rh = Math.hypot(openPose.r[0], openPose.r[1]) || 1;
+            const east = [openPose.r[0] / rh, openPose.f[0] / len];
+            const speed = 0.035;
+            liveFog.draw(film, player.lastRect, seconds, 1 - clamp01(story / 0.06), horizon, [-east[0] * speed, -east[1] * speed], FOG_LOOKS[(playerKind as 'sunset' | 'day' | 'night') in FOG_LOOKS ? (playerKind as 'sunset' | 'day' | 'night') : 'sunset']);
+          }
           if (surfaceCtx) surfaceTraffic.draw(surfaceCtx, pose, frameRect, seconds, clamp01(belowFog), shot);
         }
       } else if (gl && program) {
@@ -398,6 +420,7 @@ export const Descent: React.FC = () => {
         {/* The rendered descent, played by scroll (film/descent.blend). */}
         <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Independent road and water traffic over the clean review sequence. */}
+        <canvas ref={fogRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         <canvas ref={surfaceRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         <canvas ref={surfaceModelRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Live air traffic, drawn over the film in its own 3D space. */}

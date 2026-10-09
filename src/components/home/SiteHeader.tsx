@@ -45,7 +45,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
       className={`fixed inset-x-0 top-0 z-30 transition-[background-color,box-shadow] duration-300 ${
         solid
           ? night
-            ? 'bg-[#060A1C]/75 shadow-[0_1px_0_rgba(247,245,240,0.12)] backdrop-blur-md'
+            ? 'bg-[#060A1C]/[0.94] shadow-[0_1px_0_rgba(247,245,240,0.12)] backdrop-blur-md'
             : 'bg-sp-ivory/95 shadow-[0_1px_0_rgba(13,31,78,0.1)] backdrop-blur-md'
           : 'bg-transparent'
       }`}
