@@ -247,10 +247,14 @@ export const Descent: React.FC = () => {
     const setText = (node: HTMLElement | null, value: string) => { if (node && node.textContent !== value) node.textContent = value; };
     const setStyle = (node: HTMLElement | null, key: 'opacity' | 'transform' | 'visibility', value: string) => { if (node && node.style[key] !== value) node.style[key] = value; };
     const setData = (node: HTMLElement | null, key: string, value: string) => { if (node && node.dataset[key] !== value) node.dataset[key] = value; };
-    const draw = () => {
+    // Everything moves by the frame's own timestamp (when it will be shown),
+    // read once. Reading performance.now() after the background repaint made
+    // the clock land late on repaint frames (12 a second while the fog loop
+    // played), so aircraft, boats, cars and fog sped up and slowed down.
+    const draw = (frameTime: number = performance.now()) => {
       frame = requestAnimationFrame(draw);
       const rect = section.getBoundingClientRect();
-      const now = performance.now();
+      const now = frameTime;
       const elapsed = now - last;
       last = now;
       if (rect.bottom < 0 || document.hidden) return;
@@ -285,7 +289,7 @@ export const Descent: React.FC = () => {
         // At rest at either end, the scene keeps moving: fog rolls, aircraft
         // pass, boats and traffic carry on. The loop shares the film's first
         // and last camera, so it fades in over the film without doubling.
-        const seconds = still ? 0 : (performance.now() - started) / 1000;
+        const seconds = still ? 0 : (now - started) / 1000;
         const atOpen = 1 - clamp01(story / 0.02);
         const atCity = clamp01((story - 0.975) / 0.02);
         const opening = atOpen > 0 && openLoop?.available && openLoop.complete ? openLoop : null;
@@ -318,7 +322,7 @@ export const Descent: React.FC = () => {
         }
       } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
-        gl.uniform1f(uniforms.uTime, still ? 12 : (performance.now() - started) / 1000);
+        gl.uniform1f(uniforms.uTime, still ? 12 : (now - started) / 1000);
         gl.uniform1f(uniforms.uP, story);
         gl.uniform2f(uniforms.uLook, still ? 0 : look.x, still ? 0 : look.y);
         gl.uniform3f(uniforms.uPhase, sky.phase[0], sky.phase[1], sky.phase[2]);

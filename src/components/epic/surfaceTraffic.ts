@@ -39,6 +39,11 @@ const BOATS = [
   { type: 'sail', start: [900, -520, 0] as Vec, rotation: -1.19, speed: 2.2, turn: -0.00025, length: 12 },
   { type: 'sail', start: [1250, 120, 0] as Vec, rotation: 0.54, speed: 2.4, turn: 0.00022, length: 11 },
   { type: 'sail', start: [1700, -620, 0] as Vec, rotation: -1.79, speed: 2.7, turn: -0.0002, length: 12 },
+  // Where the camera can actually see open water: the Ferry Building runs
+  // along the waterfront, the central Bay, and a ship inbound to Oakland.
+  { type: 'ferry', start: [6600, -2600, 0] as Vec, rotation: 0.9, speed: 9.0, turn: 0.0002, length: 42 },
+  { type: 'ferry', start: [7000, 0, 0] as Vec, rotation: -0.6, speed: 8.6, turn: -0.0002, length: 42 },
+  { type: 'ship', start: [7600, -1200, 0] as Vec, rotation: 0.2, speed: 5.2, turn: 0.0001, length: 300 },
 ] as const;
 
 const add = (a: Vec, b: TrafficVector): Vec => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -73,6 +78,8 @@ export class SurfaceTraffic {
   private static readonly sailStarts = [
     [2650, -560, 0], [3050, 60, 0], [3700, -700, 0], [4250, -1150, 0],
     [4900, -1900, 0], [5100, -2050, 0], [5700, -2550, 0],
+    // Around Angel Island and across the central Bay.
+    [5200, 1600, 0], [4600, 1100, 0], [5900, 900, 0], [6500, 300, 0], [7300, -400, 0], [7900, 600, 0], [6200, -1300, 0],
   ] as Vec[];
 
   /**

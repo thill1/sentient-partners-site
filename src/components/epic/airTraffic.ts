@@ -53,8 +53,8 @@ type AircraftType = 'airliner' | 'cessna' | 'helicopter';
  */
 const TYPES: Record<AircraftType, { share: number; near: number; far: number; speed: [number, number]; floor: number; ceiling: number; climb: number; turn: number }> = {
   airliner: { share: 0.5, near: 1400, far: 8900, speed: [70, 105], floor: 350, ceiling: 4000, climb: 0.035, turn: 0.002 },
-  cessna: { share: 0.3, near: 700, far: 4200, speed: [48, 62], floor: 250, ceiling: 900, climb: 0.02, turn: 0.004 },
-  helicopter: { share: 0.2, near: 500, far: 3000, speed: [28, 45], floor: 120, ceiling: 450, climb: 0, turn: 0.004 },
+  cessna: { share: 0.3, near: 350, far: 1600, speed: [48, 62], floor: 250, ceiling: 900, climb: 0.02, turn: 0.004 },
+  helicopter: { share: 0.2, near: 300, far: 1400, speed: [28, 45], floor: 120, ceiling: 450, climb: 0, turn: 0.004 },
 };
 const ROTOR_SPIN = 32; // rad/s, close to a real main rotor; reads as motion, not a frozen cross
 
@@ -78,6 +78,7 @@ export class AirTraffic {
   /** Review only: ?aircraft=cessna|helicopter|airliner makes every flight that type. */
   private forced: AircraftType | null = null;
   private spritesDrawn = true;
+  private review = new URLSearchParams(window.location.search).has('review');
 
   constructor(directCanvas?: HTMLCanvasElement) {
     const forced = new URLSearchParams(window.location.search).get('aircraft');
@@ -137,7 +138,9 @@ export class AirTraffic {
       // Enter from beyond a side edge and leave beyond an edge. The previous
       // arbitrary life timer faded aircraft out while they were still in view.
       const pick = r();
-      const type: AircraftType = this.forced ?? (pick < TYPES.airliner.share ? 'airliner' : pick < TYPES.airliner.share + TYPES.cessna.share ? 'cessna' : 'helicopter');
+      // Keep at least one light aircraft or helicopter in the sky.
+      const lightAircraftUp = this.flights.some((f) => f.type !== 'airliner');
+      const type: AircraftType = this.forced ?? (!lightAircraftUp ? (r() < .6 ? 'cessna' : 'helicopter') : pick < TYPES.airliner.share ? 'airliner' : pick < TYPES.airliner.share + TYPES.cessna.share ? 'cessna' : 'helicopter');
       const t = TYPES[type];
       const side = r() < .5 ? -1 : 1;
       const sx = side * 1.3;
@@ -187,9 +190,9 @@ export class AirTraffic {
       if (stillInView) flight.life = age + 15;
       return stillInView;
     });
-    if (now > this.nextSpawn && this.flights.length < 4) {
+    if (now > this.nextSpawn && this.flights.length < 5) {
       this.spawn(now, pose);
-      this.nextSpawn = now + 3 + this.random() * 9;
+      this.nextSpawn = now + 2 + this.random() * 5;
     }
 
     const tanX = Math.tan(camera.fov / 2);
@@ -221,7 +224,7 @@ export class AirTraffic {
         return [body, rotor];
       });
       // Review only: with ?aircraft= set, expose where each aircraft is drawn.
-      if (this.forced) (window as unknown as { __aircraft?: unknown }).__aircraft = this.flights.map((flight) => {
+      if (this.forced || this.review) (window as unknown as { __aircraft?: unknown }).__aircraft = this.flights.map((flight) => {
         const screen = project(add(flight.start, flightDisplacement(flight, now - flight.born)));
         return screen && { type: flight.type, x: screen.x / (window.devicePixelRatio || 1), y: screen.y / (window.devicePixelRatio || 1), z: screen.z };
       });
