@@ -12,6 +12,7 @@ These exist because a day of work was lost to duplicated and premature renders. 
 4. **Evidence, not claims.** Never report something as fixed or done without a screenshot of the real page in the browser, at the viewing distance a visitor sees, against the realism standard above.
 5. **State first at every handoff.** Before acting, report what is running, what is finished, and what is known to be broken. Never resume, restart or create a render run without checking why it stopped and confirming the plan with the owner.
 6. **Plan before anything costly or destructive.** Before rendering, deleting, or replacing assets, state what will be done, how long it takes, and what it replaces.
+7. **The owner's eyes beat test numbers.** When the owner reports something visible (stutter, jerkiness, a wrong-looking element), treat it as fact. Reproduce it in the owner's environment (their Chrome, display, tabs), and audit the code path that produces it, including what it asks the GPU to do every frame, before offering any explanation. A smooth number from a separate test browser is not evidence about the owner's screen. Never argue a hardware theory the owner has already ruled out.
 
 ## The standard: a hyper-realistic, correct Bay Area (owner's core requirement)
 
