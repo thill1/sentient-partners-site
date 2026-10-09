@@ -7,6 +7,7 @@ The time of day only changes lights, sky and emission strengths; the scene,
 camera path and animation are the same for all three.
 """
 import math
+import os
 import sys
 
 import bpy
@@ -83,6 +84,10 @@ for name, base in (("NavWhite", 6), ("NavRed", 5), ("NavGreen", 5), ("CabinLight
     emission(name, base * CONFIG["lights"])
 
 moon.hide_render = kind != "night"
+# NOFOG=1 renders the clean plate for the live volumetric fog: the same shot
+# with the marine-layer volume switched off (src/components/epic/liveFog.ts).
+if os.environ.get("NOFOG"):
+    bpy.data.objects["Fog"].hide_render = True
 
 s.render.engine = "CYCLES"
 s.cycles.samples = samples

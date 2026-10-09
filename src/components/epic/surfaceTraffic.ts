@@ -176,11 +176,16 @@ export class SurfaceTraffic {
 
   dispose() { this.renderer.dispose(); }
 
-  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number, shot: number | 'open' | 'city') {
+  /**
+   * fogVisibility, when given, is the live fog's transmittance from the camera
+   * to a world point (fogField.ts); it replaces the baked masks, which only
+   * describe the rendered fog.
+   */
+  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number, shot: number | 'open' | 'city', fogVisibility?: (point: Vec) => number) {
     const camera = this.camera;
     if (!camera || !pose || alpha <= 0.01 || !this.renderer.ready) { this.renderer.clear(); return; }
     const mask = this.mask(shot);
-    if (!mask) { this.renderer.clear(); return; }
+    if (!mask && !fogVisibility) { this.renderer.clear(); return; }
     const instances: AircraftInstance[] = [];
     const tanX = Math.tan(camera.fov / 2);
     const tanY = tanX / camera.aspect;
@@ -213,7 +218,7 @@ export class SurfaceTraffic {
         const type = VEHICLES[roll < .55 ? 0 : roll < .86 ? 1 : roll < .97 ? 2 : 3];
         const size = (type.length / (screen.depth * tanX * 2)) * rect.w;
         if (size < 0.6) continue;
-        const deck = this.seen(screen.u, screen.v, 1, mask);
+        const deck = fogVisibility ? fogVisibility(point) : this.seen(screen.u, screen.v, 1, mask);
         if (deck < .02) continue;
         instances.push({ model: type.type, position: point, motion: { heading, climb: 0, turnRate: 0, speed: 0 }, age: 0, alpha: alpha * haze(screen.depth) * deck, flash: false, paint: type.type === 'coach' ? undefined : paintFor(slot * 31 + laneIndex * 7 + 1) });
       }
@@ -232,9 +237,9 @@ export class SurfaceTraffic {
         seen = 1;
         for (const along of [-.5, .5]) {
           const end = project([point[0] + Math.cos(heading) * vessel.length * along, point[1] + Math.sin(heading) * vessel.length * along, 0]);
-          seen = Math.min(seen, end ? this.seen(end.u, end.v, 0, mask) : 0);
+          seen = Math.min(seen, end ? (fogVisibility ? 1 : this.seen(end.u, end.v, 0, mask)) : 0);
         }
-        seen = Math.min(seen, this.seen(screen.u, screen.v, 0, mask));
+        seen = Math.min(seen, fogVisibility ? fogVisibility([point[0], point[1], 4]) : this.seen(screen.u, screen.v, 0, mask));
       }
       return { vessel, age, point, screen, heading, seen };
     }).filter((vessel) => vessel.screen && vessel.seen > .02);

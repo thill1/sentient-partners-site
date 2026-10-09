@@ -176,7 +176,7 @@ export class AirTraffic {
   }
 
   /** Draw every flight for this frame. alpha fades the whole layer (in and under the fog). */
-  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, now: number, alpha: number) {
+  draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, now: number, alpha: number, fogVisibility?: (point: Vec) => number) {
     // The 2D canvas only carries the sprite fallback; clearing a blank
     // full-screen canvas every frame was wasted GPU work.
     if (this.spritesDrawn) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); this.spritesDrawn = false; }
@@ -219,7 +219,7 @@ export class AirTraffic {
         const edge = Math.min(1, age / 2.5);
         const haze = Math.exp(-screen.z / (this.kind === 'day' ? 26000 : 34000));
         const nearCamera = Math.max(0, Math.min(1, (screen.z - 80) / 420));
-        const opacity = alpha * edge * haze * nearCamera;
+        const opacity = alpha * edge * haze * nearCamera * (fogVisibility ? fogVisibility(position) : 1);
         if (opacity < .02) return [];
         const body: AircraftInstance = { model: flight.type, position, motion: flight, age, alpha: opacity, flash: ((now + flight.phase) % 1.2) < .08 };
         if (flight.type !== 'helicopter') return [body];

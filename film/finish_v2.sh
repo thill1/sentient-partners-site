@@ -44,13 +44,16 @@ mkdir -p film/frames/site-before-v2-$STAMP
 cp -R public/film/$KIND film/frames/site-before-v2-$STAMP/
 rm -rf public/film/$KIND && cp -R $WEB/$KIND public/film/$KIND
 
-# Traffic masks from the new fog.
+# Traffic masks from the new fog (skipped while $RUN/masks.ok exists: the
+# fog and water have not changed since the masks were last made).
 T=$PWD/public/film/traffic
+if [ ! -f $RUN/masks.ok ]; then
 mkdir -p film/frames/site-before-v2-$STAMP/traffic && cp -R $T/mask-* film/frames/site-before-v2-$STAMP/traffic/
 rm -rf $T/mask-sunset
 $BLENDER -b $SCENE --python-exit-code 1 --python film/export_traffic_mask.py -- $T/mask-open-sunset.png 1 1,48,95
 $BLENDER -b $SCENE --python-exit-code 1 --python film/export_traffic_mask.py -- $T/mask-city-sunset.png 240 146,194,240
 $BLENDER -b $SCENE --python-exit-code 1 --python film/export_traffic_mask.py -- $T/mask-sunset - 1-239
+fi
 
 npm run build
 npx wrangler pages deploy dist --project-name sentient-partners-site --branch redesign-cinematic --commit-message "v2 $KIND frames"
