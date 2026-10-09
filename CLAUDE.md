@@ -2,6 +2,19 @@
 
 Vite + React + TypeScript + Tailwind, with Cloudflare Pages Functions under `functions/` for booking, chat, voice, leads and admin settings. See `README.md` for install, local development and deploy commands.
 
+## The standard: a hyper-realistic, correct Bay Area (owner's core requirement)
+
+The homepage descent must read as the real San Francisco Bay to people who live here. Every visual change is judged against this list, in the browser, at the camera's actual distance:
+
+- **Air traffic, varied and random every visit:** commercial jets on approach and departure, Cessna-class light aircraft, other small planes, and helicopters, at believable sizes, speeds, altitudes and flight paths, with correct orientation and attached navigation lights.
+- **Water traffic, varied and random:** container ships, ferries, tugs, pilot boats and sailboats on navigable water, moving with wakes, never crossing land.
+- **Cars crossing the Golden Gate Bridge** in all six lanes, in the right directions, moving continuously even when the page is not scrolled.
+- **Geography and landmarks that are correct:** the Golden Gate Bridge itself looking real up close, the complete Bay Bridge to Oakland, a realistic downtown skyline (Salesforce Tower, Transamerica Pyramid and the rest), Alcatraz, Angel Island, Yerba Buena, Coit Tower, Sutro Tower, the Presidio, the Marin Headlands and the East Bay hills, all where they actually are.
+- **Natural light and land:** marine fog that rolls and wisps, golden-tan hills and dark woodland, water that reflects the sky, with day, sunset and night each believable.
+- **Nothing toy-like or glitchy:** no ghosting, frozen motion, floating objects, pale bands or obviously synthetic shapes.
+
+If something seen while scrolling would look wrong to a Bay Area local, it is a defect.
+
 ## Film render pipeline: locked plan (owner-approved 2026-10-08)
 
 Read this before touching any render. The owner has lost a day to duplicated renders; follow it exactly.
