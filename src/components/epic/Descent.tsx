@@ -446,7 +446,7 @@ export const Descent: React.FC = () => {
         ))}
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#060A1C]/70 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
         {/* By day the sky is bright, so the copy gets a little shade of its own. */}
-        <div aria-hidden="true" className="absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-[#0A1840]/75 via-[#0A1840]/45 to-transparent opacity-0 transition-opacity duration-700 group-data-[phase=day]/film:opacity-100 group-data-[fog=true]/film:!opacity-0" />
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-[#0A1840]/55 via-[#0A1840]/25 to-transparent opacity-0 transition-opacity duration-700 group-data-[phase=day]/film:opacity-100 group-data-[fog=true]/film:!opacity-0" />
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#060A1C]/60 to-transparent transition-opacity duration-700 group-data-[fog=true]/film:opacity-0" />
 
         {/* Chapters of the film. */}
@@ -455,7 +455,7 @@ export const Descent: React.FC = () => {
         <nav
           ref={mobileChaptersRef}
           aria-label="Film chapters"
-          className="absolute bottom-3 right-[var(--sp-gutter)] z-30 text-right text-sp-ivory opacity-0 transition-opacity duration-500 group-data-[phase=day]/film:text-sp-navy md:hidden"
+          className="absolute bottom-3 right-[var(--sp-gutter)] z-30 text-right text-sp-ivory opacity-0 transition-opacity duration-500 md:hidden"
         >
           <p className="mb-2 inline-flex items-center gap-2 whitespace-nowrap border border-white/20 bg-[#060A1C]/70 px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-sp-ivory shadow-sm backdrop-blur-md">
             <span ref={mobileChapterLabelRef} aria-live="polite">Above the fog</span>
@@ -486,7 +486,7 @@ export const Descent: React.FC = () => {
 
         <nav
           aria-label="Chapters"
-          className="absolute right-[var(--sp-gutter)] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[phase=day]/film:text-sp-navy group-data-[fog=true]/film:text-sp-navy md:top-[40%] md:block lg:top-[72%]"
+          className="absolute right-[var(--sp-gutter)] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[fog=true]/film:text-sp-navy md:top-[40%] md:block lg:top-[72%]"
         >
           {/* Altitude: where you are in the story. */}
           {/* The time in San Francisco, which also sets the light in the film. */}
