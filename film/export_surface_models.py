@@ -24,7 +24,10 @@ for kind, name in {"sedan": "Car000", "suv": "Car003", "truck": "Car001", "coach
 # behind deck/tower geometry. Simplify terrain only for the invisible mask.
 occluders = []
 for obj in list(bpy.data.objects):
-    if obj.name in {"Roadway", "TowerN", "TowerS", "DeckSurface", "Terrain", "Alcatraz", "YerbaBuena", "AngelIsland", "EastBayHills"} or (obj.name.startswith("Tower") and obj.type == "MESH"):
+    # The Golden Gate towers are built from Leg/Strut/Pier parts and the deck
+    # from Roadway/DeckSurface/Truss; all must mask traffic behind them.
+    if obj.type == "MESH" and (obj.name in {"Roadway", "DeckSurface", "TrussL", "TrussR", "Terrain", "Alcatraz", "YerbaBuena", "AngelIsland", "EastBayHills"}
+                               or obj.name.startswith(("Leg", "Strut", "Pier", "BayBridge"))):
         copy = obj.copy()
         copy.data = obj.data.copy()
         bpy.context.scene.collection.objects.link(copy)
