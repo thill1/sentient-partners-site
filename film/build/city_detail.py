@@ -123,7 +123,7 @@ for _ in range(900):
 for _ in range(32000):
     points.append((rng.uniform(300, 2700), rng.uniform(-3300, -1050)))
 # Street trees through the neighbourhoods (outside the downtown core).
-for _ in range(60000):
+for _ in range(130000):
     x, y = rng.uniform(1500, 10500), rng.uniform(-9500, -1100)
     if math.hypot((x - 6200) / 1350, (y + 4300) / 1050) < 1.05:
         continue
@@ -220,7 +220,7 @@ if "UrbanGround" not in hills.nodes:
     mix = hills.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"; mix.name = "UrbanGround"
     hills.links.new(inside.outputs[0], mix.inputs["Factor"])
     hills.links.new(source, mix.inputs["A"])
-    mix.inputs["B"].default_value = (0.2, 0.2, 0.18, 1)
+    mix.inputs["B"].default_value = (0.3, 0.29, 0.26, 1)
     hills.links.new(mix.outputs["Result"], bsdf.inputs["Base Color"])
 
 print(f"city detail: Coit Tower, {len(verts)} trees, haze")

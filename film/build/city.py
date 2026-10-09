@@ -72,6 +72,25 @@ class Mesh:
             f[self.kind] = kind
             f[self.rnd] = rnd
 
+    def gable(self, u, v, w, d, z, h, kind, rnd):
+        """A pitched roof on a w x d footprint at height z, ridge h above it,
+        running front to back so the gable end faces the street."""
+        bm = self.bm
+        c, s = math.cos(ANGLE), math.sin(ANGLE)
+        cx, cy = to_world(u, v)
+
+        def at(lx, ly, lz):
+            return bm.verts.new((cx + lx * c - ly * s, cy + lx * s + ly * c, lz))
+
+        a, b = at(-w / 2, -d / 2, z), at(w / 2, -d / 2, z)
+        cc, dd = at(w / 2, d / 2, z), at(-w / 2, d / 2, z)
+        r0, r1 = at(0, -d / 2, z + h), at(0, d / 2, z + h)
+        faces = [bm.faces.new((a, b, r0)), bm.faces.new((cc, dd, r1)),
+                 bm.faces.new((b, cc, r1, r0)), bm.faces.new((dd, a, r0, r1))]
+        for f in faces:
+            f[self.kind] = kind
+            f[self.rnd] = rnd
+
     def cylinder(self, u, v, r, z0, z1, kind, rnd, segments=24, taper=1.0):
         bm = self.bm
         cx, cy = to_world(u, v)
@@ -234,12 +253,13 @@ for dv in range(-5200, 4200, 44):
             # Lots vary: narrow Victorians, wider flats, the odd apartment block.
             roll = rng.random()
             if roll < 0.7:
-                d, h = rng.uniform(15, 18), rng.choice((7.5, 9.0, 10.5, 12.0))
+                d, h = rng.uniform(13, 18), rng.choice((6.5, 7.5, 9.0, 10.5, 12.0, 13.5))
             elif roll < 0.93:
                 d, h = rng.uniform(16, 19), rng.uniform(10, 15)
             else:
                 d, h = rng.uniform(17, 19), rng.uniform(16, 24)
-            off = side * (5.5 + d / 2)
+            # Uneven setbacks: a ruled-straight row front read as terraces.
+            off = side * (5.5 + d / 2 + rng.uniform(-1.6, 2.4))
             x, y = to_world(du, dv + off)
             # San Francisco only: Marin's headlands are open land.
             if y > -900:
@@ -250,7 +270,12 @@ for dv in range(-5200, 4200, 44):
             gz = ground(x, y)
             if gz is None or gz < 0.5:
                 continue
-            homes.prism(du, dv + off, 8.0, d, gz - 2, gz + h, 2, rng.random())
+            tone = rng.random()
+            homes.prism(du, dv + off, 8.0, d, gz - 2, gz + h, 2, tone)
+            # Victorians and Edwardians: a pitched roof with its gable to the
+            # street on about half the houses; flats keep flat roofs.
+            if roll < 0.7 and rng.random() < 0.6:
+                homes.gable(du, dv + off, 8.0, d, gz + h, rng.uniform(3.2, 5.0), 2, tone)
             houses += 1
 
 material, n = fresh_material("Building")
@@ -296,10 +321,13 @@ stone_ramp.color_ramp.elements[0].color = (0.42, 0.39, 0.34, 1)
 stone_ramp.color_ramp.elements[1].color = (0.74, 0.7, 0.62, 1)
 n.links.new(rnd, stone_ramp.inputs["Fac"])
 house_ramp = n.new("ShaderNodeValToRGB")
-for pos, c in ((0.0, (0.66, 0.64, 0.6)), (0.2, (0.62, 0.57, 0.46)), (0.4, (0.66, 0.6, 0.4)), (0.6, (0.5, 0.56, 0.6)), (0.8, (0.52, 0.57, 0.48)), (1.0, (0.7, 0.68, 0.64))):
+# San Francisco's painted houses: whites and creams with blue-grey, sage,
+# mustard and dusty rose (all houses read white in the low golden sun before).
+for pos, c in ((0.0, (0.7, 0.68, 0.63)), (0.17, (0.6, 0.47, 0.28)), (0.34, (0.36, 0.46, 0.55)), (0.5, (0.72, 0.69, 0.6)), (0.67, (0.56, 0.4, 0.37)), (0.84, (0.42, 0.5, 0.38)), (1.0, (0.64, 0.6, 0.5))):
     el = house_ramp.color_ramp.elements.new(pos) if pos not in (0.0, 1.0) else house_ramp.color_ramp.elements[0 if pos == 0.0 else 1]
     el.position = pos
     el.color = (*c, 1)
+house_ramp.color_ramp.interpolation = "CONSTANT"   # one paint colour per house
 n.links.new(rnd, house_ramp.inputs["Fac"])
 wall = n.new("ShaderNodeMix")
 wall.data_type = "RGBA"
