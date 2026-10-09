@@ -168,6 +168,8 @@ export class LiveFog {
   private depth: WebGLTexture | null = null;
   private depthUrl = '';
   private depthReady = false;
+  /** Key of the depth map now in the texture (the frame it belongs to). */
+  depthKey = '';
   private uniforms: Record<string, WebGLUniformLocation | null> = {};
   private visible = false;
   private seed: number;
@@ -223,26 +225,29 @@ export class LiveFog {
   get shaderSeed() { return (this.seed % 997) / 997; }
 
   /** Depth map for the frame on screen; until it has loaded nothing is drawn. */
-  setDepth(url: string) {
-    if (url === this.depthUrl) return;
+  setDepth(url: string, image?: HTMLImageElement | ImageBitmap) {
+    if (url === this.depthUrl && this.depthReady) return;
     this.depthUrl = url;
     this.depthReady = false;
-    const image = new Image();
-    image.onload = () => {
+    const upload = (source: HTMLImageElement | ImageBitmap) => {
       const gl = this.gl;
       if (!gl || this.depthUrl !== url) return;
       gl.bindTexture(gl.TEXTURE_2D, this.depth);
       // Depth is encoded in RGB: no colour conversion, no filtering across edges.
       gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       this.depthReady = true;
+      this.depthKey = url;
     };
-    image.src = url;
+    if (image) { upload(image); return; }
+    const loader = new Image();
+    loader.onload = () => upload(loader);
+    loader.src = url;
   }
 
   get ready() { return !!this.program && this.depthReady; }

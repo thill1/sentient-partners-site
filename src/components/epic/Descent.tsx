@@ -9,6 +9,7 @@ import { SurfaceTraffic } from './surfaceTraffic';
 import { FOG_LOOKS, FOG_WIND, LiveFog } from './liveFog';
 import { fogClock } from './fogCamera';
 import { FogField } from './fogField';
+import { CleanPlates, type PlatePair } from './cleanPlates';
 import { FILM_SEQUENCES, FramePlayer, focusAt } from './filmFrames';
 import { followTarget } from './scrollEasing';
 import { timeOfDay } from './timeOfDay';
@@ -171,15 +172,11 @@ export const Descent: React.FC = () => {
     const surfaceTraffic = new SurfaceTraffic(surfaceModelRef.current ?? undefined);
     // The fog is the same at every time of day, so one coverage map serves all.
     const liveFog = fogRef.current ? new LiveFog(fogRef.current) : null;
-    // The opening frame without baked fog, and its geometry depth (same
-    // camera, film/export_depth.py). Depth is the same at every time of day.
-    liveFog?.setDepth('/film/sunset-clean/0001-depth.png');
-    const cleanPlate = { image: null as ImageBitmap | null, ready: false };
-    fetch('/film/sunset-clean/0001.webp')
-      .then((response) => (response.ok ? response.blob() : null))
-      .then((blob) => (blob ? createImageBitmap(blob) : null))
-      .then((bitmap) => { if (bitmap) { cleanPlate.image = bitmap; cleanPlate.ready = true; } })
-      .catch(() => undefined);
+    // Fog-free plates and geometry depth, one matched pair per film frame
+    // (film/export_depth.py, render.py NOFOG=1). Frames that have a pair get
+    // live volumetric fog; frames without one keep their baked fog.
+    const plates = new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120);
+    let platePair: PlatePair | null = null;
     let fogAlpha = 0;
     // The live fog's density on the CPU, for traffic visibility (same seed).
     const fogField = liveFog ? new FogField(FOG_WIND, liveFog.shaderSeed) : null;
@@ -311,8 +308,12 @@ export const Descent: React.FC = () => {
         const opening = atOpen > 0 && openLoop?.available && openLoop.complete ? openLoop : null;
         const ending = atCity > 0 && cityLoop?.available && cityLoop.complete ? cityLoop : null;
         const fogSeconds = fogClock(now, started, still);
-        // Live fog replaces the baked fog only on the frame its depth belongs to.
-        fogAlpha = liveFog?.ready && cleanPlate.ready && playerKind === 'sunset' && player.paintKey(story).startsWith('0:') ? 1 : 0;
+        // Live fog replaces the baked fog only where the frame on screen has
+        // its own plate and depth, both loaded: never another frame's depth.
+        const shown = Number(player.paintKey(story).split(':')[0]);
+        platePair = playerKind === 'sunset' && liveFog && shown >= 0 ? plates.get(shown) : null;
+        if (platePair && liveFog) liveFog.setDepth(platePair.depthUrl, platePair.depth);
+        fogAlpha = platePair && liveFog?.ready && liveFog.depthKey === platePair.depthUrl ? 1 : 0;
         const paintKey = `${playerKind}:${filmCtx.canvas.width}:${filmCtx.canvas.height}:${player.paintKey(story)}:${atOpen}:${atCity}:${fogAlpha}:${opening?.loopPaintKey(seconds, 12) ?? ''}:${ending?.loopPaintKey(seconds, 12) ?? ''}`;
         // Repaint the full background composition only when an image/crop
         // changes. Aircraft still advance every animation frame. Redrawing
@@ -320,9 +321,9 @@ export const Descent: React.FC = () => {
         if (paintKey !== lastFilmPaint) {
           player.draw(filmCtx, story);
           // The fog-free plate in exactly the same crop as the frame it replaces.
-          if (fogAlpha > 0 && cleanPlate.image) {
+          if (fogAlpha > 0 && platePair) {
             const r = player.lastRect;
-            filmCtx.drawImage(cleanPlate.image, r.x, r.y, r.w, r.h);
+            filmCtx.drawImage(platePair.plate, r.x, r.y, r.w, r.h);
           }
           opening?.drawLoop(filmCtx, seconds, 12, atOpen, focusAt(0));
           ending?.drawLoop(filmCtx, seconds, 12, atCity, focusAt(1));
@@ -349,14 +350,13 @@ export const Descent: React.FC = () => {
           // the aircraft they hide only while the camera is inside it.
           const belowFog = 1 - clamp01((story - 0.44) / 0.03) + clamp01((story - 0.555) / 0.03);
           // Volumetric fog over the fog-free plate. It needs the depth map of
-          // the exact frame on screen, so for now it runs on the opening
-          // frame only and hands over to the rendered frames as the descent
-          // starts. Its clock is wall time; scroll only moves the camera.
+          // the exact frame on screen, with that frame's camera. Its clock is
+          // wall time; scroll only moves the camera.
           const lens = traffic.lens;
-          const fogOn = !!liveFog && liveFog.ready && cleanPlate.ready && player.lastIndex === 0 && !!lens;
-          if (fogOn && liveFog && lens && film) {
+          const fogOn = fogAlpha > 0 && !!platePair && player.lastIndex === platePair.index && !!lens;
+          if (fogOn && liveFog && lens && film && platePair) {
             const look = FOG_LOOKS[(playerKind as 'sunset' | 'day' | 'night') in FOG_LOOKS ? (playerKind as 'sunset' | 'day' | 'night') : 'sunset'];
-            const pose = traffic.pose(0);
+            const pose = traffic.pose(platePair.index);
             if (pose) liveFog.draw(film, player.lastRect, { fov: lens.fov, aspect: lens.aspect, frames: [], open: pose, city: pose }, pose, fogSeconds, fogAlpha, look);
           } else liveFog?.clear();
           if (surfaceCtx) surfaceTraffic.draw(surfaceCtx, pose, frameRect, seconds, clamp01(belowFog), shot, fogVisibility);
@@ -425,6 +425,8 @@ export const Descent: React.FC = () => {
     return () => {
       cancelAnimationFrame(frame);
       traffic.dispose();
+      plates.dispose();
+      liveFog?.dispose();
       surfaceTraffic.dispose();
       motionPreference.removeEventListener('change', onMotionChange);
       window.clearInterval(clockTimer);
