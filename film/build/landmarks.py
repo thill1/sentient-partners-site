@@ -2,7 +2,8 @@
 (east, north) from the Transamerica Pyramid, adjusted where this scene's
 simplified coastline differs:
 
-  Bay Bridge (west spans)  from the waterfront to Yerba Buena Island
+  Bay Bridge              west suspension spans, island transition, eastern
+                          single-tower suspension span and Oakland skyway
   Yerba Buena Island       about 3.2 km E, 1.6 km N
   Alcatraz                 about 1.8 km W, 3.5 km N
   Angel Island             about 2.6 km W, 7 km N (placed clear of the Marin shore)
@@ -76,6 +77,25 @@ class Mesh:
         bmesh.ops.translate(self.bm, vec=centre, verts=g["verts"])
         for f in {f for v in g["verts"] for f in v.link_faces}:
             f.material_index = mi
+
+    def beam(self, a, b, radius, mi=0, segments=8):
+        a, b = Vector(a), Vector(b)
+        delta = b - a
+        geometry = bmesh.ops.create_cone(self.bm, cap_ends=True, cap_tris=False, segments=segments, radius1=radius, radius2=radius, depth=delta.length)
+        bmesh.ops.rotate(self.bm, matrix=delta.to_track_quat("Z", "Y").to_matrix(), verts=geometry["verts"])
+        bmesh.ops.translate(self.bm, vec=(a + b) / 2, verts=geometry["verts"])
+        for face in {face for vertex in geometry["verts"] for face in vertex.link_faces}:
+            face.material_index = mi
+
+    def deck_segment(self, a, b, width, depth, mi=0):
+        a, b = Vector(a), Vector(b)
+        delta = b - a
+        geometry = bmesh.ops.create_cube(self.bm, size=1)
+        bmesh.ops.scale(self.bm, vec=(delta.length + .05, width, depth), verts=geometry["verts"])
+        bmesh.ops.rotate(self.bm, matrix=delta.to_track_quat("X", "Z").to_matrix(), verts=geometry["verts"])
+        bmesh.ops.translate(self.bm, vec=(a + b) / 2, verts=geometry["verts"])
+        for face in {face for vertex in geometry["verts"] for face in vertex.link_faces}:
+            face.material_index = mi
 
     def finish(self, name, smooth=False):
         me = bpy.data.meshes.new(name)
@@ -203,15 +223,14 @@ cable_mesh = Mesh([steel, bay_lights])
 for off in (-12, 12):
     pts = [at(k / 400, cable_z(k / 400), off) for k in range(401)]
     for p0, p1 in zip(pts, pts[1:]):
-        mid = (p0 + p1) / 2
-        d = p1 - p0
-        cable_mesh.box(mid, (d.length + 0.2, 0.9, 0.9), rot=math.atan2(d.y, d.x), mi=0)
+        cable_mesh.beam(p0, p1, .45)
     # The Bay Lights: LEDs along the vertical cables, every 18 m.
     for k in range(0, 400, 2):
         t = k / 400
         top = cable_z(t)
         if top - DECK < 6:
             continue
+        cable_mesh.beam(at(t, DECK, off), at(t, top, off), .13, segments=6)
         for z in range(int(DECK + 4), int(top), 9):
             cable_mesh.sphere(at(t, z, off), 0.5, 1)
 cable_mesh.finish("BayBridgeCables")
@@ -235,6 +254,91 @@ for i in range(24):
     for j in range(160):
         bm.faces.new((rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]))
 east = eb.finish("EastBayHills", smooth=True)
+
+# ---------------------------------------------------------------- Bay Bridge east span
+# MTC describes the single-tower self-anchored span followed by a concrete
+# skyway. Its tower is 525 ft (160 m); the main/back spans are 385/180 m.
+# The longer approach below follows this scene's simplified East Bay coast.
+# Reference: https://mtc.ca.gov/operations/programs-projects/bridges/san-francisco-oakland-bay-bridge
+east_white = principled("BayBridgeEastWhite", (.76, .77, .75), roughness=.55, metallic=.18)
+east_asphalt = principled("BayBridgeEastRoad", (.065, .07, .075), roughness=.92)
+E0 = Vector((ybi_x + 330, ybi_y - 80, 0))
+E1 = Vector((16200, -2350, 0))
+east_axis = (E1 - E0).normalized()
+east_side = Vector((-east_axis.y, east_axis.x, 0))
+east_length = (E1 - E0).length
+east_rot = math.atan2(east_axis.y, east_axis.x)
+hit, shore, _normal, _face = east.ray_cast(Vector((E1.x, E1.y, 1500)), Vector((0, 0, -1)))
+touchdown = shore.z + .3 if hit else 24
+
+
+def east_deck_z(distance):
+    return 62 if distance < 665 else 62 + (touchdown - 62) * min(1, (distance - 665) / (east_length - 665))
+
+
+def east_at(distance, z=None, off=0):
+    return E0 + east_axis * distance + east_side * off + Vector((0, 0, east_deck_z(distance) if z is None else z))
+
+
+eastern = Mesh([east_white, concrete, east_asphalt, deck_lamp, beacon])
+for start in range(0, math.ceil(east_length), 80):
+    end = min(start + 80, east_length)
+    for offset in (-20, 20):
+        p0, p1 = east_at(start, off=offset), east_at(end, off=offset)
+        eastern.deck_segment(p0 - Vector((0, 0, 2.5)), p1 - Vector((0, 0, 2.5)), 31, 5)
+        eastern.deck_segment(p0 + Vector((0, 0, .05)), p1 + Vector((0, 0, .05)), 29, .12, mi=2)
+        for edge in (-15.3, 15.3):
+            eastern.deck_segment(east_at(start, off=offset + edge) + Vector((0, 0, .7)), east_at(end, off=offset + edge) + Vector((0, 0, .7)), .4, 1.4)
+    # Southern bicycle/pedestrian path, outside the traffic decks.
+    eastern.deck_segment(east_at(start, off=-38) - Vector((0, 0, .3)), east_at(end, off=-38) - Vector((0, 0, .3)), 3.5, .7)
+
+# Four closely spaced steel shafts read as the east span's single tower.
+tower_distance = 280
+for along in (-4.4, 4.4):
+    for off in (-4.4, 4.4):
+        eastern.box(east_at(tower_distance + along, 80, off), (5.8, 5.8, 160), rot=east_rot, taper=.62)
+for z in (65, 94, 124, 157):
+    eastern.box(east_at(tower_distance, z), (16, 16, 3.5), rot=east_rot)
+eastern.box(east_at(tower_distance, -4), (36, 32, 20), rot=east_rot, mi=1)
+eastern.sphere(east_at(tower_distance, 161), .8, 4)
+
+east_cables = Mesh([east_white])
+for off in (-34, 34):
+    for start, end, rising in ((100, 280, True), (280, 665, False)):
+        points = []
+        for i in range(151):
+            u = i / 150
+            height = 64 + 96 * (u*u if rising else (1-u)*(1-u))
+            side_offset = off * (1-u if rising else u) + math.copysign(4, off) * (u if rising else 1-u)
+            points.append(east_at(start + (end-start)*u, height, side_offset))
+        for a, b in zip(points, points[1:]):
+            east_cables.beam(a, b, .45)
+        for i in range(0, 151, 4):
+            point = points[i]
+            distance = start + (end-start)*i/150
+            if point.z > 66:
+                east_cables.beam(east_at(distance, 62, off), point, .1, segments=6)
+east_cables.finish("BayBridgeEastCables")
+
+# Paired concrete bents support the skyway to the Oakland touchdown.
+for distance in range(665, int(east_length - 120), 150):
+    deck_z = east_deck_z(distance)
+    for off in (-20, 20):
+        eastern.box(east_at(distance, (deck_z - 8) / 2, off), (7, 13, deck_z + 8), rot=east_rot, mi=1, taper=.85)
+        eastern.box(east_at(distance, -2, off), (24, 29, 8), rot=east_rot, mi=1)
+        eastern.box(east_at(distance, deck_z - 6, off), (10, 29, 4), rot=east_rot, mi=1)
+for distance in range(0, int(east_length), 60):
+    for off in (-35, 35):
+        eastern.beam(east_at(distance, off=off), east_at(distance, off=off) + Vector((0, 0, 8)), .13)
+        eastern.sphere(east_at(distance, off=off) + Vector((0, 0, 8)), .3, 3)
+eastern.finish("BayBridgeEast")
+
+# Connect the island tunnel/transition to both side-by-side eastern decks.
+transition = Mesh([concrete, east_asphalt])
+west_end = B + Vector((0, 0, 62))
+for off in (-20, 20):
+    transition.deck_segment(west_end, east_at(0, off=off), 23, 4)
+transition.finish("BayBridgeIslandTransition")
 # Oakland and Berkeley: a carpet of low buildings along the shore under the hills.
 town = Mesh([bpy.data.materials["Building"]])
 kind = town.bm.faces.layers.float.new("kind")
@@ -256,4 +360,4 @@ for k in range(9000):
         f[kind] = 2.0 if h < 40 else 1.0
         f[rnd] = val
 town.finish("EastBayTowns")
-print("landmarks: Bay Bridge, Yerba Buena, Alcatraz, Angel Island, Coit Tower, Sutro Tower, East Bay")
+print("landmarks: complete Bay Bridge crossing (west, island transition, eastern SAS and Oakland skyway), Yerba Buena, Alcatraz, Angel Island, Coit Tower, Sutro Tower, East Bay")

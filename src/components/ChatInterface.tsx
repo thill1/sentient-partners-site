@@ -30,11 +30,20 @@ const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 interface ChatInterfaceProps {
   /** 'concept' renders a quieter, square launcher that collapses to the monogram on phones. */
   launcher?: 'default' | 'concept';
+  /** Keep the phone layout clear when the page provides an in-flow Concierge action. */
+  mobileInlineOnly?: boolean;
+  /** Hide the fixed launcher while the capabilities storefront is on screen. */
+  hideLauncherInsideCapabilities?: boolean;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ launcher = 'default' }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  launcher = 'default',
+  mobileInlineOnly = false,
+  hideLauncherInsideCapabilities = false,
+}) => {
   const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
+  const [capabilitiesVisible, setCapabilitiesVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -74,6 +83,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ launcher = 'defaul
   const activeSourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeAudioResolveRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!hideLauncherInsideCapabilities) return;
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      setCapabilitiesVisible(entry.isIntersecting);
+    }, { rootMargin: '-88px 0px 0px 0px' });
+    const observeSection = () => {
+      const section = document.getElementById('capabilities');
+      if (!section) return false;
+      visibilityObserver.observe(section);
+      return true;
+    };
+
+    if (observeSection()) return () => visibilityObserver.disconnect();
+
+    // Epic is lazy-loaded beside this widget, so its section may not exist yet.
+    const mountObserver = new MutationObserver(() => {
+      if (observeSection()) mountObserver.disconnect();
+    });
+    mountObserver.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      mountObserver.disconnect();
+      visibilityObserver.disconnect();
+    };
+  }, [hideLauncherInsideCapabilities]);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -841,7 +876,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ launcher = 'defaul
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label={`Open ${CHAT_WIDGET_CONTENT.launcherEyebrow}`}
-        className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-3 border border-white/15 bg-ca-deep/90 p-1.5 text-white shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors hover:border-white/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-ca-orange sm:pr-4"
+        className={`fixed bottom-5 right-5 z-40 ${
+          hideLauncherInsideCapabilities && capabilitiesVisible
+            ? 'hidden'
+            : mobileInlineOnly
+              ? 'hidden sm:inline-flex'
+              : 'inline-flex'
+        } items-center gap-3 border border-white/15 bg-ca-deep/90 p-1.5 text-white shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors hover:border-white/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-ca-orange sm:pr-4`}
       >
         <span className="flex h-9 w-9 items-center justify-center bg-ca-navy p-1.5">
           <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />

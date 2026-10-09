@@ -16,7 +16,7 @@ export const HOME_META = {
 export const HOME_CONTACT = {
   phone: '(415) 504-2757',
   phoneHref: 'tel:+14155042757',
-  email: 'troyhill@sentientpartners.ai',
+  email: 'hello@sentientpartners.ai',
   location: 'Auburn, California',
   signature: ['Strategy', 'Intelligence', 'Results'],
 };

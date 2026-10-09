@@ -12,7 +12,19 @@ import sys
 import bpy
 
 ROOT = pathlib.Path(__file__).resolve().parent
-PASSES = ("bridge.py", "boats.py", "cars.py", "aircraft.py", "water.py", "fog.py", "camera.py")
+PASSES = (
+    "coast.py",
+    "bridge.py",
+    "landmarks.py",
+    "city.py",
+    "boats.py",
+    "cars.py",
+    "aircraft.py",
+    "water.py",
+    "shore.py",
+    "fog.py",
+    "camera.py",
+)
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 if len(args) != 1:
     raise SystemExit("usage: blender -b film/descent.blend --python film/rebuild.py -- OUTPUT.blend")

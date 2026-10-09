@@ -12,6 +12,8 @@ import { Stage } from '../home/cards/Stage';
 import { VoiceDemo } from '../home/cards/VoiceDemo';
 import { WebDemo } from '../home/cards/WebDemo';
 import { WorkflowDemo } from '../home/cards/WorkflowDemo';
+import { followTarget } from './scrollEasing';
+import { openSentientChat } from '../../lib/siteActions';
 
 const DEMOS: Record<CapabilityId, React.FC> = {
   chat: ChatDemo,
@@ -54,6 +56,8 @@ const WARM = '#F6C98A';
 const COUNT = EPIC_STREET_ORDER.length;
 /** Scroll distance from one shop to the next while the street is held, in viewport heights. */
 const STEP_VH = 78;
+/** Matches the previous 0.09/frame response at 60 Hz without changing feel across displays. */
+const STREET_FOLLOW_MS = 175;
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 
 /** The upper floor and roofline of a building. */
@@ -145,13 +149,16 @@ export const MainStreet: React.FC = () => {
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let position = -1;
     let frame = 0;
-    const walk = () => {
+    let previousTime = performance.now();
+    const walk = (now: number) => {
       frame = requestAnimationFrame(walk);
+      const elapsed = now - previousTime;
+      previousTime = now;
       const rect = section.getBoundingClientRect();
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
       const travel = rect.height - window.innerHeight;
       const wanted = clamp(-rect.top / Math.max(1, travel), 0, 1) * (COUNT - 1);
-      position = position < 0 || still ? wanted : position + (wanted - position) * 0.09;
+      position = position < 0 || still ? wanted : followTarget(position, wanted, elapsed, STREET_FOLLOW_MS);
       track.style.transform = `translate3d(calc(50vw - var(--bw) * ${(position + 0.5).toFixed(4)}), 0, 0)`;
       if (ridgeRef.current) ridgeRef.current.style.transform = `translate3d(${(-position * 3).toFixed(3)}vw, 0, 0)`;
       setIndex((current) => {
@@ -201,8 +208,8 @@ export const MainStreet: React.FC = () => {
       ref={sectionRef}
       aria-labelledby="capabilities-heading"
       className="relative bg-[#060A1C] text-sp-ivory [--bw:86vw] lg:[--bw:min(36vw,calc((100svh-470px)/1.22),34rem)]"
-      // The held scene has its own header room, so jumping here lands it flush.
-      style={{ scrollMarginTop: 0, ...(held ? { height: `calc(100vh + ${(COUNT - 1) * STEP_VH}vh)` } : {}) }}
+      // Preserve the shared scroll margin so the fixed header never covers the section heading.
+      style={held ? { height: `calc(100vh + ${(COUNT - 1) * STEP_VH}vh)` } : undefined}
     >
       <div
         className={`flex flex-col overflow-hidden bg-[linear-gradient(to_bottom,#060A1C_0%,#0B1132_30%,#2A2259_62%,#70487A_84%,#C4705A_100%)] ${
@@ -215,12 +222,17 @@ export const MainStreet: React.FC = () => {
               <h2 id="capabilities-heading" className="text-[13px] uppercase tracking-[0.24em] text-sp-champagne">
                 {EPIC_STREET.heading}
               </h2>
+              <p className="mt-2 text-[11.5px] leading-relaxed text-sp-mist">
+                <span className="font-medium text-sp-champagne">Illustrative demo</span>
+                <span aria-hidden="true"> · </span>
+                <span>All businesses and data shown are fictional.</span>
+              </p>
               <div key={card.id} className="sp-fade mt-3" aria-live="polite">
                 <h3 className="font-editorial text-[clamp(2.25rem,1.3rem+3.4vw,4.25rem)] leading-[1] tracking-[-0.022em]">{card.title}</h3>
                 <p className="sp-lede mt-3 max-w-[40rem] text-sp-mist lg:min-h-[3.1em]">{card.outcome}</p>
               </div>
             </div>
-            <div className="flex items-center justify-between gap-6 lg:col-span-4 lg:justify-end">
+            <div className="flex flex-wrap items-center justify-between gap-3 lg:col-span-4 lg:justify-end">
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => go(index - 1)} disabled={index === 0} aria-label={EPIC_STREET.previous} className={stepper}>
                   <Arrow className="rotate-180" />
@@ -232,6 +244,15 @@ export const MainStreet: React.FC = () => {
                   <Arrow />
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={() => openSentientChat({ source: 'Capabilities section', ctaLabel: 'Ask the Concierge' })}
+                aria-label="Ask the Concierge"
+                className="inline-flex h-11 min-w-11 items-center justify-center gap-2 border border-sp-ivory/35 px-3 text-sm text-sp-ivory transition-colors hover:border-sp-champagne hover:text-sp-champagne focus:outline-none focus-visible:ring-2 focus-visible:ring-sp-champagne"
+              >
+                <MessageSquare aria-hidden="true" className="h-4 w-4 shrink-0" />
+                <span className="hidden min-[1280px]:inline">Ask the Concierge</span>
+              </button>
             </div>
           </div>
         </div>
@@ -344,9 +365,6 @@ export const MainStreet: React.FC = () => {
             })}
           </ul>
 
-          <div className="relative shrink-0 bg-[#0A0F26] px-[var(--sp-gutter)] py-3 text-center text-[13.5px] text-sp-mist/80 lg:py-[1.6vh]">
-            {EPIC_STREET.note}
-          </div>
         </div>
       </div>
     </section>

@@ -218,23 +218,26 @@ export const CloseSection: React.FC = () => (
           {HOME_CTA.book}
           <Arrow />
         </button>
-        <p className="sp-body mt-6 text-sp-mist">
-          Or call or text{" "}
-          <a
-            href={HOME_CONTACT.phoneHref}
-            className="whitespace-nowrap text-sp-ivory underline decoration-sp-ivory/40 underline-offset-4 hover:decoration-sp-ivory"
-          >
-            {HOME_CONTACT.phone}
-          </a>
-          , or email{" "}
-          <a
-            href={`mailto:${HOME_CONTACT.email}`}
-            className="break-words text-sp-ivory underline decoration-sp-ivory/40 underline-offset-4 hover:decoration-sp-ivory"
-          >
-            {HOME_CONTACT.email}
-          </a>
-          .
-        </p>
+        <div className="sp-body mt-6 flex flex-col gap-2 text-sp-mist">
+          <p>
+            Call or text{" "}
+            <a
+              href={HOME_CONTACT.phoneHref}
+              className="whitespace-nowrap text-sp-ivory underline decoration-sp-ivory/40 underline-offset-4 hover:decoration-sp-ivory"
+            >
+              {HOME_CONTACT.phone}
+            </a>
+          </p>
+          <p>
+            Email{" "}
+            <a
+              href={`mailto:${HOME_CONTACT.email}`}
+              className="whitespace-nowrap text-sp-ivory underline decoration-sp-ivory/40 underline-offset-4 hover:decoration-sp-ivory"
+            >
+              {HOME_CONTACT.email}
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -242,8 +245,9 @@ export const CloseSection: React.FC = () => (
 
 export const SiteFooter: React.FC<{
   nav?: readonly { id: string; label: string }[];
-}> = ({ nav = HOME_NAV }) => (
-  <footer className="bg-sp-deep pb-28 text-sp-mist sm:pb-12">
+  reserveMobileLauncher?: boolean;
+}> = ({ nav = HOME_NAV, reserveMobileLauncher = true }) => (
+  <footer className={`bg-sp-deep ${reserveMobileLauncher ? 'pb-28' : 'pb-12'} text-sp-mist sm:pb-12`}>
     <div className="sp-shell">
       <div className="flex flex-col gap-8 border-t border-sp-ivory/15 pt-10 lg:flex-row lg:items-center lg:justify-between">
         <div>

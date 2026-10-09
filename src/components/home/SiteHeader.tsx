@@ -51,7 +51,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
       }`}
     >
       <div
-        className={`sp-shell flex h-[76px] items-center justify-between gap-6 lg:h-[84px] ${
+        className={`sp-shell flex h-[76px] items-center justify-between gap-6 max-[359px]:gap-3 lg:h-[84px] ${
           centered ? 'lg:grid lg:grid-cols-[1fr_auto_1fr]' : ''
         }`}
       >
@@ -64,7 +64,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ nav = HOME_NAV, centered
           <Wordmark tone={tone} />
         </a>
 
-        <nav aria-label="Sections" className={`hidden lg:block ${centered ? 'lg:order-1' : ''}`}>
+        <nav aria-label="Sections" className={`hidden lg:block ${centered ? 'lg:order-1 sp-hero-aligned-nav' : ''}`}>
           <ul className={`flex items-center ${centered ? 'gap-6 xl:gap-8' : 'gap-7 xl:gap-10'}`}>
             {nav.map((item) => (
               <li key={item.id}>

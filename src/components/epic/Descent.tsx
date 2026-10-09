@@ -5,7 +5,9 @@ import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { DESCENT_FRAGMENT, DESCENT_VERTEX } from './descentShader';
 import { AirTraffic } from './airTraffic';
+import { SurfaceTraffic } from './surfaceTraffic';
 import { FILM_SEQUENCES, FramePlayer, focusAt } from './filmFrames';
+import { followTarget } from './scrollEasing';
 import { timeOfDay } from './timeOfDay';
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -31,10 +33,17 @@ export const Descent: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLCanvasElement>(null);
   const airRef = useRef<HTMLCanvasElement>(null);
+  const airModelRef = useRef<HTMLCanvasElement>(null);
+  const surfaceRef = useRef<HTMLCanvasElement>(null);
   const beatRefs = useRef<(HTMLDivElement | null)[]>([]);
   const altitudeRef = useRef<HTMLSpanElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
   const chapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const chapterLabelRef = useRef<HTMLSpanElement>(null);
+  const chapterCountRef = useRef<HTMLSpanElement>(null);
+  const mobileChapterRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const mobileChapterLabelRef = useRef<HTMLSpanElement>(null);
+  const mobileChapterCountRef = useRef<HTMLSpanElement>(null);
   const cueRef = useRef<HTMLParagraphElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
   const stillRefs = useRef<Record<string, HTMLImageElement | null>>({});
@@ -51,7 +60,8 @@ export const Descent: React.FC = () => {
     const section = sectionRef.current;
     const canvas = canvasRef.current;
     if (!section || !canvas) return;
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let still = motionPreference.matches;
 
     const gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'high-performance' });
     let program: WebGLProgram | null = null;
@@ -130,7 +140,6 @@ export const Descent: React.FC = () => {
       const rect = section.getBoundingClientRect();
       return clamp01(-rect.top / Math.max(1, rect.height - window.innerHeight));
     };
-
     // The light and the clock follow Pacific time, checked every few seconds.
     let sky = timeOfDay();
     const showClock = () => {
@@ -149,20 +158,41 @@ export const Descent: React.FC = () => {
     const filmCtx = film?.getContext('2d') ?? null;
     const air = airRef.current;
     const airCtx = air?.getContext('2d') ?? null;
-    const traffic = new AirTraffic();
+    const surface = surfaceRef.current;
+    const surfaceCtx = surface?.getContext('2d') ?? null;
+    const traffic = new AirTraffic(airModelRef.current ?? undefined);
+    const surfaceTraffic = new SurfaceTraffic();
+    const onMotionChange = () => {
+      still = motionPreference.matches;
+      if (still) {
+        airCtx?.clearRect(0, 0, air?.width ?? 0, air?.height ?? 0);
+        surfaceCtx?.clearRect(0, 0, surface?.width ?? 0, surface?.height ?? 0);
+        traffic.clear();
+      }
+    };
+    motionPreference.addEventListener('change', onMotionChange);
     let player: FramePlayer | null = null;
     // Held-camera loops for when the visitor pauses at the start or the end.
     let openLoop: FramePlayer | null = null;
     let cityLoop: FramePlayer | null = null;
     let playerKind = '';
     const choosePlayer = () => {
-      const kind = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'sunset';
+      const kind: 'night' | 'day' | 'sunset' = sky.phase[2] > 0.5 ? 'night' : sky.phase[0] > 0.5 ? 'day' : 'sunset';
       const count = FILM_SEQUENCES[kind];
       if (kind === playerKind) return;
       playerKind = kind;
       player = count ? new FramePlayer(kind, count) : null;
       traffic.setKind(kind);
-      openLoop = count ? new FramePlayer(`${kind}-open`, 48) : null;
+      surfaceTraffic.setPhase(kind);
+      // The reviewed high-resolution sunset loop is the only complete held-camera
+      // loop. Use it for the sunset hero by default; other phases stay on their
+      // existing backgrounds until matching loops pass visual review.
+      const hasCleanSunsetOpening = kind === 'sunset';
+      openLoop = count
+        ? new FramePlayer(`${kind}-open`, 48, hasCleanSunsetOpening
+          ? (index) => `/film/preview/sunset-open/${String(index + 1).padStart(4, '0')}.webp`
+          : undefined)
+        : null;
       cityLoop = count ? new FramePlayer(`${kind}-city`, 48) : null;
     };
     choosePlayer();
@@ -175,6 +205,10 @@ export const Descent: React.FC = () => {
         air.width = film.width;
         air.height = film.height;
       }
+      if (surface) {
+        surface.width = film.width;
+        surface.height = film.height;
+      }
     };
     sizeFilm();
     window.addEventListener('resize', sizeFilm);
@@ -185,6 +219,7 @@ export const Descent: React.FC = () => {
     }, 5000);
 
     let story = target();
+    let lastFilmPaint = '';
     let frame = 0;
     // ?t=42 starts the film's own clock 42 s in, so a review can catch a moment.
     let offset = 0;
@@ -224,29 +259,46 @@ export const Descent: React.FC = () => {
 
       // The camera follows the scroll with a little weight, like a crane.
       const wanted = target();
-      story = still ? wanted : story + (wanted - story) * 0.07;
-      look.x += (look.targetX - look.x) * 0.04;
-      look.y += (look.targetY - look.y) * 0.04;
+      story = still || Math.abs(wanted - story) < .00001 ? wanted : followTarget(story, wanted, elapsed, 230);
+      look.x = followTarget(look.x, look.targetX, elapsed, 400);
+      look.y = followTarget(look.y, look.targetY, elapsed, 400);
 
       // Play the rendered film once it has frames; until then, or if it has none, the still and live film stand in.
       const playing = !!player && player.available && player.loaded > 0;
       section.dataset.rendered = playing ? 'true' : 'false';
       if (playing && player && filmCtx) {
-        player.draw(filmCtx, story);
         // At rest at either end, the scene keeps moving: fog rolls, aircraft
         // pass, boats and traffic carry on. The loop shares the film's first
         // and last camera, so it fades in over the film without doubling.
         const seconds = still ? 0 : (performance.now() - started) / 1000;
         const atOpen = 1 - clamp01(story / 0.02);
         const atCity = clamp01((story - 0.975) / 0.02);
-        if (atOpen > 0 && openLoop?.available && openLoop.complete) openLoop.drawLoop(filmCtx, seconds, 12, atOpen, focusAt(0));
-        if (atCity > 0 && cityLoop?.available && cityLoop.complete) cityLoop.drawLoop(filmCtx, seconds, 12, atCity, focusAt(1));
+        const opening = atOpen > 0 && openLoop?.available && openLoop.complete ? openLoop : null;
+        const ending = atCity > 0 && cityLoop?.available && cityLoop.complete ? cityLoop : null;
+        const paintKey = `${playerKind}:${filmCtx.canvas.width}:${filmCtx.canvas.height}:${player.paintKey(story)}:${atOpen}:${atCity}:${opening?.loopPaintKey(seconds, 12) ?? ''}:${ending?.loopPaintKey(seconds, 12) ?? ''}`;
+        // Repaint the full background composition only when an image/crop
+        // changes. Aircraft still advance every animation frame. Redrawing
+        // identical multi-megapixel layers was delaying their live motion.
+        if (paintKey !== lastFilmPaint) {
+          player.draw(filmCtx, story);
+          opening?.drawLoop(filmCtx, seconds, 12, atOpen, focusAt(0));
+          ending?.drawLoop(filmCtx, seconds, 12, atCity, focusAt(1));
+          lastFilmPaint = paintKey;
+        }
         // Aircraft on random paths, in the frame's own camera. They are above
         // the fog, so they fade out as the camera goes into it and stay hidden
         // until it is out from under it, east of the Gate.
         if (airCtx && !still) {
           const visible = 1 - clamp01((story - 0.43) / 0.035) + clamp01((story - 0.76) / 0.05);
-          traffic.draw(airCtx, traffic.pose(player.lastIndex), player.lastRect, seconds, clamp01(visible));
+          const pose = traffic.pose(opening && atOpen > .5 ? 'open' : ending && atCity > .5 ? 'city' : player.lastIndex);
+          const frameRect = opening && atOpen > .5 ? opening.lastRect : ending && atCity > .5 ? ending.lastRect : player.lastRect;
+          traffic.draw(airCtx, pose, frameRect, seconds, clamp01(visible));
+          // The reviewed opening loop has no baked vehicles, so this layer
+          // can move freely without doubling the old traffic in site frames.
+          if (surfaceCtx) {
+            const surfaceAlpha = playerKind === 'sunset' && opening && atOpen > .5 ? clamp01(atOpen) : 0;
+            surfaceTraffic.draw(surfaceCtx, pose, frameRect, seconds, surfaceAlpha);
+          }
         }
       } else if (gl && program) {
         gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
@@ -279,8 +331,21 @@ export const Descent: React.FC = () => {
         if (story >= chapter.at - 0.06) current = index;
       });
       chapterRefs.current.forEach((node, index) => {
-        if (node) node.dataset.current = index === current ? 'true' : 'false';
+        if (!node) return;
+        node.dataset.current = index === current ? 'true' : 'false';
+        if (index === current) node.setAttribute('aria-current', 'step');
+        else node.removeAttribute('aria-current');
       });
+      if (chapterLabelRef.current) chapterLabelRef.current.textContent = EPIC_CHAPTERS[current].label;
+      if (chapterCountRef.current) chapterCountRef.current.textContent = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
+      mobileChapterRefs.current.forEach((node, index) => {
+        if (!node) return;
+        node.dataset.current = index === current ? 'true' : 'false';
+        if (index === current) node.setAttribute('aria-current', 'step');
+        else node.removeAttribute('aria-current');
+      });
+      if (mobileChapterLabelRef.current) mobileChapterLabelRef.current.textContent = EPIC_CHAPTERS[current].label;
+      if (mobileChapterCountRef.current) mobileChapterCountRef.current.textContent = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
       // In the fog the frame is pale, so the instruments turn dark.
       // At night the inside of the fog is dark, so the copy stays light.
       // The rendered still leads the opening and hands over to the live film as you descend.
@@ -297,6 +362,9 @@ export const Descent: React.FC = () => {
 
     return () => {
       cancelAnimationFrame(frame);
+      traffic.dispose();
+      surfaceTraffic.dispose();
+      motionPreference.removeEventListener('change', onMotionChange);
       window.clearInterval(clockTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('resize', sizeFilm);
@@ -305,15 +373,18 @@ export const Descent: React.FC = () => {
   }, []);
 
   return (
-    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[520vh] bg-[#060A1C] lg:h-[600vh]">
+    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[440vh] bg-[#060A1C] lg:h-[500vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-[1600ms] data-[live=true]:opacity-100 group-data-[rendered=true]/film:hidden" />
         {/* The rendered descent, played by scroll (film/descent.blend). */}
         <canvas ref={filmRef} aria-hidden="true" className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
+        {/* Independent road and water traffic over the clean review sequence. */}
+        <canvas ref={surfaceRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Live air traffic, drawn over the film in its own 3D space. */}
         <canvas ref={airRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
+        <canvas ref={airModelRef} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0 transition-opacity duration-700 group-data-[rendered=true]/film:opacity-100" />
         {/* Path-traced stills of the opening shot, one per time of day (rendered in Blender, film/descent.blend). */}
         {(['sunset', 'day', 'night'] as const).map((kind) => (
           <img
@@ -337,8 +408,39 @@ export const Descent: React.FC = () => {
 
         {/* Chapters of the film. */}
         <nav
+          aria-label="Film chapters"
+          className="absolute right-[var(--sp-gutter)] top-[32%] z-30 -translate-y-1/2 text-right text-sp-ivory group-data-[phase=day]/film:text-sp-navy md:hidden"
+        >
+          <p className="mb-2 inline-flex items-center gap-2 whitespace-nowrap border border-white/20 bg-[#060A1C]/70 px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-sp-ivory shadow-sm backdrop-blur-md">
+            <span ref={mobileChapterLabelRef} aria-live="polite">Above the fog</span>
+            <span ref={mobileChapterCountRef} className="tabular-nums text-sp-mist">01 / 05</span>
+          </p>
+          <ol className="ml-auto flex w-[13.75rem] flex-row items-center justify-between gap-0">
+            {EPIC_CHAPTERS.map((chapter, index) => (
+              <li key={chapter.label} className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  ref={(node) => {
+                    mobileChapterRefs.current[index] = node;
+                  }}
+                  onClick={() => goTo(chapter.at)}
+                  aria-label={`Go to ${chapter.label} chapter`}
+                  aria-current={index === 0 ? 'step' : undefined}
+                  className="group/mobile-chapter flex h-11 w-11 items-center justify-end focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sp-champagne"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="block h-[2px] w-3 bg-current opacity-45 transition-all duration-300 group-hover/mobile-chapter:w-6 group-hover/mobile-chapter:opacity-80 group-focus-visible/mobile-chapter:w-6 group-focus-visible/mobile-chapter:opacity-100 group-data-[current=true]/mobile-chapter:w-6 group-data-[current=true]/mobile-chapter:opacity-100"
+                  />
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <nav
           aria-label="Chapters"
-          className="absolute right-[var(--sp-gutter)] top-[72%] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[fog=true]/film:text-sp-navy md:block"
+          className="absolute right-[var(--sp-gutter)] hidden -translate-y-1/2 text-sp-ivory transition-colors duration-700 group-data-[phase=day]/film:text-sp-navy group-data-[fog=true]/film:text-sp-navy md:top-[40%] md:block lg:top-[72%]"
         >
           {/* Altitude: where you are in the story. */}
           {/* The time in San Francisco, which also sets the light in the film. */}
@@ -354,7 +456,11 @@ export const Descent: React.FC = () => {
               <span ref={railRef} className="absolute inset-0 origin-left bg-current" />
             </span>
           </p>
-          <ol className="flex flex-col items-end gap-4">
+          <p aria-label="Current film chapter" className="mb-1 flex items-center justify-end gap-3 text-[11px] uppercase tracking-[0.12em] text-current/90">
+            <span ref={chapterLabelRef} aria-live="polite">Above the fog</span>
+            <span ref={chapterCountRef} className="tabular-nums text-current/70">01 / 05</span>
+          </p>
+          <ol className="flex flex-col items-end gap-0">
             {EPIC_CHAPTERS.map((chapter, index) => (
               <li key={chapter.label}>
                 <button
@@ -363,7 +469,8 @@ export const Descent: React.FC = () => {
                     chapterRefs.current[index] = node;
                   }}
                   onClick={() => goTo(chapter.at)}
-                  className="group/chapter flex items-center gap-3 py-1 text-[13px] tracking-[0.08em]"
+                  aria-label={`Go to ${chapter.label} chapter`}
+                  className="group/chapter flex min-h-11 items-center gap-3 rounded-sm py-2 text-[13px] tracking-[0.08em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sp-champagne"
                 >
                   <span className="opacity-0 transition-opacity duration-300 group-hover/chapter:opacity-100 group-focus-visible/chapter:opacity-100 group-data-[current=true]/chapter:opacity-100">
                     {chapter.label}
@@ -381,7 +488,7 @@ export const Descent: React.FC = () => {
         <p
           ref={cueRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2 text-[12px] uppercase tracking-[0.24em] text-sp-ivory/80"
+          className="sp-film-scroll-cue pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2 text-[12px] uppercase tracking-[0.24em] text-sp-ivory/80"
         >
           {EPIC_SCROLL_CUE}
           <span className="sp-cue block h-7 w-px bg-sp-ivory/70" />
@@ -396,26 +503,25 @@ export const Descent: React.FC = () => {
               ref={(node) => {
                 beatRefs.current[index] = node;
               }}
-              className={`absolute inset-x-0 bottom-[clamp(5.5rem,13vh,8rem)] px-[var(--sp-gutter)] text-center will-change-[opacity,transform] lg:text-left ${
+              className={`${index === 0 ? 'absolute inset-0' : 'absolute inset-x-0 bottom-[clamp(5.5rem,13vh,8rem)]'} px-[var(--sp-gutter)] text-center will-change-[opacity,transform] lg:text-left ${
                 pale ? 'text-sp-ivory group-data-[fog=true]/film:text-sp-navy' : 'text-sp-ivory'
               } ${index === 0 ? '' : 'invisible opacity-0'}`}
             >
-              <Heading
-                className={`mx-auto font-editorial font-normal tracking-[-0.022em] lg:mx-0 ${
-                  index === 0
-                    ? 'max-w-[12ch] text-[clamp(2.75rem,1.3rem+5.4vw,6.75rem)] leading-[0.98]'
-                    : 'max-w-[20ch] text-[clamp(2rem,1.2rem+3.4vw,4.75rem)] leading-[1.03]'
-                }`}
-              >
-                {beat.heading}
-              </Heading>
-              {beat.body && (
-                <p className={`mx-auto mt-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] lg:mx-0 ${pale ? 'text-sp-ivory/90 group-data-[fog=true]/film:text-sp-navy/85' : 'text-sp-ivory/90'}`}>
-                  {beat.body}
-                </p>
-              )}
-              {index === 0 && (
-                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
+              {index === 0 ? (
+                <>
+                  <h1 className="pointer-events-none absolute inset-0 font-editorial text-[clamp(2.75rem,1.3rem+5.4vw,6.75rem)] font-normal leading-[0.98] tracking-[-0.022em]">
+                    <span className="absolute inset-x-0 top-[clamp(5.75rem,11vh,7.5rem)] mx-auto block max-w-[12ch] lg:inset-x-[var(--sp-gutter)] lg:mx-0">
+                      Global Experience.
+                    </span>
+                    <span className="sp-hero-local-impact absolute inset-x-0 bottom-[clamp(20rem,39vh,21rem)] mx-auto block max-w-[12ch] translate-y-8 lg:inset-x-[var(--sp-gutter)] lg:bottom-[clamp(13.5rem,26vh,17.5rem)] lg:mx-0">
+                      Local Impact.
+                    </span>
+                  </h1>
+                  <div className="absolute inset-x-[var(--sp-gutter)] bottom-[clamp(5rem,12vh,7.5rem)] translate-y-6">
+                    <p className="mx-auto mb-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] text-sp-ivory/90 lg:mx-0">
+                      {beat.body}
+                    </p>
+                    <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
                   <button type="button" onClick={() => bookIntroduction('Film')} className="sp-btn sp-btn-champagne w-full max-w-[20rem] sm:w-auto">
                     {HOME_CTA.book}
                     <Arrow />
@@ -427,7 +533,20 @@ export const Descent: React.FC = () => {
                   >
                     {HOME_CTA.explore}
                   </a>
-                </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Heading className="mx-auto max-w-[20ch] font-editorial text-[clamp(2rem,1.2rem+3.4vw,4.75rem)] font-normal leading-[1.03] tracking-[-0.022em] lg:mx-0">
+                    {beat.heading}
+                  </Heading>
+                  {beat.body && (
+                    <p className={`mx-auto mt-5 max-w-[34rem] text-[clamp(1.0625rem,1rem+0.4vw,1.3125rem)] leading-[1.55] lg:mx-0 ${pale ? 'text-sp-ivory/90 group-data-[fog=true]/film:text-sp-navy/85' : 'text-sp-ivory/90'}`}>
+                      {beat.body}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           );

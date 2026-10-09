@@ -33,15 +33,15 @@ export const EPIC_BEATS = [
   },
   {
     id: 'fog',
-    range: [0.5, 0.59],
+    range: [0.465, 0.565],
     film: [0.465, 0.565],
     heading: 'Perspective is the view from above. Impact happens on the ground.',
     body: '',
   },
   {
     id: 'thesis',
-    range: [0.73, 0.86],
-    film: [0.72, 0.84],
+    range: [0.565, 0.9],
+    film: [0.565, 0.9],
     heading: 'Enterprise-caliber thinking. Small business practicality.',
     body: 'We bring the strategic perspective of global enterprise leadership and the hands-on commitment of a local partner.',
   },
@@ -60,7 +60,7 @@ export const EPIC_CHAPTERS = [
   { at: 0.27, label: 'The Golden Gate' },
   { at: 0.5, label: 'Through the fog' },
   { at: 0.58, label: 'Under the span' },
-  { at: 0.97, label: 'The city' },
+  { at: 0.82, label: 'The city' },
 ] as const;
 
 export const EPIC_SCROLL_CUE = 'Scroll to descend';
@@ -69,7 +69,6 @@ export const EPIC_STREET = {
   heading: 'Eight windows on Main Street.',
   previous: 'Previous window',
   next: 'Next window',
-  note: 'Summit Air & Heat, its customers, and its numbers are fictional.',
 };
 
 /** The sign over each storefront. The full capability name is the card title. */

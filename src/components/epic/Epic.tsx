@@ -5,6 +5,7 @@ import { bookIntroduction } from '../home/actions';
 import { Arrow } from '../home/Arrow';
 import { SiteFooter } from '../home/Sections';
 import { SiteHeader } from '../home/SiteHeader';
+import { openSentientChat } from '../../lib/siteActions';
 import { Descent } from './Descent';
 import { MainStreet } from './MainStreet';
 
@@ -114,17 +115,27 @@ const Close: React.FC = () => (
         {HOME_CTA.book}
         <Arrow />
       </button>
-      <p className="sp-body mt-7 text-sp-ivory/90">
-        Or call or text{' '}
-        <a href={HOME_CONTACT.phoneHref} className="whitespace-nowrap underline decoration-sp-ivory/50 underline-offset-4 hover:decoration-sp-ivory">
-          {HOME_CONTACT.phone}
-        </a>
-        , or email{' '}
-        <a href={`mailto:${HOME_CONTACT.email}`} className="break-words underline decoration-sp-ivory/50 underline-offset-4 hover:decoration-sp-ivory">
-          {HOME_CONTACT.email}
-        </a>
-        .
-      </p>
+      <button
+        type="button"
+        onClick={() => openSentientChat({ source: 'Contact section', ctaLabel: 'Ask the Concierge' })}
+        className="mx-auto mt-5 block rounded-sm text-sm text-sp-ivory underline decoration-sp-ivory/50 underline-offset-4 hover:decoration-sp-ivory focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sp-champagne sm:hidden"
+      >
+        Or ask the Concierge a question
+      </button>
+      <div className="sp-body mt-7 flex flex-col items-center gap-2 text-sp-ivory/90">
+        <p>
+          Call or text{' '}
+          <a href={HOME_CONTACT.phoneHref} className="whitespace-nowrap underline decoration-sp-ivory/50 underline-offset-4 hover:decoration-sp-ivory">
+            {HOME_CONTACT.phone}
+          </a>
+        </p>
+        <p>
+          Email{' '}
+          <a href={`mailto:${HOME_CONTACT.email}`} className="whitespace-nowrap underline decoration-sp-ivory/50 underline-offset-4 hover:decoration-sp-ivory">
+            {HOME_CONTACT.email}
+          </a>
+        </p>
+      </div>
     </div>
   </section>
 );
@@ -159,7 +170,7 @@ export const Epic: React.FC = () => {
         <Approach />
         <Close />
       </main>
-      <SiteFooter nav={EPIC_NAV} />
+      <SiteFooter nav={EPIC_NAV} reserveMobileLauncher={false} />
     </div>
   );
 };

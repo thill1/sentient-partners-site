@@ -49,7 +49,7 @@ export class FramePlayer {
   /** False once the first frame has failed to load: there is no sequence to play. */
   available = true;
 
-  constructor(kind: string, count: number) {
+  constructor(kind: string, count: number, source?: (index: number) => string) {
     this.kind = kind;
     this.frames = new Array(count).fill(null);
     this.ready = new Array(count).fill(false);
@@ -73,7 +73,7 @@ export class FramePlayer {
         if (index === 0) this.available = false;
         else loadOne();
       };
-      image.src = frameUrl(this.kind, index);
+      image.src = source ? source(index) : frameUrl(this.kind, index);
     };
     // A few requests in flight at once.
     for (let k = 0; k < 4; k++) loadOne();
@@ -124,6 +124,19 @@ export class FramePlayer {
   /** True once every frame has arrived. */
   get complete() {
     return this.loaded === this.frames.length;
+  }
+
+  /** Identify the exact loaded images/crop a draw would use. */
+  paintKey(t: number) {
+    return `${this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1))}:${focusAt(t)}`;
+  }
+
+  loopPaintKey(seconds: number, fps: number) {
+    const blend = Math.min(10, Math.floor(this.frames.length / 4));
+    const span = this.frames.length - blend;
+    const index = Math.floor((seconds * fps) % span) + blend;
+    const into = index - span;
+    return `${index}:${this.nearest(index)}:${into >= 0 ? this.nearest(into) : -1}`;
   }
 
   /**

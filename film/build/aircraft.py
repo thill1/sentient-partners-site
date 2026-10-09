@@ -1,6 +1,8 @@
 """Refine the airliners and fly them through the opening and skyline beats."""
 import bmesh
 import bpy
+import math
+from mathutils import Quaternion, Vector
 
 planes = [bpy.data.objects[name] for name in ("AirlinerNear", "AirlinerMid", "AirlinerFar")]
 for plane in planes:
@@ -24,6 +26,22 @@ window_bsdf = next(node for node in window.node_tree.nodes if node.type == "BSDF
 window_bsdf.inputs["Base Color"].default_value = (0.035, 0.085, 0.12, 1.0)
 window_bsdf.inputs["Roughness"].default_value = 0.24
 window_bsdf.inputs["Metallic"].default_value = 0.18
+
+
+def detail_material(name, color, roughness, metallic):
+    material = bpy.data.materials.get(name) or bpy.data.materials.new(name)
+    material.use_nodes = True
+    bsdf = next(node for node in material.node_tree.nodes if node.type == "BSDF_PRINCIPLED")
+    bsdf.inputs["Base Color"].default_value = (*color, 1)
+    bsdf.inputs["Roughness"].default_value = roughness
+    bsdf.inputs["Metallic"].default_value = metallic
+    return material
+
+
+cockpit_glass = detail_material("AircraftCockpitGlass", (0.022, 0.052, 0.075), 0.16, 0.35)
+intake_liner = detail_material("AircraftIntakeLiner", (0.025, 0.03, 0.035), 0.42, 0.6)
+engine_lip = detail_material("AircraftEngineLip", (0.43, 0.46, 0.48), 0.24, 0.75)
+fan_blade = detail_material("AircraftFanBlade", (0.13, 0.15, 0.17), 0.3, 0.8)
 
 details = bpy.data.collections.get("Aircraft Details")
 if details is None:
@@ -64,11 +82,111 @@ for plane in planes:
     stripe.data.materials.append(tail)
     stripe.parent = plane
 
+    def add_detail(label, vertices, faces, material, smooth=False):
+        mesh = bpy.data.meshes.new(f"{plane.name} {label}")
+        mesh.from_pydata(vertices, [], faces)
+        mesh.materials.append(material)
+        for face in mesh.polygons:
+            face.use_smooth = smooth
+        obj = bpy.data.objects.new(mesh.name, mesh)
+        details.objects.link(obj)
+        obj.parent = plane
+        return obj
+
+    # Fit each windshield pane to the existing nose surface rather than
+    # placing a flat rectangle in front of it. Narrow gaps are its frames.
+    panes = [
+        [(0.08, 26.5), (1.12, 26.2), (1.05, 27.8), (0.08, 28.3)],
+        [(1.23, 25.2), (2.02, 24.8), (1.93, 26.4), (1.2, 27.6)],
+        [(2.13, 24.6), (2.5, 24.25), (2.4, 25.5), (2.05, 26.1)],
+    ]
+    for side in (-1, 1):
+        for index, pane in enumerate(panes):
+            vertices = []
+            for x, y in pane:
+                hit, location, normal, _face = plane.ray_cast(Vector((side * x, y, 20)), Vector((0, 0, -1)))
+                if not hit:
+                    raise RuntimeError(f"Cockpit pane misses {plane.name} skin")
+                vertices.append(tuple(location + normal * 0.025))
+            add_detail(f"Cockpit {side} {index}", vertices, [(0, 1, 2, 3)], cockpit_glass)
+
+    # The inherited nacelles were capped cylinders. Open the intake/exhaust
+    # ends and give them a metal lip, recessed liner and visible fan vanes.
+    bm = bmesh.new()
+    bm.from_mesh(plane.data)
+    belly_index = next(i for i, material in enumerate(plane.data.materials) if material.name == "AirlinerBelly")
+    caps = [face for face in bm.faces if face.material_index == belly_index and any(all(abs(v.co.y - y) < 0.001 for v in face.verts) for y in (2.25, 8.75))]
+    bmesh.ops.delete(bm, geom=caps, context="FACES_ONLY")
+    bm.to_mesh(plane.data)
+    bm.free()
+    for side in (-1, 1):
+        cx, cz = side * 10, -2.6
+        for label, y, outer, inner, depth in (("Intake", 8.755, 1.2, 1.055, 7.75), ("Exhaust", 2.245, 1.4, 1.13, 3.3)):
+            vertices = [(cx + radius * math.cos(i * math.tau / 48), y, cz + radius * math.sin(i * math.tau / 48)) for radius in (outer, inner) for i in range(48)]
+            faces = [(i, (i + 1) % 48, 48 + (i + 1) % 48, 48 + i) for i in range(48)]
+            add_detail(f"{label} lip {side}", vertices, faces, engine_lip, True)
+            vertices = [(cx + inner * math.cos(i * math.tau / 48), yy, cz + inner * math.sin(i * math.tau / 48)) for yy in (y, depth) for i in range(48)]
+            add_detail(f"{label} liner {side}", vertices, faces, intake_liner, True)
+            vertices = [(cx, depth, cz)] + [(cx + inner * math.cos(i * math.tau / 48), depth, cz + inner * math.sin(i * math.tau / 48)) for i in range(48)]
+            add_detail(f"{label} back {side}", vertices, [(0, i + 1, (i + 1) % 48 + 1) for i in range(48)], intake_liner)
+        blades = []
+        faces = []
+        for index in range(24):
+            angle = index * math.tau / 24
+            start = len(blades)
+            for radius, sweep in ((0.23, 0), (1.015, -0.18), (1.015, -0.11), (0.23, 0.09)):
+                blades.append((cx + radius * math.cos(angle + sweep), 7.78, cz + radius * math.sin(angle + sweep)))
+            faces.append(tuple(range(start, start + 4)))
+        add_detail(f"Fan blades {side}", blades, faces, fan_blade)
+
 
 def key_path(plane, path):
-    for frame, location in path:
+    """Sample a smooth path and orient the fuselage along its real tangent.
+
+    The previous animation linearly moved aircraft through the key locations
+    while holding one constant yaw, so the nose could point across or away
+    from the actual flight path. Catmull-Rom interpolation gives continuous
+    position and heading through the control points; orienting local +Y along
+    each tangent also makes climb/descent visible as nose pitch.
+    """
+    controls = [Vector(location) for _frame, location in path]
+    first, last = path[0][0], path[-1][0]
+
+    def sample(frame):
+        position = (frame - first) / (last - first) * (len(controls) - 1)
+        segment = min(len(controls) - 2, max(0, int(position)))
+        t = position - segment
+        p0 = controls[max(0, segment - 1)]
+        p1 = controls[segment]
+        p2 = controls[segment + 1]
+        p3 = controls[min(len(controls) - 1, segment + 2)]
+        t2, t3 = t * t, t * t * t
+        point = 0.5 * (
+            2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2
+            + (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+        )
+        tangent = 0.5 * (
+            (p2 - p0) + 2 * (2 * p0 - 5 * p1 + 4 * p2 - p3) * t
+            + 3 * (-p0 + 3 * p1 - 3 * p2 + p3) * t2
+        )
+        return point, tangent.normalized()
+
+    plane.animation_data_clear()
+    plane.rotation_mode = "QUATERNION"
+    previous = None
+    for frame in range(first, last + 1):
+        location, forward = sample(frame)
+        rotation = forward.to_track_quat("Y", "Z")
+        # Quaternions q and -q are the same pose; keep keys in one hemisphere
+        # so interpolation never flips through a needless full rotation.
+        if previous is not None and rotation.dot(previous) < 0:
+            rotation = Quaternion(tuple(-component for component in rotation))
         plane.location = location
-        plane.keyframe_insert("location", frame=frame)
+        plane.rotation_quaternion = rotation
+        plane.keyframe_insert("location", frame=frame, group="Flight path")
+        plane.keyframe_insert("rotation_quaternion", frame=frame, group="Flight attitude")
+        previous = rotation.copy()
+
     action = plane.animation_data.action
     try:
         curves = list(action.fcurves)
@@ -94,10 +212,5 @@ key_path(planes[2], [
     (1, (-6500.0, -2500.0, 1800.0)),
     (240, (8000.0, -9000.0, 1450.0)),
 ])
-
-for plane in planes:
-    plane.rotation_euler = (0.0, 0.0, -2.2)
-    plane.keyframe_insert("rotation_euler", frame=1)
-    plane.keyframe_insert("rotation_euler", frame=240)
 
 print("aircraft: smoothed, detailed, and placed through the descent")

@@ -11,6 +11,7 @@ their lights. Writes public/film/aircraft/<kind>-<elev>-<yaw>.webp.
 """
 import math
 import pathlib
+import runpy
 
 import bpy
 from mathutils import Vector
@@ -91,3 +92,7 @@ for kind, cfg in LIGHT.items():
             s.render.filepath = str(OUT / f"{kind}-{elev_name}-{k:02d}.png")
             bpy.ops.render.render(write_still=True)
     print("sprites:", kind, flush=True)
+
+# Export the light housings through this same camera setup, so browser glows
+# stay attached to the rendered model when its wings or details change.
+runpy.run_path(str(ROOT / "film" / "export_aircraft_anchors.py"), run_name="__main__")

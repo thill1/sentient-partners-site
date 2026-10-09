@@ -215,7 +215,11 @@ function App() {
       ) : (
         <Epic />
       )}
-      <ChatInterface launcher="concept" />
+      <ChatInterface
+        launcher="concept"
+        mobileInlineOnly
+        hideLauncherInsideCapabilities={route !== 'v1' && route !== 'v2'}
+      />
       <BookingModal variant="concept" />
       <ContactModal variant="concept" />
       <Toast />
