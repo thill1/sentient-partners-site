@@ -26,6 +26,8 @@ The homepage descent must read as the real San Francisco Bay to people who live 
 
 If something seen while scrolling would look wrong to a Bay Area local, it is a defect.
 
+**The bar is recognisable and believable, not photo-matching** (owner, 2026-10-08): a plane must read as a plane, a boat as a boat, a building as a building, and a local must recognise San Francisco at a glance. It does not need to pass as a photograph or be pixel-perfect. Real photos are used as references for shape, placement, colour and light, not as a pass/fail match.
+
 ## Film render pipeline: locked plan (owner-approved 2026-10-08)
 
 Read this before touching any render. The owner has lost a day to duplicated renders; follow it exactly.
