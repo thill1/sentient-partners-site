@@ -2,6 +2,17 @@
 
 Vite + React + TypeScript + Tailwind, with Cloudflare Pages Functions under `functions/` for booking, chat, voice, leads and admin settings. See `README.md` for install, local development and deploy commands.
 
+## Working rules for every agent (owner-approved 2026-10-08)
+
+These exist because a day of work was lost to duplicated and premature renders. They override any other plan.
+
+1. **One agent per area.** Only one agent owns the Blender scene and render pipeline (`film/`, `public/film/`). Any other agent works on separate files (copy, layout, components) and must not touch those paths. Never run two agents on the same files at the same time; if another agent is active in the repo, stop and tell the owner.
+2. **Preview gate before any long render.** Before any render expected to take over an hour, show the owner quick low-resolution stills of the key shots (opening above the fog, the Golden Gate, under the span, the city) from the exact scene that will be rendered. Render only after the owner approves those stills.
+3. **Freeze the scene during final renders.** Once previews are approved, do not change the scene until those renders finish. New ideas go on a list for the next pass.
+4. **Evidence, not claims.** Never report something as fixed or done without a screenshot of the real page in the browser, at the viewing distance a visitor sees, against the realism standard above.
+5. **State first at every handoff.** Before acting, report what is running, what is finished, and what is known to be broken. Never resume, restart or create a render run without checking why it stopped and confirming the plan with the owner.
+6. **Plan before anything costly or destructive.** Before rendering, deleting, or replacing assets, state what will be done, how long it takes, and what it replaces.
+
 ## The standard: a hyper-realistic, correct Bay Area (owner's core requirement)
 
 The homepage descent must read as the real San Francisco Bay to people who live here. Every visual change is judged against this list, in the browser, at the camera's actual distance:
