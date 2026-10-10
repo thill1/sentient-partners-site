@@ -53,8 +53,8 @@ export class CleanPlates {
     // first fog appears as soon as one pair is in (not after five).
     this.load(index);
     // A small window: each full plate is ~8 MB decoded on a phone.
-    const reach = this.kind === 'phone' ? 2 : 8;
-    if (this.pairs.has(index)) for (const k of [1, -1, 2, -2, 3, 4].filter((k) => Math.abs(k) <= reach)) this.load(index + k);
+    const reach = this.kind === 'phone' ? 3 : 8;
+    if (this.pairs.has(index)) for (const k of [1, -1, 2, -2, 3, -3, 4].filter((k) => Math.abs(k) <= reach)) this.load(index + k);
     for (const [i, pair] of this.pairs) {
       if (Math.abs(i - index) > reach) { pair.plate.close(); this.pairs.delete(i); }
     }

@@ -328,7 +328,9 @@ export const Descent: React.FC = () => {
 
       // The camera follows the scroll with a little weight, like a crane.
       const wanted = target();
-      story = still || Math.abs(wanted - story) < .00001 ? wanted : followTarget(story, wanted, elapsed, 230);
+      // The camera follows the scroll with a little weight on desktop; on the
+      // phone film it tracks the finger closely (230 ms felt laggy there).
+      story = still || Math.abs(wanted - story) < .00001 ? wanted : followTarget(story, wanted, elapsed, phoneFilm ? 70 : 230);
       look.x = followTarget(look.x, look.targetX, elapsed, 400);
       look.y = followTarget(look.y, look.targetY, elapsed, 400);
 
@@ -480,7 +482,7 @@ export const Descent: React.FC = () => {
   }, []);
 
   return (
-    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[720vh] bg-[#060A1C] lg:h-[500vh]">
+    <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[440vh] bg-[#060A1C] lg:h-[500vh]">
       {/* Phones: the scroll settles on each composed shot (proximity, so a
           deliberate swipe still travels on). */}
       {phoneFilm && chapters.map((chapter) => (
