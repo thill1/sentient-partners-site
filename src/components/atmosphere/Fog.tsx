@@ -175,8 +175,9 @@ export default function Fog({
       const u = f * f * (3 - 2 * f);
       return h(i) * (1 - u) + h(i + 1) * u;
     };
-    // Field units per second: nearer planes are faster (about 25-60 s across).
-    const baseSpeed = (22 + depth * 14) / (360 - depth * 30);
+    // Field units per second. On screen the rear plane drifts at 22 px/s and
+    // each nearer plane only 5% faster (front at most 1.15x the rear).
+    const baseSpeed = (22 * (1 + depth * 0.05)) / (360 - depth * 30);
     const wind = [0, 0];
     gl.uniform1f(gl.getUniformLocation(program, "u_depth"), depth);
     const resize = () => {
@@ -217,7 +218,7 @@ export default function Fog({
       gl.uniform1f(density, light[8] * (depth >= 1 ? light[9] : 1));
       gl.uniform1f(time, clock.current);
       const c = clock.current;
-      const gust = 0.55 + 0.9 * gustNoise(c / (14 + depth * 3) + depth * 7.3);
+      const gust = 0.75 + 0.4 * gustNoise(c / (14 + depth * 3) + depth * 7.3);
       const heading = (gustNoise(c / (31 + depth * 5) + 40 + depth) - 0.5) * 0.6;
       const dx = Math.cos(heading),
         dy = Math.sin(heading);
