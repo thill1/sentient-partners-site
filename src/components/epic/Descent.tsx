@@ -227,7 +227,10 @@ export const Descent: React.FC = () => {
       playerKind = kind;
       // The phone film is fog-free plates; the live fog is drawn over them.
       player = phoneFilm
-        ? new FramePlayer('phone', PHONE_FRAMES, (index) => `/film/phone-clean/${String(index + 1).padStart(4, '0')}.webp`, false, 0.5)
+        // Small previews only (360x640, ~0.9 MB decoded each): holding all 121
+        // full frames (~8 MB each) crashed Safari on iPhone. The sharp frame
+        // comes from the fog's plate pair, drawn over it once loaded.
+        ? new FramePlayer('phone', PHONE_FRAMES, (index) => `/film/phone-clean/s/${String(index + 1).padStart(4, '0')}.webp`, false, 0.5)
         : count ? new FramePlayer(kind, count) : null;
       traffic.setKind(kind);
       surfaceTraffic.setPhase(kind);
