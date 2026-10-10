@@ -147,7 +147,6 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
-          <p className="eyebrow hero-eyebrow">Your local business and technology partner</p>
           <h1 id="hero-title">
             <span>Global <br className="hero-mobile-break" />Experience. </span>
             <em>Local <br className="hero-mobile-break" />Impact.</em>

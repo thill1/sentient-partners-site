@@ -574,31 +574,11 @@
   }
 }
 
-/* Polish pass: positioning eyebrow above the hero headline. */
-.golden-gate .hero-eyebrow {
-  margin: 0 0 14px;
-  color: #ead7b3;
-  text-shadow: 0 1px 6px #07172480;
-}
 /* Polish pass: keep the phone clock inside the safe area (notch / home bar). */
 @media (max-width: 600px) {
   .golden-gate .hero-clock-rail {
     bottom: calc(74px + env(safe-area-inset-bottom, 0px));
     right: max(var(--rail-gutter), env(safe-area-inset-right, 0px));
-  }
-}
-@media (max-width: 600px) {
-  .golden-gate .hero-eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    white-space: normal;
-    max-width: 100%;
-  }
-}
-/* Keep the positioning line legible where it crosses bright fog on phones. */
-@media (max-width: 600px) {
-  .golden-gate .hero-eyebrow {
-    text-shadow: 0 0 2px #071724cc, 0 1px 8px #071724b3, 0 0 18px #07172499;
   }
 }
 
@@ -630,11 +610,6 @@
   color: #f7f6f2;
   font-weight: 500;
   text-shadow: 0 1px 2px #07172499, 0 1px 12px #071724b3;
-}
-.golden-gate .hero-eyebrow {
-  font-weight: 600;
-  color: #f0e2c6;
-  text-shadow: 0 0 2px #071724cc, 0 1px 10px #071724b3;
 }
 .golden-gate .hero-actions .text-link {
   color: #fbf9f4;
