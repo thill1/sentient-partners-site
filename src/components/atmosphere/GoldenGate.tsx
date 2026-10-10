@@ -152,9 +152,12 @@ export function GoldenGate() {
             <em>Local <br className="hero-mobile-break" />Impact.</em>
           </h1>
           <p className="hero-description">
-            Enterprise-caliber strategy, intelligent technology, and{" "}
-            <span className="whitespace-nowrap">hands-on</span> partnership for
-            growing businesses.
+            <span className="sub-line">Enterprise-caliber</span>{" "}
+            <span className="sub-line">strategy, intelligent</span>{" "}
+            <span className="sub-line">
+              technology, and <span className="whitespace-nowrap">hands-on</span>
+            </span>{" "}
+            <span className="sub-line">partnership for growing businesses.</span>
           </p>
           <div className="hero-actions">
             <a

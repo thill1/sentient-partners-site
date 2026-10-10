@@ -728,3 +728,11 @@
     text-shadow: 0 0 2px #ffffffb3, 0 1px 1px #ffffff80;
   }
 }
+
+/* Mobile subhead: deliberate short-to-long stack under the headline. */
+@media (max-width: 600px) {
+  .golden-gate .hero-description .sub-line {
+    display: block;
+    white-space: nowrap;
+  }
+}
