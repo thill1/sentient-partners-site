@@ -648,21 +648,6 @@
   font-weight: 500;
 }
 
-/* Right-align "Local Impact." so its period sits under "Experience." */
-.golden-gate .hero-copy h1 {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: fit-content;
-}
-.golden-gate .hero-copy h1 > span {
-  text-align: left;
-}
-.golden-gate .hero-copy h1 em {
-  display: block;
-  text-align: right;
-}
-
 /* Clock: translucent white face, no dark smudge, crisp legible type. */
 .hero-clock::before {
   display: none !important;
