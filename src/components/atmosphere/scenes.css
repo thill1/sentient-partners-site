@@ -606,3 +606,9 @@
     max-width: 100%;
   }
 }
+/* Keep the positioning line legible where it crosses bright fog on phones. */
+@media (max-width: 600px) {
+  .golden-gate .hero-eyebrow {
+    text-shadow: 0 0 2px #071724cc, 0 1px 8px #071724b3, 0 0 18px #07172499;
+  }
+}

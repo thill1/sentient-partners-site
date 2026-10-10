@@ -608,8 +608,8 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </div>
             <div>
               <span>Let's connect</span>
-              <a href="mailto:troyhill@sentientpartners.ai">
-                troyhill@sentientpartners.ai
+              <a href="mailto:hello@sentientpartners.ai">
+                hello@sentientpartners.ai
               </a>
               <a href={BOOKING_URL}>
                 Book a 20-minute introductory call <ArrowUpRight size={12} />
