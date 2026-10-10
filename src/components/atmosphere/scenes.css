@@ -647,21 +647,6 @@
 .golden-gate .hero-copy h1 em {
   font-weight: 500;
 }
-.golden-gate .hero-clock-copy {
-  position: relative;
-}
-.golden-gate .hero-clock-copy::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -16px -40px;
-  pointer-events: none;
-  background: radial-gradient(ellipse 50% 50% at 50% 50%, #0a1a33e6 0%, #0a1a33cc 45%, #0a1a3300 100%);
-}
-.golden-gate .hero-clock-time {
-  font-weight: 500;
-  text-shadow: 0 1px 2px #071724b3, 0 1px 10px #071724b3;
-}
 
 /* Right-align "Local Impact." so its period sits under "Experience." */
 .golden-gate .hero-copy h1 {
@@ -676,4 +661,70 @@
 .golden-gate .hero-copy h1 em {
   display: block;
   text-align: right;
+}
+
+/* Clock: translucent white face, no dark smudge, crisp legible type. */
+.hero-clock::before {
+  display: none !important;
+}
+.hero-clock {
+  --clock-ink: #0d1f4e;
+}
+[data-scene="night"] .hero-clock {
+  --clock-ink: #ffffff;
+}
+.hero-clock > svg {
+  filter: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.dial-face {
+  fill: #ffffff47;
+  stroke: #ffffffb3;
+  stroke-width: 0.9;
+}
+[data-scene="night"] .dial-face {
+  fill: #ffffff24;
+}
+.hero-clock .tick {
+  stroke: var(--clock-ink);
+  opacity: 0.55;
+}
+.hero-clock .tick.is-hour {
+  stroke: var(--clock-ink);
+  opacity: 0.9;
+}
+.hero-clock text {
+  fill: var(--clock-ink);
+  font-weight: 500;
+}
+.hero-clock .hands line:not(.hand-second) {
+  stroke: var(--clock-ink) !important;
+}
+.hero-clock .hand-second {
+  stroke: #9a763f !important;
+}
+.hand-pin {
+  fill: var(--clock-ink);
+}
+.golden-gate .hero-clock-time,
+.golden-gate .hero-clock-tagline,
+.golden-gate .hero-clock-scene,
+.golden-gate .scene-picker-toggle {
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 1px #071724e6, 0 0 2px #071724b3;
+}
+.golden-gate .hero-clock-tagline {
+  font-weight: 500;
+}
+/* Desktop: the clock sits over bright sky, so daylight scenes use navy type. */
+@media (min-width: 851px) {
+  :root:not([data-scene="night"]) .golden-gate .hero-clock-time,
+  :root:not([data-scene="night"]) .golden-gate .hero-clock-tagline,
+  :root:not([data-scene="night"]) .golden-gate .hero-clock-scene,
+  :root:not([data-scene="night"]) .golden-gate .scene-switch button {
+    color: #0d1f4e;
+    text-shadow: 0 0 2px #ffffffb3, 0 1px 1px #ffffff80;
+  }
 }
