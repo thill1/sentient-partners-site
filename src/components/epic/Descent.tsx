@@ -39,13 +39,6 @@ const presence = (p: number, from: number, to: number) => clamp01((p - from) / 0
  */
 export const Descent: React.FC = () => {
   const [phoneFilm] = useState(isPhoneFilm);
-  useEffect(() => {
-    if (!phoneFilm) return;
-    const root = document.documentElement;
-    const previous = root.style.scrollSnapType;
-    root.style.scrollSnapType = 'y proximity';
-    return () => { root.style.scrollSnapType = previous; };
-  }, [phoneFilm]);
   const chapters: readonly { at: number; label: string }[] = phoneFilm ? PHONE_CHAPTERS : EPIC_CHAPTERS;
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -483,11 +476,6 @@ export const Descent: React.FC = () => {
 
   return (
     <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[440vh] bg-[#060A1C] lg:h-[500vh]">
-      {/* Phones: the scroll settles on each composed shot (proximity, so a
-          deliberate swipe still travels on). */}
-      {phoneFilm && chapters.map((chapter) => (
-        <div key={chapter.at} aria-hidden="true" className="pointer-events-none absolute inset-x-0 h-px snap-start" style={{ top: `calc(${chapter.at} * (100% - 100svh))` }} />
-      ))}
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
