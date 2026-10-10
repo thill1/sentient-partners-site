@@ -598,3 +598,11 @@
     right: max(var(--rail-gutter), env(safe-area-inset-right, 0px));
   }
 }
+@media (max-width: 600px) {
+  .golden-gate .hero-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    white-space: normal;
+    max-width: 100%;
+  }
+}
