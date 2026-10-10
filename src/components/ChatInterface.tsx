@@ -4,7 +4,7 @@ import {
   Loader2,
   Mic,
   MicOff,
-  Radio,
+  ArrowRight,
   Maximize2,
   Minimize2,
   AlertCircle,
@@ -21,17 +21,18 @@ import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { CHAT_EVENT, type CtaEventDetail } from '../lib/siteActions';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
-import spMonogramNavy from '../assets/sp-monogram-navy.png';
-import spMonogramWhite from '../assets/sp-monogram-white.png';
+import { ConciergeLauncher } from './ConciergeLauncher';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
 export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLauncher = true }) => {
   const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
+  const [activeTab, setActiveTab] = useState<'choice' | 'chat' | 'voice'>('choice');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const dialog = useRef<HTMLDivElement>(null);
+  const closeCurrent = useRef<() => void>(() => {});
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -226,6 +227,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
           },
         ]);
       }
+      if (detail?.context) setActiveTab('chat');
       if (detail?.prefill) {
         setActiveTab('chat');
         setInputValue(detail.prefill);
@@ -284,7 +286,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
 
     const bars = 64;
-    const radiusBase = 80;
+    const radiusBase = 62;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let rotation = 0;
 
     const render = () => {
@@ -306,15 +309,15 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         for (let i = 0; i < bars; i++) dataArray[i] = fullData[i * step] || 0;
       }
 
-      rotation += 0.005;
+      if (!reduced.matches) rotation += 0.005;
 
       for (let i = 0; i < bars; i++) {
         let barHeight = isLiveConnected
-          ? Math.max(4, dataArray[i] * 0.8)
+          ? Math.max(4, dataArray[i] * 0.07)
           : 4 + Math.sin(i * 0.5 + rotation * 5) * 5;
 
         if (isVoiceLoading) {
-          rotation += 0.02;
+          if (!reduced.matches) rotation += 0.02;
           barHeight = 15 + Math.sin(i * 0.5 + rotation * 15) * 10;
         }
 
@@ -325,11 +328,11 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         const y2 = centerY + Math.sin(rad) * (radiusBase + barHeight);
 
         const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-        gradient.addColorStop(0, '#0ea5e9');
-        gradient.addColorStop(1, '#a855f7');
+        gradient.addColorStop(0, '#c8b795');
+        gradient.addColorStop(1, '#aab7bf');
 
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 1.5;
         ctx.lineCap = 'round';
 
         ctx.beginPath();
@@ -338,7 +341,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         ctx.stroke();
       }
 
-      animId = requestAnimationFrame(render);
+      if ((isLiveConnected || isVoiceLoading) && !reduced.matches) animId = requestAnimationFrame(render);
     };
 
     render();
@@ -385,6 +388,33 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     stopLiveSession();
     setIsOpen(false);
   };
+
+  useEffect(() => { closeCurrent.current = () => { void handleClose(); }; });
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const background = document.getElementById('top');
+    const previousInert = background?.inert ?? false;
+    if (background) background.inert = true;
+    document.body.style.overflow = 'hidden';
+    dialog.current?.querySelector<HTMLButtonElement>('[data-dialog-close]')?.focus();
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeCurrent.current(); }
+      if (event.key !== 'Tab') return;
+      const items = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), [tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0 && el.tabIndex >= 0);
+      const first = items[0], last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', keydown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (background) background.inert = previousInert;
+      document.removeEventListener('keydown', keydown);
+      if (previous instanceof HTMLElement) previous.focus({ preventScroll: true });
+    };
+  }, [isOpen]);
 
   // --- Chat ---
   const handleSend = async (textOverride?: string) => {
@@ -829,257 +859,65 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   };
 
   // --- UI ---
-  if (!isOpen) {
-    if (!showLauncher) return null;
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-3 rounded-full bg-brand-950/90 border border-white/15 px-4 py-3 text-sm font-medium text-white shadow-xl shadow-brand-950/50 backdrop-blur-md hover:bg-brand-900 hover:border-white/30 transition"
-      >
-        <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-brand-900 ring-1 ring-white/20 flex items-center justify-center p-2">
-            <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
-          </div>
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-brand-950"></span>
-          </span>
-        </div>
-        <div className="text-left">
-          <p className="text-[9px] font-medium text-brand-200 uppercase tracking-brand leading-none mb-1">
-            {CHAT_WIDGET_CONTENT.launcherEyebrow}
-          </p>
-          <p className="text-sm font-semibold text-white/90 leading-none">
-            {CHAT_WIDGET_CONTENT.launcherLabel}
-          </p>
-        </div>
-      </button>
-    );
-  }
-
-  const containerClasses = isFullScreen
-    ? 'fixed inset-0 z-[60] h-full w-full rounded-none'
-    : 'fixed bottom-6 right-6 z-[60] w-[400px] h-[600px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-48px)] rounded-3xl';
+  if (!isOpen) return showLauncher ? <ConciergeLauncher floating onClick={() => setIsOpen(true)} /> : null;
 
   return (
     <>
-      {!isFullScreen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] transition-opacity"
-          onClick={handleClose}
-        />
-      )}
-
-      <div
-        className={`${containerClasses} flex flex-col bg-white/95 dark:bg-dark-card/95 backdrop-blur-2xl shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden ring-1 ring-black/10 transition-all duration-300 animate-slide-up`}
-      >
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 p-4 shrink-0 bg-white/50 dark:bg-black/20">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-900 flex items-center justify-center p-1.5 shadow-lg shadow-brand-900/20">
-              <img src={spMonogramWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" />
-            </div>
-            <div>
-              <h3 className="font-display font-semibold text-[15px] text-brand-900 dark:text-white leading-tight">
-                {CHAT_WIDGET_CONTENT.title}
-              </h3>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                {CHAT_WIDGET_CONTENT.status}
-              </p>
-            </div>
+      <div className="concierge-backdrop" onClick={() => void handleClose()} aria-hidden="true" />
+      <div ref={dialog} className={`concierge-panel${isFullScreen ? ' is-fullscreen' : ''}`} role="dialog" aria-modal="true" aria-labelledby="concierge-title">
+        <header className="concierge-panel-header">
+          <div><h2 id="concierge-title">Ask Sentient</h2><p>Sentient Partners · AI assistant</p></div>
+          <div className="concierge-window-actions">
+            <button type="button" onClick={() => setIsFullScreen(!isFullScreen)} aria-label={isFullScreen ? 'Restore conversation size' : 'Expand conversation'}>{isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}</button>
+            <button type="button" data-dialog-close onClick={() => void handleClose()} disabled={isSaving} aria-label="Close conversation">{isSaving ? <Loader2 size={18} /> : <X size={20} />}</button>
           </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setIsFullScreen(!isFullScreen)}
-              className="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors"
-            >
-              {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
-            <button
-              onClick={handleClose}
-              disabled={isSaving}
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-wait"
-              title="Close & Save"
-            >
-              <X size={18} />
-            </button>
+        </header>
+        {activeTab === 'choice' ? (
+          <div className="concierge-choice">
+            <h3>How would you<br />like to talk?</h3>
+            <button type="button" onClick={() => { setActiveTab('chat'); requestAnimationFrame(() => document.getElementById('concierge-tab-chat')?.focus()); }}><MessageSquare size={25} /><span><strong>Write a message</strong><small>Ask a question in your own words.</small></span><ArrowRight size={18} /></button>
+            <button type="button" onClick={() => { setActiveTab('voice'); requestAnimationFrame(() => document.getElementById('concierge-tab-voice')?.focus()); }}><Mic size={25} /><span><strong>Start with voice</strong><small>Speak with the AI assistant.</small></span><ArrowRight size={18} /></button>
           </div>
-        </div>
-
-        <div className="flex p-1.5 mx-4 mt-4 mb-2 bg-slate-100 dark:bg-black/40 rounded-xl shrink-0 border border-slate-200 dark:border-white/5">
-          <button
-            onClick={() => setActiveTab('chat')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-              activeTab === 'chat'
-                ? 'bg-brand-900 text-white dark:bg-white dark:text-brand-900 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            <MessageSquare size={16} /> Chat
-          </button>
-          <button
-            onClick={() => setActiveTab('voice')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-              activeTab === 'voice'
-                ? 'bg-brand-900 text-white dark:bg-white dark:text-brand-900 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            <Radio size={16} className={isLiveConnected ? 'animate-pulse' : ''} /> Voice
-          </button>
-        </div>
-
-        {activeTab === 'chat' ? (
+        ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4 space-y-5 relative scrollbar-hide">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex items-end gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                >
-                  {msg.role !== 'user' && (
-                    <div className="w-7 h-7 rounded-full bg-brand-50 dark:bg-white/10 border border-brand-200 dark:border-white/15 flex items-center justify-center p-1 shrink-0 mb-1">
-                      <img src={spMonogramNavy} alt="" aria-hidden="true" className="h-full w-full object-contain dark:hidden" />
-                      <img src={spMonogramWhite} alt="" aria-hidden="true" className="hidden h-full w-full object-contain dark:block" />
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm backdrop-blur-sm ${
-                      msg.role === 'user'
-                        ? 'bg-brand-900 text-white rounded-br-none shadow-brand-900/20'
-                        : 'bg-white/80 dark:bg-white/10 text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-white/5 rounded-bl-none'
-                    }`}
-                  >
-                    {msg.text}
-                    {msg.isTyping && <span className="inline-block w-1 h-3 ml-1 bg-current animate-pulse" />}
-                  </div>
+            <div className="concierge-tabs" role="tablist" aria-label="Conversation mode">
+              {(['chat', 'voice'] as const).map(tab => <button key={tab} type="button" role="tab" id={`concierge-tab-${tab}`} aria-selected={activeTab === tab} aria-controls="concierge-content" tabIndex={activeTab === tab ? 0 : -1} onClick={() => setActiveTab(tab)} onKeyDown={event => {
+                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                event.preventDefault();
+                const next = event.key === 'Home' ? 'chat' : event.key === 'End' ? 'voice' : tab === 'chat' ? 'voice' : 'chat';
+                setActiveTab(next);
+                document.getElementById(`concierge-tab-${next}`)?.focus();
+              }}>{tab === 'chat' ? <MessageSquare size={17} /> : <Mic size={17} />}{tab === 'chat' ? 'Chat' : 'Voice'}</button>)}
+            </div>
+            <div id="concierge-content" className={`concierge-content is-${activeTab}`} role="tabpanel" aria-labelledby={`concierge-tab-${activeTab}`}>
+              {activeTab === 'chat' ? <>
+                <div className="concierge-messages" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
+                  {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
+                  <div ref={messagesEndRef} />
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide shrink-0 mask-gradient-right">
-              {SUGGESTED_ACTIONS.map((action, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSend(action.prompt)}
-                  disabled={isLoading}
-                  className="whitespace-nowrap px-3 py-1.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600 dark:hover:bg-white/10 dark:hover:text-white transition-all shadow-sm"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-4 bg-white dark:bg-black/20 border-t border-slate-100 dark:border-white/5 shrink-0">
-              <div className="flex gap-2 relative">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder={CHAT_WIDGET_CONTENT.chatPlaceholder}
-                  disabled={isLoading}
-                  className="flex-1 px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus:bg-white dark:focus:bg-black/40 focus:border-brand-500 rounded-xl outline-none text-sm text-slate-900 dark:text-white transition-all shadow-inner"
-                />
-                <button
-                  onClick={() => handleSend()}
-                  disabled={isLoading || !inputValue.trim()}
-                  className="p-3 bg-brand-600 text-white rounded-xl hover:bg-brand-500 disabled:opacity-50 transition-all shadow-lg shadow-brand-500/20 hover:scale-105 active:scale-95"
-                >
-                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                </button>
-              </div>
+                <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>
+                <form className="concierge-composer" onSubmit={event => { event.preventDefault(); void handleSend(); }}>
+                  <input aria-label="Your message" value={inputValue} onChange={event => setInputValue(event.target.value)} placeholder="Ask a question…" disabled={isLoading} />
+                  <button type="submit" aria-label={isLoading ? 'Sending message' : 'Send message'} disabled={isLoading || !inputValue.trim()}>{isLoading ? <Loader2 className="concierge-loading" size={20} /> : <Send size={19} />}</button>
+                </form>
+                <p className="concierge-disclosure">You’re speaking with an AI assistant.</p>
+              </> : <>
+                <div className="concierge-voice-intro"><h3>A conversation,<br />at your pace.</h3><p>Speak with the Sentient AI assistant<br />about your business.</p></div>
+                <div className={`concierge-voice-control${isLiveConnected || isVoiceLoading ? ' is-active' : ''}`}>
+                  <canvas ref={visualizerCanvasRef} aria-hidden="true" />
+                  <button type="button" className={`concierge-mic${isLiveConnected ? ' is-connected' : ''}`} onClick={isLiveConnected ? () => stopLiveSession() : startLiveSession} disabled={isVoiceLoading} aria-label={isVoiceLoading ? 'Connecting microphone' : isLiveConnected ? 'End voice conversation' : 'Start voice conversation'}>{isVoiceLoading ? <Loader2 size={26} className="concierge-loading" /> : isLiveConnected ? <MicOff size={26} /> : <Mic size={26} />}</button>
+                </div>
+                <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? 'Sentient is responding…' : isLiveConnected ? 'Listening. Tap the microphone to end.' : 'Tap the microphone to begin.'}</p>
+                {isThinkingOrSpeaking && !isVoiceLoading && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
+                {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
+                <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
+                  {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}
+                  {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> {turn.text}</p>)}
+                  {interimInput && <p><strong>You:</strong> {interimInput}</p>}
+                </div>
+              </>}
             </div>
           </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 to-black dark:from-black dark:to-[#050505]">
-            <canvas
-              ref={visualizerCanvasRef}
-              className="absolute inset-0 w-full h-full opacity-60 pointer-events-none mix-blend-screen"
-            />
-
-            {isThinkingOrSpeaking && !isVoiceLoading && (
-              <button
-                onClick={handleInterrupt}
-                className="relative z-20 px-5 py-3 rounded-full bg-slate-950/70 border border-brand-500/50 hover:border-brand-400/80 text-white font-semibold text-xs tracking-wider uppercase flex items-center gap-2.5 shadow-[0_0_20px_rgba(163,180,217,0.35)] hover:shadow-[0_0_25px_rgba(163,180,217,0.55)] transition-all duration-300 animate-pulse active:scale-95 mb-12"
-              >
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                </span>
-                Tap to Interrupt
-              </button>
-            )}
-
-            <div className="absolute top-6 right-6 z-30">
-              <button
-                onClick={isLiveConnected ? () => stopLiveSession() : startLiveSession}
-                disabled={isVoiceLoading}
-                className={`p-4 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl backdrop-blur-md border ${
-                  isVoiceLoading
-                    ? 'bg-slate-800 border-slate-700'
-                    : isLiveConnected
-                    ? 'bg-red-500 hover:bg-red-600 border-red-400 text-white shadow-red-500/30'
-                    : 'bg-brand-600 hover:bg-brand-500 border-brand-400 text-white shadow-brand-500/30'
-                }`}
-                title={isLiveConnected ? 'End Session' : 'Start Voice Chat'}
-              >
-                {isVoiceLoading ? (
-                  <Loader2 size={24} className="animate-spin" />
-                ) : isLiveConnected ? (
-                  <MicOff size={24} />
-                ) : (
-                  <Mic size={24} />
-                )}
-              </button>
-            </div>
-
-            {voiceError && (
-              <div className="relative z-10 px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-full backdrop-blur-sm">
-                <span className="text-red-400 text-sm flex items-center gap-2">
-                  <AlertCircle size={14} /> {voiceError}
-                </span>
-              </div>
-            )}
-
-            {isVoiceLoading && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-20">
-                <p className="text-brand-400 text-sm font-medium animate-pulse">
-                  {CHAT_WIDGET_CONTENT.voiceLoadingLabel}
-                </p>
-              </div>
-            )}
-
-            {/* Real-time Subtitles / Transcript Overlay */}
-            <div className="absolute bottom-6 left-6 right-6 z-10 max-h-[160px] overflow-y-auto rounded-2xl bg-black/40 border border-white/10 p-4 backdrop-blur-md flex flex-col gap-2.5 text-left scrollbar-hide">
-              {transcriptHistory.length === 0 && !interimInput && !isThinkingOrSpeaking && (
-                <div className="text-slate-400 text-xs text-center py-4 italic">
-                  Click the mic to speak. Ask: "How do you help SMBs?"
-                </div>
-              )}
-              {transcriptHistory.slice(-3).map((t, idx) => (
-                <div key={idx} className="text-xs leading-relaxed">
-                  <span className={`font-semibold mr-1.5 ${t.role === 'user' ? 'text-brand-300' : 'text-brand-200'}`}>
-                    {t.role === 'user' ? 'You' : 'Sentient AI'}:
-                  </span>
-                  <span className="text-slate-200">{t.text}</span>
-                </div>
-              ))}
-              {interimInput && (
-                <div className="text-xs leading-relaxed text-slate-300 animate-pulse">
-                  <span className="font-semibold text-brand-300 mr-1.5">You:</span>
-                  <span className="italic">{interimInput}...</span>
-                </div>
-              )}
-              {isThinkingOrSpeaking && !interimInput && (
-                <div className="flex items-center gap-2 text-xs text-brand-200 italic animate-pulse">
-                  <Loader2 size={12} className="animate-spin" /> Sentient AI is thinking...
-                </div>
-              )}
-            </div>
-          </div>
         )}
       </div>
     </>

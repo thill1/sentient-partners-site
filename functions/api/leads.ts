@@ -147,7 +147,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     deliveryAttempts.push(sendToWebhook(env.LEADS_WEBHOOK_URL, lead));
   }
 
-  const notificationEmail = env.FORMSUBMIT_EMAIL || "troyhill@sentientpartners.ai";
+  const notificationEmail = env.FORMSUBMIT_EMAIL || "hello@sentientpartners.ai";
   if (notificationEmail) {
     deliveryAttempts.push(sendToFormSubmit(notificationEmail, lead));
   }
