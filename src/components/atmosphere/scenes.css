@@ -608,10 +608,10 @@
   content: "";
   position: absolute;
   z-index: -1;
-  inset: 0;
+  inset: 0 0 0 -40vw;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 52% 42% at 21% 49%,
+    ellipse 36% 42% at 45% 49%,
     #0a1a33b3 0%,
     #0a1a3399 40%,
     #0a1a3340 72%,
@@ -655,6 +655,7 @@
 }
 @media (max-width: 600px) {
   .golden-gate .hero-copy::before {
+    inset: 0 -60px;
     background: linear-gradient(
       180deg,
       #0a1a3300 4%,
