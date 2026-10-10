@@ -721,3 +721,23 @@
     white-space: nowrap;
   }
 }
+
+/* Mobile: clock and scene picker sit top right, just below the navigation. */
+@media (max-width: 850px) {
+  .golden-gate .hero-clock-rail {
+    top: calc(84px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    right: env(safe-area-inset-right, 0px);
+  }
+  .golden-gate .hero-clock-time,
+  .golden-gate .scene-picker-toggle {
+    text-shadow: 0 1px 1px #071724f2, 0 0 2px #071724e6, 0 0 4px #07172499;
+  }
+  .golden-gate .scene-picker-toggle svg {
+    filter: drop-shadow(0 1px 1px #071724e6);
+  }
+  .scene-picker-panel {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+}
