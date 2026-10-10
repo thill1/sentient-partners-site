@@ -22,7 +22,7 @@ import numpy as np
 args = sys.argv[sys.argv.index("--") + 1:]
 frame, out = int(args[0]), args[1]
 width = int(args[2]) if len(args) > 2 else 1600
-height = round(width * 9 / 16)
+height = round(width * 16 / 9) if os.environ.get("PORTRAIT") else round(width * 9 / 16)
 
 s = bpy.context.scene
 s.frame_set(frame)

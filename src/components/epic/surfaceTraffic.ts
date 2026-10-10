@@ -1,5 +1,6 @@
 /** Independent bridge traffic and bay vessels, projected through the film camera. */
 import type { CameraData, FrameRect, Pose } from './airTraffic';
+import { poseTan } from './airTraffic';
 import { AircraftRenderer, type AircraftInstance, type ModelWake } from './aircraftRenderer';
 import { lanePosition, laneStart, trafficDisplacement, trafficHeading, type TrafficMotion, type TrafficVector } from './trafficPhysics';
 import { routeOnWater, type WaterGrid } from './waterNavigation';
@@ -87,9 +88,9 @@ export class SurfaceTraffic {
    * copying the full-screen result into a 2D canvas every frame forced a GPU
    * sync point that stalled every layer (fog, boats, cars, aircraft) together.
    */
-  constructor(directCanvas?: HTMLCanvasElement) {
+  constructor(directCanvas?: HTMLCanvasElement, cameraUrl = '/film/camera.json') {
     this.renderer = new AircraftRenderer('/film/traffic/models.json', directCanvas);
-    fetch('/film/camera.json')
+    fetch(cameraUrl)
       .then((response) => response.ok ? response.json() as Promise<CameraData> : null)
       .then((camera) => { this.camera = camera; })
       .catch(() => undefined);
@@ -184,10 +185,10 @@ export class SurfaceTraffic {
   draw(ctx: CanvasRenderingContext2D, pose: Pose | null, rect: FrameRect, seconds: number, alpha: number, shot: number | 'open' | 'city', fogVisibility?: (point: Vec) => number) {
     const camera = this.camera;
     if (!camera || !pose || alpha <= 0.01 || !this.renderer.ready) { this.renderer.clear(); return; }
-    const mask = this.mask(shot);
+    const mask = fogVisibility ? null : this.mask(shot);
     if (!mask && !fogVisibility) { this.renderer.clear(); return; }
     const instances: AircraftInstance[] = [];
-    const tanX = Math.tan(camera.fov / 2);
+    const tanX = poseTan(camera, pose);
     const tanY = tanX / camera.aspect;
     const project = (point: Vec) => {
       const relative = sub(point, pose.p);

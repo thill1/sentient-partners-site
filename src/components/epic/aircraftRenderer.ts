@@ -1,4 +1,5 @@
 import type { CameraData, FrameRect, Pose } from './airTraffic';
+import { poseTan } from './airTraffic';
 import { flightBasis, type FlightMotion, type FlightVector } from './flightPhysics';
 
 interface ModelMesh {
@@ -173,7 +174,7 @@ export class AircraftRenderer {
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     const vector = (name: string, value: number[]) => gl.uniform3fv(this.uniforms[name], value);
     vector('Camera', pose.p); vector('CameraRight', pose.r); vector('CameraUp', pose.u); vector('CameraForward', pose.f);
-    const tanX = Math.tan(camera.fov / 2);
+    const tanX = poseTan(camera, pose);
     gl.uniform2f(this.uniforms.Tan, tanX, tanX / camera.aspect);
     const day = phase === 'day', night = phase === 'night';
     // Matches film/render.py: golden-hour sunset (sun 6.5 degrees up, warm

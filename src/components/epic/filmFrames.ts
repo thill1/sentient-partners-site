@@ -65,8 +65,12 @@ export class FramePlayer {
   /** A seamless loop has its cross-fade baked in (film/seamless_loop.py). */
   private seamless: boolean;
 
-  constructor(kind: string, count: number, source?: (index: number) => string, seamless = false) {
+  /** A film framed for its screen (the phone film) is centred, not panned. */
+  private fixedFocus?: number;
+
+  constructor(kind: string, count: number, source?: (index: number) => string, seamless = false, fixedFocus?: number) {
     this.kind = kind;
+    this.fixedFocus = fixedFocus;
     this.seamless = seamless;
     this.frames = new Array(count).fill(null);
     this.ready = new Array(count).fill(false);
@@ -181,7 +185,7 @@ export class FramePlayer {
     const pick = this.drawable(this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1)));
     if (!pick) return false;
     this.lastIndex = pick[1];
-    this.cover(ctx, pick[0], alpha, focusAt(t));
+    this.cover(ctx, pick[0], alpha, this.fixedFocus ?? focusAt(t));
     return true;
   }
 
@@ -193,7 +197,7 @@ export class FramePlayer {
   /** Identify the exact loaded images/crop a draw would use. */
   paintKey(t: number) {
     const pick = this.drawable(this.nearest(Math.min(1, Math.max(0, t)) * (this.frames.length - 1)), false, false);
-    return `${pick ? pick[1] : -1}:${pick && pick[0] instanceof HTMLImageElement ? 'i' : 'b'}:${focusAt(t)}`;
+    return `${pick ? pick[1] : -1}:${pick && pick[0] instanceof HTMLImageElement ? 'i' : 'b'}:${this.fixedFocus ?? focusAt(t)}`;
   }
 
   loopPaintKey(seconds: number, fps: number) {

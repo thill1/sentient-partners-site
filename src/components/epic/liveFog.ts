@@ -17,6 +17,7 @@
  * at incommensurate scales, so it is cheap and does not visibly repeat.
  */
 import type { CameraData, FrameRect, Pose } from './airTraffic';
+import { poseTan } from './airTraffic';
 import { NOISE_SEED, NOISE_SIZE, noiseTexture } from './fogField';
 
 const VERTEX = `
@@ -290,7 +291,7 @@ export class LiveFog {
     // which can differ from the requested canvas size.
     const bufferWidth = gl.drawingBufferWidth, bufferHeight = gl.drawingBufferHeight;
     const scale = bufferWidth / Math.max(1, filmCanvas.width);
-    const tanX = Math.tan(camera.fov / 2);
+    const tanX = poseTan(camera, pose);
     gl.viewport(0, 0, bufferWidth, bufferHeight);
     gl.useProgram(this.program);
     const u = this.uniforms;

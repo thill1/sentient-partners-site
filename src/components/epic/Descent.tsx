@@ -1,5 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { EPIC_ALTITUDE, EPIC_BEATS, EPIC_CHAPTERS, EPIC_SCROLL_CUE } from '../../content/epicContent';
+import React, { useEffect, useRef, useState } from 'react';
+import { EPIC_ALTITUDE, EPIC_BEATS, EPIC_CHAPTERS, EPIC_SCROLL_CUE, PHONE_CHAPTERS } from '../../content/epicContent';
+
+/** Phones in portrait get the phone film: six composed shots (film/build/phone_path.py). */
+const PHONE_FRAMES = 121;
+const isPhoneFilm = () => typeof window !== 'undefined' && window.innerWidth < 768 && window.innerHeight > window.innerWidth
+  && !new URLSearchParams(window.location.search).has('desktopFilm');
 import { HOME_CTA } from '../../content/homeContent';
 import { bookIntroduction, goToSection } from '../home/actions';
 import { Arrow } from '../home/Arrow';
@@ -33,6 +38,15 @@ const presence = (p: number, from: number, to: number) => clamp01((p - from) / 0
  * position is the only control.
  */
 export const Descent: React.FC = () => {
+  const [phoneFilm] = useState(isPhoneFilm);
+  useEffect(() => {
+    if (!phoneFilm) return;
+    const root = document.documentElement;
+    const previous = root.style.scrollSnapType;
+    root.style.scrollSnapType = 'y proximity';
+    return () => { root.style.scrollSnapType = previous; };
+  }, [phoneFilm]);
+  const chapters: readonly { at: number; label: string }[] = phoneFilm ? PHONE_CHAPTERS : EPIC_CHAPTERS;
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLCanvasElement>(null);
@@ -168,18 +182,19 @@ export const Descent: React.FC = () => {
     const airCtx = air?.getContext('2d') ?? null;
     const surface = surfaceRef.current;
     const surfaceCtx = surface?.getContext('2d') ?? null;
-    const traffic = new AirTraffic(airModelRef.current ?? undefined);
-    const surfaceTraffic = new SurfaceTraffic(surfaceModelRef.current ?? undefined);
+    const cameraUrl = phoneFilm ? '/film/phone-camera.json' : '/film/camera.json';
+    const traffic = new AirTraffic(airModelRef.current ?? undefined, cameraUrl);
+    const surfaceTraffic = new SurfaceTraffic(surfaceModelRef.current ?? undefined, cameraUrl);
     // The fog is the same at every time of day, so one coverage map serves all.
     const liveFog = fogRef.current ? new LiveFog(fogRef.current) : null;
     // Fog-free plates and geometry depth, one matched pair per film frame
     // (film/export_depth.py, render.py NOFOG=1). Frames that have a pair get
     // live volumetric fog; frames without one keep their baked fog.
     // One loader per time of day that has its fog-free pairs rendered.
-    const plateSets: Record<string, CleanPlates> = {
-      sunset: new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120),
-      day: new CleanPlates('day', FILM_SEQUENCES.day ?? 120),
-    };
+    const phonePlates = phoneFilm ? new CleanPlates('phone', PHONE_FRAMES) : null;
+    const plateSets: Record<string, CleanPlates> = phonePlates
+      ? { sunset: phonePlates, day: phonePlates, night: phonePlates }
+      : { sunset: new CleanPlates('sunset', FILM_SEQUENCES.sunset ?? 120), day: new CleanPlates('day', FILM_SEQUENCES.day ?? 120) };
     let platePair: PlatePair | null = null;
     let fogAlpha = 0;
     // ?fogDebug: a small readout of the fog engine's state, for real devices.
@@ -210,7 +225,10 @@ export const Descent: React.FC = () => {
       const count = FILM_SEQUENCES[kind];
       if (kind === playerKind) return;
       playerKind = kind;
-      player = count ? new FramePlayer(kind, count) : null;
+      // The phone film is fog-free plates; the live fog is drawn over them.
+      player = phoneFilm
+        ? new FramePlayer('phone', PHONE_FRAMES, (index) => `/film/phone-clean/${String(index + 1).padStart(4, '0')}.webp`, false, 0.5)
+        : count ? new FramePlayer(kind, count) : null;
       traffic.setKind(kind);
       surfaceTraffic.setPhase(kind);
       // The reviewed high-resolution sunset loop is the only complete held-camera
@@ -390,7 +408,7 @@ export const Descent: React.FC = () => {
       EPIC_BEATS.forEach((beat, index) => {
         const node = beatRefs.current[index];
         if (!node) return;
-        const range: readonly number[] = playing ? beat.film : beat.range;
+        const range: readonly number[] = playing ? (phoneFilm ? beat.phone : beat.film) : beat.range;
         const shown = presence(story, range[0], range[1]);
         const rounded = Math.round(shown * 1000) / 1000;
         setStyle(node, 'opacity', String(rounded));
@@ -403,7 +421,7 @@ export const Descent: React.FC = () => {
       setStyle(railRef.current, 'transform', `scaleX(${Math.round(story * 1000) / 1000})`);
       setStyle(cueRef.current, 'opacity', String(Math.round(clamp01(1 - story * 14) * 100) / 100));
       let current = 0;
-      EPIC_CHAPTERS.forEach((chapter, index) => {
+      chapters.forEach((chapter, index) => {
         if (story >= chapter.at - 0.06) current = index;
       });
       chapterRefs.current.forEach((node, index) => {
@@ -412,8 +430,8 @@ export const Descent: React.FC = () => {
         if (index === current) { if (node.getAttribute('aria-current') !== 'step') node.setAttribute('aria-current', 'step'); }
         else if (node.hasAttribute('aria-current')) node.removeAttribute('aria-current');
       });
-      const count = `${String(current + 1).padStart(2, '0')} / ${String(EPIC_CHAPTERS.length).padStart(2, '0')}`;
-      setText(chapterLabelRef.current, EPIC_CHAPTERS[current].label);
+      const count = `${String(current + 1).padStart(2, '0')} / ${String(chapters.length).padStart(2, '0')}`;
+      setText(chapterLabelRef.current, chapters[current].label);
       setText(chapterCountRef.current, count);
       mobileChapterRefs.current.forEach((node, index) => {
         if (!node) return;
@@ -422,7 +440,7 @@ export const Descent: React.FC = () => {
         else if (node.hasAttribute('aria-current')) node.removeAttribute('aria-current');
       });
       setStyle(mobileChaptersRef.current, 'opacity', story > 0.05 ? '1' : '0');
-      setText(mobileChapterLabelRef.current, EPIC_CHAPTERS[current].label);
+      setText(mobileChapterLabelRef.current, chapters[current].label);
       setText(mobileChapterCountRef.current, count);
       // In the fog the frame is pale, so the instruments turn dark.
       // At night the inside of the fog is dark, so the copy stays light.
@@ -454,6 +472,11 @@ export const Descent: React.FC = () => {
 
   return (
     <section id="top" ref={sectionRef} aria-label="Introduction" className="group/film relative h-[720vh] bg-[#060A1C] lg:h-[500vh]">
+      {/* Phones: the scroll settles on each composed shot (proximity, so a
+          deliberate swipe still travels on). */}
+      {phoneFilm && chapters.map((chapter) => (
+        <div key={chapter.at} aria-hidden="true" className="pointer-events-none absolute inset-x-0 h-px snap-start" style={{ top: `calc(${chapter.at} * (100% - 100svh))` }} />
+      ))}
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Without WebGL the same dusk stands in as a still gradient. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,#04061A_0%,#1B1F55_30%,#7A5A9A_52%,#F29B76_62%,#8C8DC6_66%,#3A3F86_82%,#0B1230_100%)]" />
@@ -501,7 +524,7 @@ export const Descent: React.FC = () => {
             <span ref={mobileChapterCountRef} className="tabular-nums text-sp-mist">01 / 05</span>
           </p>
           <ol className="ml-auto flex w-[13.75rem] flex-row items-center justify-between gap-0">
-            {EPIC_CHAPTERS.map((chapter, index) => (
+            {chapters.map((chapter, index) => (
               <li key={chapter.label} className="min-w-0 flex-1">
                 <button
                   type="button"
@@ -546,7 +569,7 @@ export const Descent: React.FC = () => {
             <span ref={chapterCountRef} className="tabular-nums text-current/70">01 / 05</span>
           </p>
           <ol className="flex flex-col items-end gap-0">
-            {EPIC_CHAPTERS.map((chapter, index) => (
+            {chapters.map((chapter, index) => (
               <li key={chapter.label}>
                 <button
                   type="button"

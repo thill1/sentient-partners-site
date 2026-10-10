@@ -21,6 +21,7 @@ export const EPIC_BEATS = [
     id: 'title',
     range: [-1, 0.13],
     film: [-1, 0.12],
+    phone: [-1, 0.1],
     heading: 'Global Experience. Local Impact.',
     body: 'Enterprise-caliber strategy, technology, and operational expertise for growing businesses.',
   },
@@ -28,6 +29,7 @@ export const EPIC_BEATS = [
     id: 'founder',
     range: [0.17, 0.36],
     film: [0.17, 0.4],
+    phone: [0.12, 0.3],
     heading: 'Experience earned globally. Applied locally.',
     body: 'Decades of experience leading teams of thousands and mission-critical operations worldwide. Today, we bring that expertise, perspective, and discipline to the businesses we serve.',
   },
@@ -35,6 +37,7 @@ export const EPIC_BEATS = [
     id: 'fog',
     range: [0.465, 0.565],
     film: [0.465, 0.565],
+    phone: [0.32, 0.5],
     heading: 'Perspective is the view from above. Impact happens on the ground.',
     body: '',
   },
@@ -42,6 +45,7 @@ export const EPIC_BEATS = [
     id: 'thesis',
     range: [0.565, 0.9],
     film: [0.565, 0.9],
+    phone: [0.52, 0.88],
     heading: 'Enterprise-caliber thinking. Small business practicality.',
     body: 'We bring the strategic perspective of global enterprise leadership and the hands-on commitment of a local partner.',
   },
@@ -49,6 +53,7 @@ export const EPIC_BEATS = [
     id: 'home',
     range: [0.91, 2],
     film: [0.9, 2],
+    phone: [0.9, 2],
     heading: 'Northern California, close to home.',
     body: 'Based in Auburn. Local, reachable, and invested. Clients work directly with an accountable partner, not a distant ticket queue.',
   },
@@ -61,6 +66,16 @@ export const EPIC_CHAPTERS = [
   { at: 0.5, label: 'Through the fog' },
   { at: 0.58, label: 'Under the span' },
   { at: 0.82, label: 'The city' },
+] as const;
+
+/** The phone film's six composed shots (film/build/phone_path.py), at story 0, 0.2 ... 1. */
+export const PHONE_CHAPTERS = [
+  { at: 0, label: 'Above the fog' },
+  { at: 0.2, label: 'The Golden Gate' },
+  { at: 0.4, label: 'Through the fog' },
+  { at: 0.6, label: 'Under the span' },
+  { at: 0.8, label: 'Across the Bay' },
+  { at: 1, label: 'The city' },
 ] as const;
 
 export const EPIC_SCROLL_CUE = 'Scroll to descend';

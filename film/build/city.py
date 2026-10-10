@@ -323,7 +323,9 @@ n.links.new(rnd, stone_ramp.inputs["Fac"])
 house_ramp = n.new("ShaderNodeValToRGB")
 # San Francisco's painted houses: whites and creams with blue-grey, sage,
 # mustard and dusty rose (all houses read white in the low golden sun before).
-for pos, c in ((0.0, (0.7, 0.68, 0.63)), (0.17, (0.6, 0.47, 0.28)), (0.34, (0.36, 0.46, 0.55)), (0.5, (0.72, 0.69, 0.6)), (0.67, (0.56, 0.4, 0.37)), (0.84, (0.42, 0.5, 0.38)), (1.0, (0.64, 0.6, 0.5))):
+# Warmer and more varied: in the low sun the old pale palette read as a
+# white blanket (owner: "looks like it's not even done").
+for pos, c in ((0.0, (0.52, 0.47, 0.39)), (0.17, (0.5, 0.36, 0.2)), (0.34, (0.27, 0.34, 0.41)), (0.5, (0.58, 0.53, 0.43)), (0.67, (0.45, 0.3, 0.27)), (0.84, (0.31, 0.37, 0.27)), (1.0, (0.47, 0.43, 0.35))):
     el = house_ramp.color_ramp.elements.new(pos) if pos not in (0.0, 1.0) else house_ramp.color_ramp.elements[0 if pos == 0.0 else 1]
     el.position = pos
     el.color = (*c, 1)

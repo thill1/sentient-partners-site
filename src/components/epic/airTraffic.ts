@@ -14,7 +14,12 @@ export interface Pose {
   r: Vec;
   u: Vec;
   f: Vec;
+  /** Horizontal half-angle tangent for this frame, when the lens is animated (phone film). */
+  tx?: number;
 }
+/** The lens of a pose: its own (phone film) or the film's single lens. */
+export const poseTan = (camera: { fov: number }, pose: { tx?: number } | null | undefined): number => pose?.tx ?? Math.tan(camera.fov / 2);
+
 export interface CameraData {
   fov: number;
   aspect: number;
@@ -80,11 +85,11 @@ export class AirTraffic {
   private spritesDrawn = true;
   private review = new URLSearchParams(window.location.search).has('review');
 
-  constructor(directCanvas?: HTMLCanvasElement) {
+  constructor(directCanvas?: HTMLCanvasElement, cameraUrl = '/film/camera.json') {
     const forced = new URLSearchParams(window.location.search).get('aircraft');
     if (forced && forced in TYPES) this.forced = forced as AircraftType;
     if (!new URLSearchParams(window.location.search).has('aircraftSprites')) this.renderer = new AircraftRenderer('/film/aircraft/airliner.json', directCanvas);
-    fetch('/film/camera.json')
+    fetch(cameraUrl)
       .then((response) => (response.ok ? response.json() : null))
       .then((data: CameraData | null) => {
         this.camera = data;
@@ -134,7 +139,7 @@ export class AirTraffic {
   private spawn(now: number, pose: Pose) {
     const r = this.random;
     const camera = this.camera as CameraData;
-    const tanX = Math.tan(camera.fov / 2);
+    const tanX = poseTan(camera, pose);
     const tanY = tanX / camera.aspect;
     // Reject routes that converge on another aircraft. This is checked over
     // the shared lifetime, not just at spawn, so two foreground silhouettes
@@ -191,7 +196,7 @@ export class AirTraffic {
       if (age < flight.life) return true;
       const relative = sub(add(flight.start, flightDisplacement(flight, age)), pose.p);
       const depth = dot(relative, pose.f);
-      const tan = Math.tan(camera.fov / 2);
+      const tan = poseTan(camera, pose);
       const stillInView = depth > 80 && Math.abs(dot(relative, pose.r) / (depth * tan)) < 1.6 && Math.abs(dot(relative, pose.u) / (depth * tan / camera.aspect)) < 1.6;
       // A camera move can reveal a route after its original exit time. Keep
       // flying until it leaves this view rather than dissolving in mid-air.
@@ -203,7 +208,7 @@ export class AirTraffic {
       this.nextSpawn = now + 2 + this.random() * 5;
     }
 
-    const tanX = Math.tan(camera.fov / 2);
+    const tanX = poseTan(camera, pose);
     const tanY = tanX / camera.aspect;
     const project = (point: Vec) => {
       const v = sub(point, pose.p);

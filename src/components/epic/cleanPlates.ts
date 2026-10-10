@@ -18,6 +18,8 @@ export class CleanPlates {
   private small = typeof window !== 'undefined' && Math.max(window.innerWidth, window.innerHeight) * (window.devicePixelRatio || 1) < 1100 * 2.2;
 
   private url(index: number, depth: boolean) {
+    // The phone film is already phone-sized: full plate, half-size depth.
+    if (this.kind === 'phone') return `/film/phone-clean/${depth ? 'm/' : ''}${String(index + 1).padStart(4, '0')}${depth ? '-depth.png' : '.webp'}`;
     return `/film/${this.kind}-clean/${this.small ? 'm/' : ''}${String(index + 1).padStart(4, '0')}${depth ? '-depth.png' : '.webp'}`;
   }
 
