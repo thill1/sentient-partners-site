@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs",
     "deploy:cloudflare": "wrangler pages deploy dist --project-name sentient-partners-site --branch main",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",

@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-09",
+  "baseCommit": "0791377",
+  "browser": {
+    "checks": [
+      "Hero remains pinned during descent",
+      "Bridge transforms reverse with scrolling",
+      "Atmosphere pause toggles",
+      "Chat example responds",
+      "Voice example advances",
+      "Operations example updates job and invoice state",
+      "Website demo changes device",
+      "Search demo shows foundations",
+      "Calendar example selects a slot without booking",
+      "Workflow completes with human review",
+      "Review example creates draft only",
+      "Connected workflow advances",
+      "Booking CTA opens accessible dialog",
+      "Booking retains verified direct destination",
+      "Escape closes booking",
+      "Contact form sends expected contract to local intercepted endpoint",
+      "No horizontal overflow at 1920",
+      "No horizontal overflow at 1440",
+      "No horizontal overflow at 768",
+      "No horizontal overflow at 390",
+      "No horizontal overflow at 320",
+      "Mobile navigation closes after selection",
+      "Reduced motion removes animated fog"
+    ],
+    "errors": [],
+    "layouts": [
+      1920,
+      1440,
+      768,
+      390,
+      320
+    ]
+  },
+  "accessibility": [
+    {
+      "name": "Desktop page",
+      "violations": []
+    },
+    {
+      "name": "AI Voice Agents",
+      "violations": []
+    },
+    {
+      "name": "Business Applications",
+      "violations": []
+    },
+    {
+      "name": "Premium Websites",
+      "violations": []
+    },
+    {
+      "name": "Search Visibility",
+      "violations": []
+    },
+    {
+      "name": "Calendar & Scheduling",
+      "violations": []
+    },
+    {
+      "name": "Workflow Automation",
+      "violations": []
+    },
+    {
+      "name": "Reputation & Reviews",
+      "violations": []
+    },
+    {
+      "name": "Contact dialog",
+      "violations": []
+    },
+    {
+      "name": "Mobile page",
+      "violations": []
+    }
+  ],
+  "lighthouse": [
+    {
+      "source": "lighthouse-review-mobile-isolated.json",
+      "version": "13.5.0",
+      "fetchTime": "2026-10-10T03:18:38.086Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "largest-contentful-paint": {
+          "value": 1406.4492,
+          "display": "1.4\u00a0s"
+        },
+        "first-contentful-paint": {
+          "value": 814.2246,
+          "display": "0.8\u00a0s"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.001622879429303741,
+          "display": "0.002"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "display": "0\u00a0ms"
+        }
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "source": "lighthouse-review-mobile.json",
+      "version": "13.5.0",
+      "fetchTime": "2026-10-10T03:17:04.472Z",
+      "scores": {
+        "performance": 97,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "largest-contentful-paint": {
+          "value": 2622.7417,
+          "display": "2.6\u00a0s"
+        },
+        "first-contentful-paint": {
+          "value": 835.37085,
+          "display": "0.8\u00a0s"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.0015604760816139499,
+          "display": "0.002"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "display": "0\u00a0ms"
+        }
+      },
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "source": "lighthouse-review-desktop.json",
+      "version": "13.5.0",
+      "fetchTime": "2026-10-10T03:17:04.472Z",
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "largest-contentful-paint": {
+          "value": 1224.1624000000002,
+          "display": "1.2\u00a0s"
+        },
+        "first-contentful-paint": {
+          "value": 510.1015,
+          "display": "0.5\u00a0s"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.006491811089294012,
+          "display": "0.006"
+        },
+        "total-blocking-time": {
+          "value": 212.0000000000001,
+          "display": "210\u00a0ms"
+        }
+      },
+      "throttling": {
+        "rttMs": 40,
+        "throughputKbps": 10240,
+        "requestLatencyMs": 0,
+        "downloadThroughputKbps": 0,
+        "uploadThroughputKbps": 0,
+        "cpuSlowdownMultiplier": 1
+      }
+    }
+  ]
+}

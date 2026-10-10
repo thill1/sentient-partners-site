@@ -39,3 +39,6 @@ Thumbs.db
 coverage/
 .nyc_output/
 .playwright-cli/
+
+# Local cinematic homepage QA captures; curated evidence lives in docs.
+/output/playwright/atmosphere/

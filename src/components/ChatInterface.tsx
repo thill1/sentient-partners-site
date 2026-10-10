@@ -26,7 +26,7 @@ import spMonogramWhite from '../assets/sp-monogram-white.png';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
-export const ChatInterface: React.FC = () => {
+export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLauncher = true }) => {
   const { settings: siteSettings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'voice'>('chat');
@@ -830,6 +830,7 @@ export const ChatInterface: React.FC = () => {
 
   // --- UI ---
   if (!isOpen) {
+    if (!showLauncher) return null;
     return (
       <button
         onClick={() => setIsOpen(true)}
