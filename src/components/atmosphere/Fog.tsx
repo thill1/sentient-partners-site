@@ -36,9 +36,12 @@ void main(){
  vec2 p=(uv-.5)*fieldSize/((360.-u_depth*30.)*approach);
  p*=vec2(.82,1.18);
  p.y-=u_progress*(.15+layer*.9);
- p+=vec2(u_depth*13.7,u_depth*8.3)+u_seed+u_wind;
  // Sample in the wind's frame, stretched along it, so streamers trail downwind.
- vec2 a=vec2(dot(p,u_wdir),dot(p,vec2(-u_wdir.y,u_wdir.x)));
+ // Rotate only the on-screen coordinates, then add the seed/wind offsets:
+ // rotating the large offsets made a small heading change sweep the whole
+ // pattern hundreds of pixels per second.
+ vec2 a=vec2(dot(p,u_wdir),dot(p,vec2(-u_wdir.y,u_wdir.x)))
+  +vec2(u_depth*13.7,u_depth*8.3)+u_seed+u_wind;
  float t=u_time*(.05+u_depth*.012);
  vec2 q=vec2(fbm3(vec3(a*.7,t)+vec3(0.,0.,3.1)),fbm3(vec3(a*.8,t*1.2)+vec3(5.2,1.3,7.7)));
  vec2 r=vec2(fbm3(vec3(a*1.6+q*1.8,t*1.3+1.7)),fbm3(vec3(a*1.5+q*1.8,t*1.1+8.3)));
@@ -219,7 +222,7 @@ export default function Fog({
       gl.uniform1f(time, clock.current);
       const c = clock.current;
       const gust = 0.75 + 0.4 * gustNoise(c / (14 + depth * 3) + depth * 7.3);
-      const heading = (gustNoise(c / (31 + depth * 5) + 40 + depth) - 0.5) * 0.6;
+      const heading = (gustNoise(c / (31 + depth * 5) + 40 + depth) - 0.5) * 0.3;
       const dx = Math.cos(heading),
         dy = Math.sin(heading);
       wind[0] += dx * baseSpeed * gust * (delta / 1000) * FOG_SPEED;
