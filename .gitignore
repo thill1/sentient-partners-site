@@ -52,3 +52,4 @@ film/frames/
 film/descent-*.blend
 film/__pycache__/
 film/textures/
+film/geo/cache/
