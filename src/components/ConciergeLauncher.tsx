@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import spMonogramWhite from '../assets/sp-monogram-white.png';
+const spMonogramWhite = '/atmosphere/sp-monogram-white.png';
 import './concierge.css';
 
 export function ConciergeLauncher({ onClick, floating = false }: { onClick: () => void; floating?: boolean }) {
