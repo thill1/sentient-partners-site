@@ -9,6 +9,14 @@ uniform float u_time, u_progress, u_depth;
 uniform vec2 u_size;
 uniform vec3 u_tint, u_warm;
 uniform float u_warmth, u_sunx, u_density;
+uniform vec2 u_wind, u_wdir;
+uniform float u_seed, u_octaves;
+float hash3(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(hash3(i),hash3(i+vec3(1,0,0)),f.x),mix(hash3(i+vec3(0,1,0)),hash3(i+vec3(1,1,0)),f.x),f.y),
+  mix(mix(hash3(i+vec3(0,0,1)),hash3(i+vec3(1,0,1)),f.x),mix(hash3(i+vec3(0,1,1)),hash3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+// Time is the third axis: shapes form, thicken, thin and dissolve in place.
+float fbm3(vec3 p){float v=0.,a=.5;for(int i=0;i<5;i++){if(float(i)>=u_octaves)break;v+=a*noise3(p);p=vec3(mat2(.8,-.6,.6,.8)*p.xy,p.z)*2.03+vec3(7.1,3.3,1.7);a*=.5;}return v;}
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=mat2(.8,-.6,.6,.8)*p*2.03+7.1;a*=.5;}return v;}
@@ -18,30 +26,28 @@ void main(){
  float nearPlane=min(u_depth,2.)*.5;
  float layer=u_depth/3.;
  float mobile=1.-step(601.,u_size.x);
- // West/ocean is screen-right in this composition, so the wind carries banks
- // left. The distant bank moves more slowly than the passing wisps.
- float drift=22.+u_depth*14.;
- // Scrolling carries the camera into the layers: nearer planes swell and sweep past.
+ // Wind is integrated on the CPU from noise-driven gusts (u_wind), so speed
+ // and heading wander over tens of seconds, differently for every layer.
  float approach=1.+u_progress*layer*1.1;
- // A phone needs several visible folds across its crop, rather than one
- // small slice of a desktop-sized clearing.
  vec2 fieldSize=vec2(mix(u_size.x,max(u_size.x,780.),mobile),u_size.y);
  vec2 p=(uv-.5)*fieldSize/((360.-u_depth*30.)*approach);
  p*=vec2(.82,1.18);
- p.x+=u_time*drift/(360.-u_depth*30.);
  p.y-=u_progress*(.15+layer*.9);
- p+=vec2(u_depth*13.7,u_depth*8.3);
- float t=u_time;
- // Two warp octaves on their own slow clocks: banks keep bending and folding.
- vec2 q=vec2(fbm(p*.7+vec2(t*.011,3.4)),fbm(p*.8+vec2(9.1,-t*.009)));
- vec2 r=vec2(fbm(p*1.6+q*1.8+vec2(t*.017,1.7)),fbm(p*1.5+q*1.8+vec2(-t*.014,8.3)));
- float rolling=fbm(p+q*1.6+r*.9);
- float wisps=fbm(p*3.6+r*2.6+vec2(t*.03,-t*.02));
- // Transparent openings from a broad, slower field, so clearings open and close.
- float openings=smoothstep(.3,.47,fbm(p*.42+vec2(t*.004,-t*.003)+19.3));
- float body=smoothstep(.33,.66,rolling*.78+wisps*.22);
- // Thin streamers drawn out along the wind at the edges of each bank.
- float streak=fbm(vec2(p.x*.85,p.y*4.)+r*1.4+vec2(t*.02,0.));
+ p+=vec2(u_depth*13.7,u_depth*8.3)+u_seed+u_wind;
+ // Sample in the wind's frame, stretched along it, so streamers trail downwind.
+ vec2 a=vec2(dot(p,u_wdir),dot(p,vec2(-u_wdir.y,u_wdir.x)));
+ float t=u_time*(.05+u_depth*.012);
+ vec2 q=vec2(fbm3(vec3(a*.7,t)+vec3(0.,0.,3.1)),fbm3(vec3(a*.8,t*1.2)+vec3(5.2,1.3,7.7)));
+ vec2 r=vec2(fbm3(vec3(a*1.6+q*1.8,t*1.3+1.7)),fbm3(vec3(a*1.5+q*1.8,t*1.1+8.3)));
+ float rolling=fbm3(vec3(a+q*1.6+r*.9,t*.8));
+ // Wisps: strongly anisotropic noise, advected by the warp, that tears apart.
+ float wisps=fbm3(vec3(vec2(a.x*.55,a.y*3.)*1.6+r*2.4,t*1.6));
+ float openings=smoothstep(.3,.47,fbm3(vec3(a*.42+19.3,t*.45)));
+ float body=smoothstep(.34,.66,rolling*.66+wisps*.34);
+ // High-frequency erosion eats the edges of each bank so none reads as cotton.
+ float ero=fbm3(vec3(a*8.+r*3.5,t*2.4));
+ body=clamp(body-body*(1.-body)*4.*(ero-.36)*1.5,0.,1.);
+ float streak=fbm3(vec3(a.x*.45+r.x*1.4,a.y*4.6+r.y*1.4,t*1.2));
  float fringe=smoothstep(.52,.74,streak)*(1.-body)*.6;
  float density=(body+fringe)*mix(.2+.8*openings,.5+.5*openings,mobile);
  float veil;
@@ -73,7 +79,7 @@ void main(){
  color=mix(color,vec3(.96,.97,.97),smoothstep(.55,.8,rolling)*.7);
  // Edges that face the light take its colour: the low western sun is screen
  // right, the rising sun and the moon sit to the left.
- float lit=clamp((rolling-fbm(p+q*1.6+r*.9+vec2(.07,.035)))*9.+.3,0.,1.);
+ float lit=clamp((rolling-fbm3(vec3(a+q*1.6+r*.9+vec2(.07,.035),t*.8)))*9.+.3,0.,1.);
  float sun=smoothstep(.2,1.,mix(1.-uv.x,uv.x,u_sunx))*(.45+.55*uv.y);
  color=mix(color,u_warm,clamp((lit*sun*.65+sun*.08)*u_warmth,0.,.7));
  color*=u_tint*(1.+mobile*.1);
@@ -147,6 +153,28 @@ export default function Fog({
       sunX = gl.getUniformLocation(program, "u_sunx"),
       density = gl.getUniformLocation(program, "u_density");
     let light = [...sceneFog[activeScene()]];
+    const windU = gl.getUniformLocation(program, "u_wind"),
+      wdirU = gl.getUniformLocation(program, "u_wdir");
+    // A fresh seed per visit, so no two page loads show the same sky.
+    const seed = Math.random() * 1000;
+    gl.uniform1f(gl.getUniformLocation(program, "u_seed"), (seed % 97) * 1.3);
+    gl.uniform1f(
+      gl.getUniformLocation(program, "u_octaves"),
+      innerWidth < 601 ? 3 : 4,
+    );
+    const gustNoise = (x: number) => {
+      const i = Math.floor(x),
+        f = x - i,
+        h = (n: number) => {
+          const v = Math.sin(n * 127.1 + seed) * 43758.5453;
+          return v - Math.floor(v);
+        };
+      const u = f * f * (3 - 2 * f);
+      return h(i) * (1 - u) + h(i + 1) * u;
+    };
+    // Field units per second: nearer planes are faster (about 25-60 s across).
+    const baseSpeed = (22 + depth * 14) / (360 - depth * 30);
+    const wind = [0, 0];
     gl.uniform1f(gl.getUniformLocation(program, "u_depth"), depth);
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
@@ -185,6 +213,15 @@ export default function Fog({
       gl.uniform1f(sunX, light[7]);
       gl.uniform1f(density, light[8] * (depth >= 1 ? light[9] : 1));
       gl.uniform1f(time, clock.current);
+      const c = clock.current;
+      const gust = 0.55 + 0.9 * gustNoise(c / (14 + depth * 3) + depth * 7.3);
+      const heading = (gustNoise(c / (31 + depth * 5) + 40 + depth) - 0.5) * 0.6;
+      const dx = Math.cos(heading),
+        dy = Math.sin(heading);
+      wind[0] += dx * baseSpeed * gust * (delta / 1000);
+      wind[1] += dy * baseSpeed * gust * (delta / 1000);
+      gl.uniform2f(windU, wind[0], wind[1]);
+      gl.uniform2f(wdirU, dx, dy);
       gl.uniform1f(camera, progress.current);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
