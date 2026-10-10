@@ -725,7 +725,7 @@
 /* Mobile: clock and scene picker sit top right, just below the navigation. */
 @media (max-width: 850px) {
   .golden-gate .hero-clock-rail {
-    top: calc(84px + env(safe-area-inset-top, 0px));
+    top: calc(66px + env(safe-area-inset-top, 0px));
     bottom: auto;
     right: env(safe-area-inset-right, 0px);
   }
@@ -739,5 +739,26 @@
   .scene-picker-panel {
     top: calc(100% + 8px);
     bottom: auto;
+  }
+}
+
+/* Mobile: time above the scene picker, right-aligned under the menu button. */
+@media (max-width: 850px) {
+  .golden-gate .hero-clock-copy {
+    grid-template-columns: auto;
+    justify-items: end;
+    row-gap: 0;
+    text-align: right;
+  }
+  .golden-gate .hero-clock-time {
+    line-height: 20px;
+  }
+  .golden-gate .hero-clock-copy {
+    /* Align with the hamburger glyph (24px icon centred in a 44px button). */
+    padding-right: 10px;
+  }
+  .golden-gate .scene-picker-toggle {
+    margin-right: 0;
+    justify-items: end;
   }
 }
