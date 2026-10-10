@@ -850,3 +850,28 @@
 .golden-gate .concierge-launch {
   text-shadow: 0 0 2px #071724, 0 1px 3px #071724f2, 0 0 8px #071724cc, 0 0 16px #07172499;
 }
+
+/* Desktop header CTA: same underline treatment as the hero CTAs. */
+@media (min-width: 851px) {
+  .site-header .header-book,
+  .site-header:not(.header-scrolled):not(.header-on-light) .header-book {
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 0;
+    border-bottom: 1px solid #ffffff55;
+    min-height: 0;
+    padding: 12px 0;
+    gap: 16px;
+    font-size: 14.3px;
+    font-weight: 500;
+    transition: gap 0.2s;
+  }
+  .site-header .header-book:hover {
+    background: none;
+    gap: 23px;
+  }
+  .site-header.header-on-light .header-book {
+    border-bottom-color: currentColor;
+  }
+}
