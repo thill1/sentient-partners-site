@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { BOOKING_URL } from "../../content/siteContent";
 import { openBookingModal, openSentientChat } from "../../lib/siteActions";
 import { HeroClock } from "./HeroClock";
+import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
 import "./scenes.css";
@@ -186,26 +187,10 @@ export function GoldenGate() {
           </a>
         </div>
         <div className="hero-bottom header-rail">
-          <button
-            type="button"
-            className="concierge-launch"
-            onClick={() =>
-              openSentientChat({
-                source: "Cinematic hero",
-                ctaLabel: "Talk to the Concierge",
-              })
-            }
-          >
-            <span className="concierge-mark" aria-hidden="true">
-              <img
-                src="/atmosphere/sp-monogram-white.png"
-                alt=""
-                width="513"
-                height="835"
-              />
-            </span>
-            Talk to the Concierge
-          </button>
+          <ConciergeLauncher onClick={() => openSentientChat({
+            source: "Cinematic hero",
+            ctaLabel: "Ask Sentient",
+          })} />
         </div>
       </div>
     </section>

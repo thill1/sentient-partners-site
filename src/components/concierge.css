@@ -1,0 +1,115 @@
+/* The concierge shares the hero's serif, ivory and coastal blue. */
+.concierge-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 54px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f3f0e8;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  text-shadow: 0 1px 6px #07172480;
+}
+.concierge-launch-floating { position: fixed; bottom: 24px; right: 24px; z-index: 40; }
+.concierge-label { letter-spacing: normal; text-align: right; font: 24px/1.1 'Cormorant Garamond', Georgia, serif; }
+.concierge-label small { display: block; margin-top: 5px; color: #e6ddd0; font: 10px/1.4 Inter, sans-serif; letter-spacing: .04em; }
+.concierge-mark { display: grid; place-items: center; flex-shrink: 0; width: 54px; height: 54px; border: 1px solid #d6c5a799; border-radius: 50%; background: #10243499; transition: border-color .2s, background-color .2s; }
+.concierge-mark img { display: block; width: auto; height: 32px; }
+.concierge-launch:hover .concierge-mark, .concierge-launch:focus-visible .concierge-mark { border-color: #ead7b3; background: #102434e6; }
+.concierge-launch:focus-visible { outline: 2px solid #c8b795; outline-offset: 6px; }
+.concierge-backdrop { position: fixed; inset: 0; z-index: 80; background: #06152366; }
+.concierge-panel { position: fixed; right: 24px; bottom: 24px; z-index: 81; width: 400px; height: min(640px, calc(100dvh - 48px)); max-width: calc(100vw - 48px); display: flex; flex-direction: column; padding: 24px; overflow: hidden; border: 1px solid #c8b79555; background: #142c3c; color: #f3f0e8; font: 14px/1.6 Inter, sans-serif; animation: concierge-open .24s ease-out; }
+.concierge-panel *, .concierge-panel { box-sizing: border-box; }
+.concierge-panel h2, .concierge-panel h3, .concierge-panel p { margin: 0; }
+.concierge-panel h2, .concierge-panel h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400; letter-spacing: -.02em; }
+.concierge-panel h2 { font-size: 34px; line-height: 1.1; }
+.concierge-panel h3 { font-size: 36px; line-height: 1.08; }
+.concierge-panel button, .concierge-panel input { font: inherit; color: inherit; }
+.concierge-panel button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-color: transparent; }
+.concierge-panel button:disabled { cursor: default; opacity: .45; }
+.concierge-panel button:hover:not(:disabled) { color: #ead7b3; }
+.concierge-panel button:focus-visible, .concierge-panel input:focus-visible { outline: 2px solid #c8b795; outline-offset: 3px; }
+.concierge-panel ::selection { background: #c8b795; color: #102434; }
+.concierge-panel svg { flex-shrink: 0; stroke-width: 1.5; }
+.concierge-panel-header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; gap: 4px; }
+.concierge-panel-header p { color: #bfcbd0; font-size: 10px; margin-top: 5px; }
+.concierge-window-actions { display: flex; }
+.concierge-window-actions button { display: grid; place-items: center; width: 44px; height: 44px; }
+.concierge-choice { display: flex; flex-direction: column; justify-content: center; gap: 18px; flex: 1; min-height: 0; overflow: auto; }
+.concierge-choice h3 { margin-bottom: 8px; }
+.concierge-choice button { display: flex; align-items: center; gap: 16px; border-top: 1px solid #c8b79555; text-align: left; padding: 18px 0; }
+.concierge-choice strong { display: block; font-size: 16px; font-weight: 400; }
+.concierge-choice small { display: block; margin-top: 4px; color: #bfcbd0; font-size: 12px; }
+.concierge-choice button > svg:last-child { margin-left: auto; }
+.concierge-tabs { display: flex; flex-shrink: 0; gap: 26px; margin: 20px 0; border-bottom: 1px solid #c8b79533; }
+.concierge-tabs button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 2px; color: #bfcbd0; border-bottom: 1px solid transparent; font-size: 13px; }
+.concierge-tabs button[aria-selected="true"] { color: #f3f0e8; border-color: #e0c79c; }
+.concierge-content { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.concierge-messages { overflow-y: auto; overscroll-behavior: contain; flex: 1; min-height: 0; padding-right: 6px; scrollbar-color: #677b85 transparent; scrollbar-width: thin; }
+.concierge-message { margin-bottom: 20px; }
+.concierge-message-author { color: #d6c5a7; font-size: 10px; }
+.concierge-message p { margin-top: 5px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.concierge-message.is-user { margin-left: 28px; background: #ffffff08; padding: 10px 14px; }
+.concierge-suggestions { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 10px; }
+.concierge-suggestions button { display: flex; align-items: center; justify-content: space-between; gap: 6px; text-align: left; min-height: 44px; padding: 8px 0; border-top: 1px solid #c8b79533; font-size: 11px; }
+.concierge-composer { display: flex; align-items: center; gap: 8px; flex-shrink: 0; border-bottom: 1px solid #c8b79588; margin-top: 14px; }
+.concierge-composer input { flex: 1; min-width: 0; min-height: 48px; background: none; border: 0; font-size: 16px; border-radius: 0; }
+.concierge-composer input::placeholder { color: #bfcbd0; }
+.concierge-composer button { display: grid; place-items: center; width: 44px; height: 44px; color: #dfc496; }
+.concierge-panel .concierge-disclosure { font-size: 10px; line-height: 1.6; color: #bfcbd0; margin-top: 10px; }
+.concierge-voice-intro { text-align: center; }
+.concierge-voice-intro h3 { font-size: 34px; }
+.concierge-voice-intro p { color: #c6d0d3; font-size: 13px; line-height: 1.7; margin-top: 14px; }
+.concierge-voice-control { position: relative; display: grid; place-items: center; width: 164px; height: 164px; flex-shrink: 0; margin: 0 auto; }
+.concierge-voice-control canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+.concierge-voice-control.is-active canvas { opacity: .6; }
+.concierge-panel .concierge-mic { z-index: 1; width: 64px; height: 64px; display: grid; place-items: center; border: 1px solid #cfb78d; border-radius: 50%; background: #142c3c; }
+.concierge-panel .concierge-mic.is-connected { border-color: #e1ac91; color: #e1ac91; }
+.concierge-voice-status { font-size: 12px; text-align: center; }
+.concierge-panel .concierge-interrupt { min-height: 44px; margin: 8px auto 0; padding: 0 8px; border-bottom: 1px solid #c8b79580; font-size: 12px; }
+.concierge-panel .concierge-error { display: flex; align-items: flex-start; gap: 8px; color: #f0bda5; font-size: 12px; margin-top: 12px; }
+.concierge-transcript { flex: 1; overflow: auto; min-height: 0; margin-top: 18px; font-size: 12px; line-height: 1.7; scrollbar-color: #677b85 transparent; scrollbar-width: thin; }
+.concierge-transcript p { margin-bottom: 10px; overflow-wrap: anywhere; }
+.concierge-transcript strong { color: #d6c5a7; font-weight: 500; }
+.concierge-transcript .concierge-disclosure { text-align: center; }
+.concierge-panel.is-fullscreen { inset: 12px; width: auto; max-width: none; height: auto; }
+.concierge-panel.is-fullscreen .concierge-content, .concierge-panel.is-fullscreen .concierge-choice { width: min(100%, 760px); margin-inline: auto; }
+.concierge-loading { animation: concierge-loading 1s linear infinite; }
+@keyframes concierge-open { from { opacity: .5; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes concierge-loading { to { transform: rotate(360deg); } }
+@media (max-width: 600px) {
+  .concierge-launch { min-height: 44px; gap: 13px; }
+  .concierge-label { font-size: 20px; }
+  .concierge-label small { font-size: 9px; margin-top: 4px; }
+  .concierge-mark { width: 44px; height: 44px; }
+  .concierge-mark img { height: 27px; }
+  .concierge-panel { inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px; width: auto; max-width: none; height: min(640px, calc(100dvh - 36px)); padding: 22px 20px; }
+  .concierge-panel.is-fullscreen { inset: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); height: auto; }
+  .concierge-panel h2 { font-size: 32px; }
+}
+@media (max-width: 360px) {
+  .concierge-panel { padding: 20px 16px; }
+  .concierge-panel h2 { font-size: 29px; }
+  .concierge-window-actions button { width: 40px; }
+  .concierge-choice { gap: 14px; }
+  .concierge-choice button { gap: 10px; }
+  .concierge-choice small { font-size: 11px; }
+}
+@media (max-height: 600px) {
+  .concierge-panel { top: 12px; bottom: 12px; height: auto; padding: 16px; }
+  .concierge-tabs { margin-block: 8px; }
+  .concierge-choice { gap: 8px; }
+  .concierge-choice h3 { font-size: 28px; }
+  .concierge-choice button { padding-block: 10px; }
+  .concierge-content.is-voice { overflow-y: auto; display: block; }
+  .concierge-voice-intro h3 { font-size: 28px; }
+  .concierge-voice-control { height: 112px; }
+  .concierge-suggestions { display: flex; overflow-x: auto; }
+  .concierge-suggestions button { white-space: nowrap; flex-shrink: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .concierge-panel, .concierge-loading { animation: none; }
+  .concierge-mark { transition: none; }
+}

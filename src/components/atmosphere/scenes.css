@@ -462,13 +462,6 @@
   }
 }
 
-@media (max-width: 360px) {
-  .golden-gate .hero-copy {
-    /* Reserve a separate row for the clock above the chat on narrow phones. */
-    padding-bottom: 206px;
-  }
-}
-
 @media (max-width: 850px) {
   .golden-gate {
     --horizon: 26%;
@@ -561,22 +554,18 @@
     display: block;
   }
   .hero-copy {
-    padding-top: 320px;
+    /* Center the complete copy group between the 78px navigation and the
+       seal at height minus 66px; keep the clock in its own lower-right space. */
+    padding-top: 100px;
+    padding-bottom: 88px;
   }
 }
 @media (max-width: 360px) {
-  .hero-copy {
-    padding-top: 280px;
-  }
   .hero-copy h1 {
     font-size: 48px;
   }
 }
 @media (max-width: 600px) and (max-height: 700px) {
-  .hero-copy {
-    padding-top: 300px;
-    padding-bottom: 180px;
-  }
   .hero-copy h1 {
     font-size: 44px;
   }
