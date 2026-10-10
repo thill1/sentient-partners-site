@@ -601,3 +601,88 @@
     text-shadow: 0 0 2px #071724cc, 0 1px 8px #071724b3, 0 0 18px #07172499;
   }
 }
+
+/* Legibility pass: a soft, localized navy scrim behind the hero copy and the
+   header wordmark, plus brighter/heavier hero type. Gold accents stay champagne. */
+.golden-gate .hero-copy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 52% 42% at 21% 49%,
+    #0a1a33b3 0%,
+    #0a1a3399 40%,
+    #0a1a3340 72%,
+    #0a1a3300 100%
+  );
+}
+.golden-gate .hero-copy h1 {
+  font-weight: 500;
+  color: #fbf9f4;
+  text-shadow: 0 1px 2px #07172466, 0 2px 24px #071724a6;
+}
+.golden-gate .hero-copy h1 em {
+  color: #eedfc2;
+}
+.golden-gate .hero-description {
+  color: #f7f6f2;
+  font-weight: 500;
+  text-shadow: 0 1px 2px #07172499, 0 1px 12px #071724b3;
+}
+.golden-gate .hero-eyebrow {
+  font-weight: 600;
+  color: #f0e2c6;
+  text-shadow: 0 0 2px #071724cc, 0 1px 10px #071724b3;
+}
+.golden-gate .hero-actions .text-link {
+  color: #fbf9f4;
+  text-shadow: 0 1px 8px #071724b3;
+}
+.site-header:not(.header-scrolled):not(.header-on-light)::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -40px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 34% 100% at 50% 30%, #0a1a338c, #0a1a3300 100%);
+}
+.site-header:not(.header-on-light) .brand-lockup > span {
+  color: #fbf9f4;
+  font-weight: 500;
+  text-shadow: 0 1px 2px #07172499, 0 1px 12px #071724b3;
+}
+@media (max-width: 600px) {
+  .golden-gate .hero-copy::before {
+    background: linear-gradient(
+      180deg,
+      #0a1a3300 4%,
+      #0a1a33a6 22%,
+      #0a1a33bf 50%,
+      #0a1a33a6 74%,
+      #0a1a3300 92%
+    );
+  }
+  .site-header:not(.header-scrolled):not(.header-on-light)::before {
+    background: linear-gradient(180deg, #0a1a33a6, #0a1a3300);
+  }
+}
+.golden-gate .hero-copy h1 em {
+  font-weight: 500;
+}
+.golden-gate .hero-clock-copy {
+  position: relative;
+}
+.golden-gate .hero-clock-copy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -16px -40px;
+  pointer-events: none;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, #0a1a33e6 0%, #0a1a33cc 45%, #0a1a3300 100%);
+}
+.golden-gate .hero-clock-time {
+  font-weight: 500;
+  text-shadow: 0 1px 2px #071724b3, 0 1px 10px #071724b3;
+}
