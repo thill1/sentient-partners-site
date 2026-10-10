@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 import { activeScene, type Scene } from "./sceneTime";
 
+/** Global fog tempo: scales drift, shape evolution and gust cadence together. */
+const FOG_SPEED = 0.9;
+
 const vertex = `attribute vec2 a_position; varying vec2 v_uv;
 void main(){v_uv=a_position*.5+.5;gl_Position=vec4(a_position,0.,1.);}`;
 const fragment = `precision highp float;
@@ -202,7 +205,7 @@ export default function Fog({
       if (now - previous < 42) return;
       const delta = Math.min(100, now - previous);
       previous = now;
-      clock.current += delta / 1000;
+      clock.current += (delta / 1000) * FOG_SPEED;
       const target = sceneFog[activeScene()];
       light = light.map(
         (v, i) => v + (target[i] - v) * Math.min(1, delta / 600),
@@ -218,8 +221,8 @@ export default function Fog({
       const heading = (gustNoise(c / (31 + depth * 5) + 40 + depth) - 0.5) * 0.6;
       const dx = Math.cos(heading),
         dy = Math.sin(heading);
-      wind[0] += dx * baseSpeed * gust * (delta / 1000);
-      wind[1] += dy * baseSpeed * gust * (delta / 1000);
+      wind[0] += dx * baseSpeed * gust * (delta / 1000) * FOG_SPEED;
+      wind[1] += dy * baseSpeed * gust * (delta / 1000) * FOG_SPEED;
       gl.uniform2f(windU, wind[0], wind[1]);
       gl.uniform2f(wdirU, dx, dy);
       gl.uniform1f(camera, progress.current);
