@@ -20,7 +20,7 @@ void main(){
  float mobile=1.-step(601.,u_size.x);
  // West/ocean is screen-right in this composition, so the wind carries banks
  // left. The distant bank moves more slowly than the passing wisps.
- float drift=3.8+u_depth*1.9;
+ float drift=22.+u_depth*14.;
  // Scrolling carries the camera into the layers: nearer planes swell and sweep past.
  float approach=1.+u_progress*layer*1.1;
  // A phone needs several visible folds across its crop, rather than one
@@ -65,11 +65,12 @@ void main(){
   veil=bank+lowBank*.24;
   veil*=1.-u_progress*nearPlane*.48;
  }
+ veil*=passing?1.:mix(1.25,.5,smoothstep(.1,.85,uv.y));
  float alpha=1.-exp(-density*veil*(passing?1.1:1.8-nearPlane*.4)*(1.+mobile*.65));
- alpha=min(alpha,passing?.48:.74);
+ alpha=min(alpha,passing?.5:.8);
  // Cool silver and blue-grey in the body, soft white where it is thickest.
- vec3 color=mix(vec3(.48,.57,.67),vec3(.79,.84,.88),smoothstep(.3,.62,rolling));
- color=mix(color,vec3(.91,.92,.93),smoothstep(.58,.82,rolling)*.55);
+ vec3 color=mix(vec3(.66,.72,.78),vec3(.88,.91,.93),smoothstep(.3,.62,rolling));
+ color=mix(color,vec3(.96,.97,.97),smoothstep(.55,.8,rolling)*.7);
  // Edges that face the light take its colour: the low western sun is screen
  // right, the rising sun and the moon sit to the left.
  float lit=clamp((rolling-fbm(p+q*1.6+r*.9+vec2(.07,.035)))*9.+.3,0.,1.);
@@ -82,10 +83,10 @@ void main(){
 
 /** How each scene lights the fog: overall tint, rim colour and strength, which side the light is on, density, and the density of the planes in front of the bridge. */
 const sceneFog: Record<Scene, number[]> = {
-  sunrise: [1, 0.96, 0.96, 1, 0.83, 0.72, 1, 0.3, 1.05, 0.95],
-  day: [1.02, 1.05, 1.06, 1, 0.99, 0.95, 0.3, 0.8, 0.9, 0.85],
-  sunset: [1, 0.96, 0.94, 1, 0.8, 0.58, 1.15, 1, 1.1, 0.95],
-  night: [0.42, 0.52, 0.7, 0.73, 0.84, 1, 0.65, 0.2, 0.75, 0.72],
+  sunrise: [1, 0.96, 0.96, 1, 0.83, 0.72, 1, 0.3, 1.45, 1.05],
+  day: [1.02, 1.05, 1.06, 1, 0.99, 0.95, 0.3, 0.8, 1.4, 1.0],
+  sunset: [1, 0.96, 0.94, 1, 0.8, 0.58, 1.15, 1, 1.45, 1.05],
+  night: [0.42, 0.52, 0.7, 0.73, 0.84, 1, 0.65, 0.2, 1.05, 0.9],
 };
 
 /** Four depth planes: rear bank, bridge-height mist, foreground, and a veil the camera passes through. */
