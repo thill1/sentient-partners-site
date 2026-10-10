@@ -68,13 +68,14 @@ export class FogField {
     const near = 1 - smoothstep(1500, 6000, t);
     const fine = 0.5 + (detail - 0.5) * near;
     const dome = this.tex(x / 1300 + 0.47, y / 1300 + 0.47, 3);
-    const top = 160 + 34 * bank + 26 * (dome - 0.5) + 14 * (fine - 0.5);
-    const base = 104 + 18 * open;
+    const top = 160 + 34 * bank + 26 * (dome - 0.5) + 14 * (fine - 0.5) - 28 * (1 - smoothstep(900, 2600, Math.hypot(p[0], p[1])));
+    const base = 104 + 18 * open + 58 * smoothstep(1500, 5200, p[0]);
     const upper = smoothstep(base, base + 28, p[2]) * (1 - smoothstep(top - 38, top, p[2]));
     const cover = smoothstep(0.18, 0.42, bank * 0.82 + fine * 0.18) * smoothstep(0.14, 0.32, open);
     let d = upper * cover * (0.62 + 0.38 * fine);
     const lowCover = smoothstep(0.44, 0.7, this.tex(x / 3300 + 0.61, y / 3300 + 0.61, 0));
-    d += smoothstep(4, 16, p[2]) * (1 - smoothstep(40, 56, p[2])) * lowCover * 0.85;
+    const strait = 1 - smoothstep(1100, 2400, Math.hypot(p[0], p[1]));
+    d += smoothstep(4, 16, p[2]) * (1 - smoothstep(40, 56, p[2])) * lowCover * strait * 0.85;
     const strand = smoothstep(0.58, 0.82, this.tex(x / 1450 + p[2] / 520 + 0.83, y / 1450 + p[2] / 770 + 0.83, 2));
     d += smoothstep(260, 330, p[2]) * (1 - smoothstep(620, 860, p[2])) * strand * 0.12 * (1 - smoothstep(600, 1800, t));
     return d;

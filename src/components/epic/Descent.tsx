@@ -263,6 +263,11 @@ export const Descent: React.FC = () => {
     };
     sizeFilm();
     window.addEventListener('resize', sizeFilm);
+    // Measured once at mount, the canvas could catch its pre-stylesheet size
+    // (1200x600 on a portrait phone) and keep it, stretching every frame.
+    // Re-measure whenever its laid-out size changes.
+    const filmObserver = film && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => sizeFilm()) : null;
+    if (film) filmObserver?.observe(film);
     const clockTimer = window.setInterval(() => {
       sky = timeOfDay();
       showClock();
@@ -346,7 +351,7 @@ export const Descent: React.FC = () => {
         fogAlpha = platePair && liveFog?.ready && liveFog.depthKey === platePair.depthUrl ? 1 : 0;
         if (fogDebug && now - debugAt > 250) {
           debugAt = now;
-          fogDebug.textContent = `fog: ${liveFog?.status ?? 'none'}\nkind ${playerKind} frame ${shown} pair ${platePair ? 'yes' : 'no'} depth ${liveFog?.ready ? 'yes' : 'no'}\nalpha ${fogAlpha} t ${fogSeconds.toFixed(1)}s still ${still}\ncanvas ${fogRef.current?.width}x${fogRef.current?.height} dpr ${window.devicePixelRatio} lost ${liveFog?.lost}`;
+          fogDebug.textContent = `fog: ${liveFog?.status ?? 'none'}\nkind ${playerKind} frame ${shown} pair ${platePair ? 'yes' : 'no'} depth ${liveFog?.ready ? 'yes' : 'no'}\nalpha ${fogAlpha} t ${fogSeconds.toFixed(1)}s still ${still}\ncanvas ${fogRef.current?.width}x${fogRef.current?.height} dpr ${window.devicePixelRatio} lost ${liveFog?.lost}\nphone ${phoneFilm} film ${film?.width}x${film?.height} rect ${Math.round(player.lastRect.x)},${Math.round(player.lastRect.y)} ${Math.round(player.lastRect.w)}x${Math.round(player.lastRect.h)}`;
         }
         const paintKey = `${playerKind}:${filmCtx.canvas.width}:${filmCtx.canvas.height}:${player.paintKey(story)}:${atOpen}:${atCity}:${fogAlpha}:${opening?.loopPaintKey(seconds, 12) ?? ''}:${ending?.loopPaintKey(seconds, 12) ?? ''}`;
         // Repaint the full background composition only when an image/crop
@@ -466,6 +471,7 @@ export const Descent: React.FC = () => {
       window.clearInterval(clockTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('resize', sizeFilm);
+      filmObserver?.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
     };
   }, []);

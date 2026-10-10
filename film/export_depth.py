@@ -20,7 +20,14 @@ import bpy
 import numpy as np
 
 args = sys.argv[sys.argv.index("--") + 1:]
-frame, out = int(args[0]), args[1]
+# FRAME OUT.png, or FIRST-LAST OUTDIR (one session renders every frame;
+# OUTDIR/0001-depth.png is FIRST). Starting Blender per frame took ~70 s each.
+if "-" in args[0]:
+    first, last = map(int, args[0].split("-"))
+    jobs = [(f, os.path.join(args[1], f"{f - first + 1:04d}-depth.png")) for f in range(first, last + 1)]
+else:
+    jobs = [(int(args[0]), args[1])]
+frame, out = jobs[0]
 width = int(args[2]) if len(args) > 2 else 1600
 height = round(width * 16 / 9) if os.environ.get("PORTRAIT") else round(width * 9 / 16)
 
@@ -71,27 +78,29 @@ try:
 except Exception as error:  # noqa: BLE001
     print("GPU unavailable:", error)
 
-raw = out + ".exr"
-s.render.filepath = raw
-bpy.ops.render.render(write_still=True)
-image = bpy.data.images.load(raw)
-pixels = np.array(image.pixels[:], dtype=np.float32).reshape(height, width, 4)[::-1]
-os.remove(raw)
-distance, alpha = pixels[..., 0], pixels[..., 3]
-sky = alpha < 0.5
-near, far = math.log(5.0), math.log(60000.0)
-n = np.clip((np.log(np.maximum(distance, 5.0)) - near) / (far - near), 0.0, 0.99999)
-a = np.floor(n * 255); rem = n * 255 - a
-b = np.floor(rem * 255); rem2 = rem * 255 - b
-c = np.floor(rem2 * 255)
-rgb = np.stack([a, b, c], axis=-1)
-rgb[sky] = 255
+for frame, out in jobs:
+    s.frame_set(frame)
+    raw = out + ".exr"
+    s.render.filepath = raw
+    bpy.ops.render.render(write_still=True)
+    image = bpy.data.images.load(raw)
+    pixels = np.array(image.pixels[:], dtype=np.float32).reshape(height, width, 4)[::-1]
+    os.remove(raw)
+    distance, alpha = pixels[..., 0], pixels[..., 3]
+    sky = alpha < 0.5
+    near, far = math.log(5.0), math.log(60000.0)
+    n = np.clip((np.log(np.maximum(distance, 5.0)) - near) / (far - near), 0.0, 0.99999)
+    a = np.floor(n * 255); rem = n * 255 - a
+    b = np.floor(rem * 255); rem2 = rem * 255 - b
+    c = np.floor(rem2 * 255)
+    rgb = np.stack([a, b, c], axis=-1)
+    rgb[sky] = 255
 
-png = bpy.data.images.new("Depth", width, height, alpha=False)
-png.colorspace_settings.name = "Non-Color"
-flat = np.concatenate([rgb[::-1].astype(np.float32) / 255.0, np.ones((height, width, 1), np.float32)], axis=2)
-png.pixels = flat.ravel()
-png.filepath_raw = out
-png.file_format = "PNG"
-png.save()
-print("DEPTH", out, width, height, "sky", round(float(sky.mean()), 3), "median m", round(float(np.median(distance[~sky])), 1))
+    png = bpy.data.images.new("Depth", width, height, alpha=False)
+    png.colorspace_settings.name = "Non-Color"
+    flat = np.concatenate([rgb[::-1].astype(np.float32) / 255.0, np.ones((height, width, 1), np.float32)], axis=2)
+    png.pixels = flat.ravel()
+    png.filepath_raw = out
+    png.file_format = "PNG"
+    png.save()
+    print("DEPTH", out, width, height, "sky", round(float(sky.mean()), 3), "median m", round(float(np.median(distance[~sky])), 1))

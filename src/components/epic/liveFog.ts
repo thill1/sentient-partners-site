@@ -63,7 +63,10 @@ float density(vec3 p, float t, out float cover) {
   float detail = tex(xy / 760.0 + vec2(p.z / 640.0, -p.z / 910.0) + 0.11, 2);
   // Main marine layer: base ~105-120 m, a rolling top between ~150 and 230 m.
   float top = 148.0 + 82.0 * bank + 22.0 * (detail - 0.5);
-  float base = 104.0 + 18.0 * open;
+  // The base lifts toward the city: over the strait the layer is deep, over
+  // downtown it is thin and high, so from the water the skyline stands under
+  // a grey ceiling and from above only the tallest towers pierce it.
+  float base = 104.0 + 18.0 * open + 58.0 * smoothstep(1500.0, 5200.0, p.x);
   // Fine detail fades with distance so far banks stay smooth, not speckled.
   float near = 1.0 - smoothstep(1500.0, 6000.0, t);
   detail = mix(0.5, detail, near);
@@ -73,13 +76,18 @@ float density(vec3 p, float t, out float cover) {
   // city and leaves only the icons above it: the Golden Gate towers (227 m),
   // Transamerica (260), 181 Fremont (245), Salesforce (326), Sutro.
   top = 160.0 + 34.0 * bank + 26.0 * (dome - 0.5) + 14.0 * (detail - 0.5);
+  // Around the bridge the layer sits lower, so the towers' top portals stand
+  // clear of it as in the owner's reference (towers are 227 m).
+  top -= 28.0 * (1.0 - smoothstep(900.0, 2600.0, length(p.xy)));
   float upper = smoothstep(base, base + 28.0, p.z) * (1.0 - smoothstep(top - 38.0, top, p.z));
   // A near-continuous blanket: openings are occasional, not the rule.
   cover = smoothstep(0.18, 0.42, bank * 0.82 + detail * 0.18) * smoothstep(0.14, 0.32, open);
   float d = upper * cover * (0.62 + 0.38 * detail);
   // A separate lower bank beneath the 67.6 m roadway.
   float lowCover = smoothstep(0.44, 0.7, tex(xy / 3300.0 + 0.61, 0));
-  float low = smoothstep(4.0, 16.0, p.z) * (1.0 - smoothstep(40.0, 56.0, p.z)) * lowCover;
+  // ...and only in the strait, around the bridge, not across the Bay.
+  float strait = 1.0 - smoothstep(1100.0, 2400.0, length(p.xy));
+  float low = smoothstep(4.0, 16.0, p.z) * (1.0 - smoothstep(40.0, 56.0, p.z)) * lowCover * strait;
   d += low * 0.85;
   // Sparse high strands the camera passes through on the way down.
   // Delicate strands near the camera only: far away they read as speckle.
