@@ -1,30 +1,49 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight, Pause, Play } from "lucide-react";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { BOOKING_URL } from "../../content/siteContent";
-import { openBookingModal } from "../../lib/siteActions";
+import { openBookingModal, openSentientChat } from "../../lib/siteActions";
+import { HeroClock } from "./HeroClock";
+// After the shared sheet, so scene rules win over its defaults.
+import "./atmosphere.css";
+import "./scenes.css";
 const Fog = lazy(() => import("./Fog"));
+const Traffic = lazy(() => import("./Traffic"));
+const Aircraft = lazy(() => import("./Aircraft"));
+const Boats = lazy(() => import("./Boats"));
+const Ocean = lazy(() => import("./Ocean"));
+const Ambience = lazy(() => import("./Ambience"));
+
+// Colour grades for each time of day, cross-faded by `data-scene` on <html>.
+const grades = [
+  "night-tone",
+  "night-deep",
+  "day-sky",
+  "day-water",
+  "day-light",
+  "sunset-tone",
+  "sunset-glow",
+  "sunrise-tone",
+  "sunrise-glow",
+];
 
 export function GoldenGate() {
   const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const [enhanced, setEnhanced] = useState(false);
   const [gpu, setGpu] = useState(false);
-  const [paused, setPaused] = useState(false);
+  // Lazy layers wait for the browser: prerendering cannot suspend on them.
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const desktop = matchMedia("(min-width: 761px)");
     const update = () => {
       const capable = !media.matches && navigator.hardwareConcurrency > 2;
       setEnhanced(capable);
-      setGpu(capable && desktop.matches);
+      setGpu(capable && !!document.createElement("canvas").getContext("webgl"));
     };
     update();
+    setMounted(true);
     media.addEventListener("change", update);
-    desktop.addEventListener("change", update);
-    return () => {
-      media.removeEventListener("change", update);
-      desktop.removeEventListener("change", update);
-    };
+    return () => media.removeEventListener("change", update);
   }, []);
   useEffect(() => {
     const element = section.current;
@@ -58,7 +77,7 @@ export function GoldenGate() {
   return (
     <section
       ref={section}
-      className={`golden-gate ${enhanced ? "is-enhanced" : ""} ${paused ? "is-paused" : ""}`}
+      className={`golden-gate ${enhanced ? "is-enhanced" : ""}`}
       aria-labelledby="hero-title"
     >
       <div className="scene-sticky">
@@ -71,17 +90,36 @@ export function GoldenGate() {
             height="1024"
           />
           {enhanced && (
+            <img
+              className="scene-bay"
+              src="/atmosphere/bay.webp"
+              alt=""
+              width="1536"
+              height="1024"
+            />
+          )}
+          {gpu && (
+            <Suspense fallback={null}>
+              <Ocean />
+            </Suspense>
+          )}
+          {grades.map((grade) => (
+            <div key={grade} className={`scene-grade grade-${grade}`} />
+          ))}
+          {mounted && (
+            <Suspense fallback={null}>
+              <Ambience />
+            </Suspense>
+          )}
+          {enhanced && (
             <>
-              <img
-                className="scene-bay"
-                src="/atmosphere/bay.webp"
-                alt=""
-                width="1536"
-                height="1024"
-              />
+              <Suspense fallback={null}>
+                <Aircraft />
+                <Boats />
+              </Suspense>
               {gpu && (
                 <Suspense fallback={null}>
-                  <Fog depth={0} progress={progress} paused={paused} />
+                  <Fog depth={0} progress={progress} />
                 </Suspense>
               )}
               <div className="scene-bridge">
@@ -91,53 +129,35 @@ export function GoldenGate() {
                   width="1536"
                   height="1024"
                 />
-                <svg className="scene-traffic" viewBox="0 0 1536 1024">
-                  <g fill="#f7ddaa">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <circle key={i} r="1.2">
-                        <animateMotion
-                          dur={`${41 + i * 7}s`}
-                          begin={`${-i * 9}s`}
-                          repeatCount="indefinite"
-                          path="M 493 323 Q 800 413 1400 767"
-                        />
-                      </circle>
-                    ))}
-                  </g>
-                </svg>
-              </div>
-              <div className="bay-boat boat-one">
-                <span />
-              </div>
-              <div className="bay-boat boat-two">
-                <span />
+                <Suspense fallback={null}>
+                  <Traffic />
+                </Suspense>
               </div>
               {gpu && (
                 <Suspense fallback={null}>
-                  <Fog depth={1} progress={progress} paused={paused} />
+                  <Fog depth={1} progress={progress} />
+                  <Fog depth={2} progress={progress} />
+                  <Fog depth={3} progress={progress} />
                 </Suspense>
               )}
             </>
           )}
           <div className="scene-shade" />
         </div>
-        <div className="hero-copy page-width">
-          <p className="eyebrow">
-            Strategy <span> / </span> Intelligence <span> / </span> Results
-          </p>
+        <HeroClock />
+        <div className="hero-copy header-rail">
           <h1 id="hero-title">
-            Experience
-            <br /> earned globally.
-            <br /> <em>Applied locally.</em>
+            <span>Global <br className="hero-mobile-break" />Experience. </span>
+            <em>Local <br className="hero-mobile-break" />Impact.</em>
           </h1>
           <p className="hero-description">
-            Decades of experience leading teams of thousands and
-            mission-critical operations worldwide. Today, we bring that
-            expertise, perspective, and discipline to the businesses we serve.
+            Enterprise-caliber strategy, intelligent technology, and{" "}
+            <span className="whitespace-nowrap">hands-on</span> partnership for
+            growing businesses.
           </p>
           <div className="hero-actions">
             <a
-              className="button button-light"
+              className="text-link"
               href={BOOKING_URL}
               onClick={(e) => {
                 e.preventDefault();
@@ -147,41 +167,44 @@ export function GoldenGate() {
                 });
               }}
             >
-              Book a Conversation <ArrowUpRight size={17} />
+              Book a Conversation <ArrowUpRight size={18} />
             </a>
             <a className="text-link" href="#work">
-              Explore Our Work <ArrowUpRight size={16} />
+              Explore Our Work <ArrowUpRight size={18} />
             </a>
           </div>
         </div>
         <div className="descent-note page-width">
-          <p className="eyebrow">Perspective changes everything.</p>
           <p>
             Big-picture thinking.
             <br />
-            <em>Down-to-earth partnership.</em>
+            <em>Hands-on execution.</em>
           </p>
           <a href="#perspective" className="text-link">
             Meet your local partner <ArrowDown size={16} />
           </a>
         </div>
-        <div className="hero-bottom page-width">
-          <a href="#perspective" className="scroll-cue">
-            <ArrowDown size={14} /> A different perspective
-          </a>
-          <span className="scene-location">
-            Northern California. Rooted here.
-          </span>
-          {enhanced && (
-            <button
-              className="motion-toggle"
-              onClick={() => setPaused(!paused)}
-              aria-label={paused ? "Play atmosphere" : "Pause atmosphere"}
-            >
-              {paused ? <Play size={13} /> : <Pause size={13} />}
-              <span>{paused ? "Play" : "Pause"} atmosphere</span>
-            </button>
-          )}
+        <div className="hero-bottom header-rail">
+          <button
+            type="button"
+            className="concierge-launch"
+            onClick={() =>
+              openSentientChat({
+                source: "Cinematic hero",
+                ctaLabel: "Talk to the Concierge",
+              })
+            }
+          >
+            <span className="concierge-mark" aria-hidden="true">
+              <img
+                src="/atmosphere/sp-monogram-white.png"
+                alt=""
+                width="513"
+                height="835"
+              />
+            </span>
+            Talk to the Concierge
+          </button>
         </div>
       </div>
     </section>

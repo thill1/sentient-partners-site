@@ -15,6 +15,26 @@
       })();
     </script>
 
+    <!-- First-paint guess at the hero's time of day (Pacific); the hero clock refines it. -->
+    <script>
+      (function () {
+        try {
+          var scene = new URLSearchParams(location.search).get("scene");
+          if (!/^(sunrise|day|sunset|night)$/.test(scene || "")) {
+            var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", month: "numeric", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
+            var get = function (type) { for (var i = 0; i < parts.length; i++) if (parts[i].type === type) return Number(parts[i].value); };
+            var hour = (get("hour") % 24) + get("minute") / 60, month = get("month") - 1;
+            var rise = [7.4, 7.0, 7.1, 6.6, 6.0, 5.8, 6.0, 6.4, 6.9, 7.3, 6.9, 7.3][month];
+            var set = [17.3, 17.8, 19.2, 19.6, 20.1, 20.5, 20.5, 20.0, 19.3, 18.6, 17.1, 16.9][month];
+            scene = hour >= rise - 0.83 && hour < rise + 1.17 ? "sunrise"
+              : hour >= rise + 1.17 && hour < set - 1.17 ? "day"
+              : hour >= set - 1.17 && hour < set + 0.83 ? "sunset" : "night";
+          }
+          document.documentElement.dataset.scene = scene;
+        } catch (e) {}
+      })();
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Sentient Partners | Global Experience. Local Partnership.</title>
@@ -71,7 +91,7 @@
   </head>
 
   <body class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300">
-    <noscript><style>.atmosphere-page button,.capability-atelier,.journey-line,.journey-detail,.motion-toggle{display:none!important}</style></noscript>
+    <noscript><style>.atmosphere-page button,.cx-atelier,.journey-line,.journey-detail,.motion-toggle{display:none!important}</style></noscript>
 
     <div id="root"></div>
 

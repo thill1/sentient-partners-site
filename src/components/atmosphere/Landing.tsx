@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  Menu,
-  X,
-  MapPin,
-  Mail,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Menu, X, Mail } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL } from "../../content/siteContent";
 import {
@@ -25,15 +17,20 @@ function Brand() {
   return (
     <a className="brand-lockup" href="#top">
       <img
+        className="monogram-light"
         src="/atmosphere/sp-monogram-white.png"
         alt=""
-        width="50"
-        height="50"
+        width="513"
+        height="835"
       />
-      <span>
-        <strong>Sentient Partners</strong>
-        <small>STRATEGY | INTELLIGENCE | RESULTS</small>
-      </span>
+      <img
+        className="monogram-ink"
+        src="/atmosphere/sp-monogram-navy.png"
+        alt=""
+        width="513"
+        height="835"
+      />
+      <span>Sentient Partners</span>
     </a>
   );
 }
@@ -45,13 +42,53 @@ const links = [
 ];
 function Navigation() {
   const [menu, setMenu] = useState(false),
+    [onLight, setOnLight] = useState(false),
     [scrolled, setScrolled] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const header = useRef<HTMLElement>(null);
   useEffect(() => {
-    const update = () => setScrolled(scrollY > 30);
+    // The header has no bar of its own, so its lettering follows whatever
+    // section is behind it: ink over light backgrounds, ivory over dark.
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      // The bar arrives as the descent reaches its second line of copy
+      // (the descent note fades in from 47% of the hero's scroll).
+      const hero = document
+        .querySelector(".golden-gate")
+        ?.getBoundingClientRect();
+      setScrolled(
+        hero
+          ? -hero.top / Math.max(1, hero.height - innerHeight) > 0.47
+          : scrollY > 8,
+      );
+      const under = document
+        .elementsFromPoint(innerWidth / 2, 50)
+        .find((element) => !header.current?.contains(element));
+      let element: Element | null = under ?? null;
+      while (element) {
+        const [r, g, b, a = 1] = (
+          getComputedStyle(element).backgroundColor.match(/[\d.]+/g) ?? []
+        ).map(Number);
+        if (a > 0.5) {
+          setOnLight(0.2126 * r + 0.7152 * g + 0.0722 * b > 150);
+          return;
+        }
+        element = element.parentElement;
+      }
+      setOnLight(false);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
     update();
-    addEventListener("scroll", update, { passive: true });
-    return () => removeEventListener("scroll", update);
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      removeEventListener("scroll", schedule);
+      removeEventListener("resize", schedule);
+    };
   }, []);
   useEffect(() => {
     if (!menu) return;
@@ -65,9 +102,11 @@ function Navigation() {
     return () => removeEventListener("keydown", close);
   }, [menu]);
   return (
-    <header className={`site-header ${scrolled ? "header-scrolled" : ""}`}>
+    <header
+      ref={header}
+      className={`site-header ${onLight && !menu ? "header-on-light" : ""} ${scrolled ? "header-scrolled" : ""}`}
+    >
       <div className="header-inner">
-        <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
           {links.map(([label, href]) => (
             <a key={href} href={href}>
@@ -75,6 +114,7 @@ function Navigation() {
             </a>
           ))}
         </nav>
+        <Brand />
         <a
           className="header-book"
           href={BOOKING_URL}
@@ -202,12 +242,6 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
         <GoldenGate />
         <section id="perspective" className="perspective-section section-space">
           <div className="page-width">
-            <div className="place-line">
-              <span>
-                <MapPin size={13} /> Auburn, California
-              </span>
-              <span>Global perspective. Local commitment.</span>
-            </div>
             <div className="perspective-layout">
               <h2>
                 The discipline of
@@ -449,11 +483,13 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
           <div className="page-width founder-layout">
             <div className="founder-portrait">
               <img
-                src="/atmosphere/troy-hill-480.webp"
+                src="/atmosphere/troy-hill-founder-480.webp"
+                srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
+                sizes="(max-width: 600px) 100vw, 410px"
                 alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
                 loading="lazy"
                 width="480"
-                height="600"
+                height="476"
               />
               <div>
                 <strong>Troy Hill</strong>
