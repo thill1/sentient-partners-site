@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { BOOKING_URL } from "../../content/siteContent";
 import { openBookingModal, openSentientChat } from "../../lib/siteActions";
 import { HeroClock } from "./HeroClock";
+import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
 import "./scenes.css";
@@ -146,12 +147,13 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
+          <p className="eyebrow hero-eyebrow">Your local business and technology partner</p>
           <h1 id="hero-title">
             <span>Global <br className="hero-mobile-break" />Experience. </span>
             <em>Local <br className="hero-mobile-break" />Impact.</em>
           </h1>
           <p className="hero-description">
-            Enterprise-caliber strategy, intelligent technology, and{" "}
+            Practical strategy, dependable technology, and{" "}
             <span className="whitespace-nowrap">hands-on</span> partnership for
             growing businesses.
           </p>
@@ -163,14 +165,14 @@ export function GoldenGate() {
                 e.preventDefault();
                 openBookingModal({
                   source: "Cinematic hero",
-                  ctaLabel: "Book a Conversation",
+                  ctaLabel: "Book a 20-minute introductory call",
                 });
               }}
             >
-              Book a Conversation <ArrowUpRight size={18} />
+              Book a 20-minute introductory call <ArrowUpRight size={18} />
             </a>
             <a className="text-link" href="#work">
-              Explore Our Work <ArrowUpRight size={18} />
+              Explore our work <ArrowUpRight size={18} />
             </a>
           </div>
         </div>
@@ -185,26 +187,10 @@ export function GoldenGate() {
           </a>
         </div>
         <div className="hero-bottom header-rail">
-          <button
-            type="button"
-            className="concierge-launch"
-            onClick={() =>
-              openSentientChat({
-                source: "Cinematic hero",
-                ctaLabel: "Talk to the Concierge",
-              })
-            }
-          >
-            <span className="concierge-mark" aria-hidden="true">
-              <img
-                src="/atmosphere/sp-monogram-white.png"
-                alt=""
-                width="513"
-                height="835"
-              />
-            </span>
-            Talk to the Concierge
-          </button>
+          <ConciergeLauncher onClick={() => openSentientChat({
+            source: "Cinematic hero",
+            ctaLabel: "Ask Sentient",
+          })} />
         </div>
       </div>
     </section>

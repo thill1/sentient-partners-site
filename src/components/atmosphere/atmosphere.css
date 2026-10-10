@@ -445,36 +445,6 @@ html {
   letter-spacing: 0.05em;
   color: #d1d9dc;
 }
-.concierge-launch {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 7px 18px 7px 7px;
-  background: #0b1426e6;
-  border: 1px solid #ffffff1f;
-  color: var(--a-ivory);
-  font-size: 13px;
-  letter-spacing: 0.01em;
-  backdrop-filter: blur(8px);
-  transition:
-    background 0.2s,
-    border-color 0.2s;
-}
-.concierge-launch:hover {
-  background: #0b1426;
-  border-color: #ffffff40;
-}
-.concierge-mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  background: var(--a-navy);
-}
-.concierge-mark img {
-  width: auto;
-  height: 24px;
-}
 .descent-note {
   position: absolute;
   top: 43%;
@@ -1352,18 +1322,6 @@ html {
     bottom: 22px;
     font-size: 8px;
     gap: 8px;
-  }
-  .concierge-launch {
-    gap: 10px;
-    padding: 5px 12px 5px 5px;
-    font-size: 11px;
-  }
-  .concierge-mark {
-    width: 32px;
-    height: 32px;
-  }
-  .concierge-mark img {
-    height: 20px;
   }
   .scene-poster,
   .scene-bay,
