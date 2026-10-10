@@ -12,7 +12,7 @@ import { Capabilities } from "./Capabilities";
 import "./atmosphere.css";
 
 const book = (source: string) =>
-  openBookingModal({ source, ctaLabel: "Book a Conversation" });
+  openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
 function Brand() {
   return (
     <a className="brand-lockup" href="#top">
@@ -123,7 +123,7 @@ function Navigation() {
             book("Navigation");
           }}
         >
-          Let's talk <ArrowUpRight size={15} />
+          Book an intro call <ArrowUpRight size={15} />
         </a>
         <button
           ref={menuButton}
@@ -149,7 +149,7 @@ function Navigation() {
             </a>
           ))}
           <a href="#contact" onClick={() => setMenu(false)}>
-            Book a conversation <ArrowUpRight size={18} />
+            Book a 20-minute introductory call <ArrowUpRight size={18} />
           </a>
         </nav>
       )}
@@ -231,7 +231,8 @@ function Connected() {
     </section>
   );
 }
-export default function Landing({ banner }: { banner: BannerDisplayState }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function Landing(_props: { banner: BannerDisplayState }) {
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">
@@ -246,7 +247,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
               <h2>
                 The discipline of
                 <br />
-                enterprise technology.
+                proven technology.
                 <br />
                 <em>
                   The commitment
@@ -256,14 +257,13 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
               </h2>
               <div className="perspective-copy">
                 <p className="lead-copy">
-                  Big-business experience.
+                  Seasoned experience.
                   <br />
                   Built for your business.
                 </p>
                 <p>
                   Growing businesses deserve the same thoughtful strategy,
-                  reliable systems, and disciplined execution as the world's
-                  largest organizations.
+                  reliable systems, and disciplined execution as anyone.
                 </p>
                 <p>
                   We make that expertise practical. From Auburn and Placer
@@ -276,32 +276,6 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
                 </a>
               </div>
             </div>
-            {banner.visible && (
-              <aside
-                className="partner-announcement"
-                aria-label="Current invitation"
-              >
-                <span>{banner.message}</span>
-                <a
-                  href={
-                    banner.ctaUrl === "#blueprint" ? "#contact" : banner.ctaUrl
-                  }
-                  onClick={(event) => {
-                    if (banner.ctaUrl === "#blueprint") {
-                      event.preventDefault();
-                      openContactModal({
-                        intent: "blueprint",
-                        source: "Partner invitation",
-                        ctaLabel: banner.ctaText,
-                      });
-                    }
-                  }}
-                >
-                  {banner.ctaText}
-                  <ArrowUpRight size={14} />
-                </a>
-              </aside>
-            )}
           </div>
         </section>
         <section id="services" className="outcomes-section section-space">
@@ -499,7 +473,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
             <div className="founder-copy">
               <p className="eyebrow">Meet your partner</p>
               <h2>
-                Enterprise experience.
+                Global experience.
                 <br />
                 <em>Personal accountability.</em>
               </h2>
@@ -509,28 +483,10 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
                 Local partnership is why it matters.
               </p>
               <p>
-                After decades leading global teams and mission-critical
-                operations, Troy Hill founded Sentient Partners to bring
-                enterprise-level expertise directly to growing businesses.
+                After senior leadership roles at Hewlett-Packard and E*TRADE
+                Financial, Troy Hill founded Sentient Partners to be a hands-on
+                technology partner for growing local businesses.
               </p>
-              <p>
-                His prior senior leadership experience at Hewlett-Packard and
-                E*TRADE Financial spans teams of thousands and technology
-                operations reaching more than 180 countries. That background
-                informs a practical approach: understand the business, build
-                carefully, and verify the result.
-              </p>
-              <p>
-                Today, every engagement combines strategic perspective with
-                hands-on execution and a personal commitment to getting it
-                right.
-              </p>
-              <div className="experience-note">
-                Prior corporate experience includes financial services,
-                aviation, healthcare, and enterprise technology. These are
-                Troy's career credentials, not Sentient Partners client
-                endorsements.
-              </div>
               <a
                 className="text-link"
                 href={BOOKING_URL}
@@ -539,7 +495,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
                   book("Founder");
                 }}
               >
-                Have a conversation with Troy <ArrowUpRight size={16} />
+                Book a 20-minute introductory call <ArrowUpRight size={16} />
               </a>
             </div>
           </div>
@@ -625,7 +581,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
                 book("Final invitation");
               }}
             >
-              Schedule a Conversation <ArrowUpRight size={17} />
+              Book a 20-minute introductory call <ArrowUpRight size={17} />
             </a>
             <button
               className="contact-alternative"
@@ -641,7 +597,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
           <div className="footer-top">
             <div>
               <Brand />
-              <p>Global perspective. Local commitment.</p>
+              <p>Your local business and technology partner.</p>
             </div>
             <div>
               <span>Explore</span>
@@ -656,7 +612,7 @@ export default function Landing({ banner }: { banner: BannerDisplayState }) {
                 troyhill@sentientpartners.ai
               </a>
               <a href={BOOKING_URL}>
-                Book a conversation <ArrowUpRight size={12} />
+                Book a 20-minute introductory call <ArrowUpRight size={12} />
               </a>
               <button onClick={() => openSentientChat({ source: "Footer" })}>
                 Ask our AI concierge

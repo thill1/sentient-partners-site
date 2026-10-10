@@ -584,3 +584,17 @@
     font-size: 14px;
   }
 }
+
+/* Polish pass: positioning eyebrow above the hero headline. */
+.golden-gate .hero-eyebrow {
+  margin: 0 0 14px;
+  color: #ead7b3;
+  text-shadow: 0 1px 6px #07172480;
+}
+/* Polish pass: keep the phone clock inside the safe area (notch / home bar). */
+@media (max-width: 600px) {
+  .golden-gate .hero-clock-rail {
+    bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+    right: max(var(--rail-gutter), env(safe-area-inset-right, 0px));
+  }
+}

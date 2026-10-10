@@ -146,12 +146,13 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
+          <p className="eyebrow hero-eyebrow">Your local business and technology partner</p>
           <h1 id="hero-title">
             <span>Global <br className="hero-mobile-break" />Experience. </span>
             <em>Local <br className="hero-mobile-break" />Impact.</em>
           </h1>
           <p className="hero-description">
-            Enterprise-caliber strategy, intelligent technology, and{" "}
+            Practical strategy, dependable technology, and{" "}
             <span className="whitespace-nowrap">hands-on</span> partnership for
             growing businesses.
           </p>
@@ -163,14 +164,14 @@ export function GoldenGate() {
                 e.preventDefault();
                 openBookingModal({
                   source: "Cinematic hero",
-                  ctaLabel: "Book a Conversation",
+                  ctaLabel: "Book a 20-minute introductory call",
                 });
               }}
             >
-              Book a Conversation <ArrowUpRight size={18} />
+              Book a 20-minute introductory call <ArrowUpRight size={18} />
             </a>
             <a className="text-link" href="#work">
-              Explore Our Work <ArrowUpRight size={18} />
+              Explore our work <ArrowUpRight size={18} />
             </a>
           </div>
         </div>
