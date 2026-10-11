@@ -649,7 +649,7 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         </h1>
         <p className="flex items-center gap-3 text-[10px] uppercase text-white/50 md:text-[11px]" style={{ letterSpacing: '0.5em', paddingLeft: '0.5em' }}>
           <span aria-hidden="true" className="h-px w-8 bg-white/30" />
-          AI First Agency
+          Your local business and technology partner
           <span aria-hidden="true" className="h-px w-8 bg-white/30" />
         </p>
       </div>

@@ -11,7 +11,7 @@ type LogoProps = {
 /**
  * Official Sentient Partners lockup:
  * interlocked SP serif monogram | hairline divider | serif wordmark
- * with the "AI First Agency" tagline in letterspaced caps.
+ * with the "Your local business and technology partner" tagline in letterspaced caps.
  * Brand navy: #0D1F4E
  */
 export const Logo: React.FC<LogoProps> = ({ className = '', markOnly = false }) => {
@@ -47,7 +47,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', markOnly = false }) 
             </span>
             <span className="mt-1.5 flex items-center gap-2 text-[9px] md:text-[10px] tracking-brand uppercase text-brand-900/60 dark:text-white/55">
               <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
-              AI First Agency
+              Your local business and technology partner
               <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
             </span>
           </div>

@@ -25,9 +25,9 @@ export interface SiteSettings {
 export const defaultSiteSettings: SiteSettings = {
   banner: {
     enabled: true,
-    message: 'Free AI Opportunity Review',
-    ctaText: 'Get Review',
-    ctaUrl: '#blueprint',
+    message: 'Book a 20-minute introductory call',
+    ctaText: 'Book a 20-minute introductory call',
+    ctaUrl: 'https://cal.com/sentient-partners-strategy/introductory-call',
     variant: 'info',
   },
   ai: {
