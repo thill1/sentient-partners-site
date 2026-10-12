@@ -1,5 +1,6 @@
 import { json } from '../lib/http';
 import { getSiteSettings } from '../lib/siteSettings';
+import { applyLegacyBannerOverride } from '../../src/lib/siteSettingsSchema';
 import type { Env } from '../types';
 
 interface PagesFunctionContext {
@@ -7,7 +8,7 @@ interface PagesFunctionContext {
 }
 
 export const onRequestGet = async (context: PagesFunctionContext) => {
-  const settings = await getSiteSettings(context.env);
+  const settings = applyLegacyBannerOverride(await getSiteSettings(context.env));
 
   return json({
     banner: settings.banner,
