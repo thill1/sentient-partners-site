@@ -647,10 +647,10 @@ export const IntroSplash: React.FC<{ onDone?: () => void }> = ({ onDone }) => {
         <h1 className="font-display text-3xl font-semibold text-white md:text-5xl">
           Sentient Partners
         </h1>
-        <p className="flex items-center gap-3 text-[10px] uppercase text-white/50 md:text-[11px]" style={{ letterSpacing: '0.5em', paddingLeft: '0.5em' }}>
-          <span aria-hidden="true" className="h-px w-8 bg-white/30" />
-          Your local business and technology partner
-          <span aria-hidden="true" className="h-px w-8 bg-white/30" />
+        <p className="flex max-w-[90vw] items-center justify-center gap-3 text-center text-[9px] uppercase leading-relaxed tracking-[0.28em] pl-[0.28em] text-white/50 sm:text-[10px] md:text-[11px] md:tracking-[0.42em] md:pl-[0.42em]">
+          <span aria-hidden="true" className="hidden h-px w-8 shrink-0 bg-white/30 sm:block" />
+          <span>Your local business and technology partner</span>
+          <span aria-hidden="true" className="hidden h-px w-8 shrink-0 bg-white/30 sm:block" />
         </p>
       </div>
 

@@ -45,10 +45,12 @@ export const Logo: React.FC<LogoProps> = ({ className = '', markOnly = false }) 
             <span className="font-display font-semibold text-brand-900 dark:text-white text-[19px] md:text-[22px] tracking-tight">
               Sentient Partners
             </span>
-            <span className="mt-1.5 flex items-center gap-2 text-[9px] md:text-[10px] tracking-brand uppercase text-brand-900/60 dark:text-white/55">
-              <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
-              Your local business and technology partner
-              <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
+            <span className="mt-1.5 flex flex-col gap-[3px] text-[8.5px] md:text-[9.5px] leading-none tracking-[0.18em] uppercase whitespace-nowrap text-brand-900/60 dark:text-white/55">
+              <span className="flex items-center gap-2">
+                <span aria-hidden="true" className="h-px w-4 bg-current opacity-50" />
+                Your local business
+              </span>
+              <span className="pl-6">and technology partner</span>
             </span>
           </div>
         </>
