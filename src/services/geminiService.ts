@@ -116,7 +116,7 @@ export const submitLead = async (
 };
 
 export const sendEmailData = async (data: Record<string, unknown>, subject: string): Promise<EmailResult> => {
-  const targetEmail = "troyhill@sentientpartners.ai";
+  const targetEmail = "hello@sentientpartners.ai";
   const endpoint = `https://formsubmit.co/ajax/${targetEmail}`;
   const timestamp = new Date();
   const uniqueSubject = `${subject} - ${timestamp.toLocaleString()}`;

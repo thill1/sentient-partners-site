@@ -182,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({ banner }) => {
             </button>
 
             {/* Desktop CTA */}
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <Button size="md" onClick={openBooking}>
                 {HEADER_CONTENT.bookingCtaLabel}
               </Button>
