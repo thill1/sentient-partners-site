@@ -34,11 +34,31 @@ export const prefersReducedMotion = () =>
 
 let fabric: Promise<Fabric | null> | null = null;
 
+/**
+ * Resolves on the visitor's first sign of intent (scroll, wheel, touch,
+ * pointer, key). The page is fully readable before then; motion only needs to
+ * exist once someone starts moving, which keeps the first load light.
+ */
+function whenEngaged(): Promise<void> {
+  return new Promise((resolve) => {
+    const events = ["scroll", "wheel", "touchstart", "pointerdown", "keydown"];
+    const go = () => {
+      events.forEach((e) => removeEventListener(e, go));
+      resolve();
+    };
+    if (scrollY > 0) return resolve();
+    events.forEach((e) =>
+      addEventListener(e, go, { passive: true, once: true }),
+    );
+  });
+}
+
 /** Loads GSAP + plugins and starts Lenis on the GSAP ticker. Null under reduced motion. */
 export function loadFabric(): Promise<Fabric | null> {
   if (typeof window === "undefined" || prefersReducedMotion())
     return Promise.resolve(null);
   fabric ??= (async () => {
+    await whenEngaged();
     const [{ gsap }, { ScrollTrigger }, { SplitText }, { default: LenisCtor }] =
       await Promise.all([
         import("gsap"),

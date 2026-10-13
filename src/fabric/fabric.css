@@ -65,6 +65,14 @@
   mix-blend-mode: overlay;
   animation: pa-grain 0.9s steps(4) infinite;
 }
+.pa-fog,
+.pa-grain {
+  animation-play-state: paused;
+}
+.is-past-hero .pa-fog,
+.is-past-hero .pa-grain {
+  animation-play-state: running;
+}
 .is-past-hero .pa-grain {
   opacity: 0.09;
 }
