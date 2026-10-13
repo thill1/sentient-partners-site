@@ -10,6 +10,8 @@ import {
 import { GoldenGate } from "./GoldenGate";
 import { Capabilities } from "./Capabilities";
 import "./atmosphere.css";
+import "./cohesion.css";
+import { useScrollReveal } from "./useScrollReveal";
 
 const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
@@ -233,6 +235,7 @@ function Connected() {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Landing(_props: { banner: BannerDisplayState }) {
+  useScrollReveal();
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">
@@ -242,6 +245,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
       <main id="main-content">
         <GoldenGate />
         <section id="perspective" className="perspective-section section-space">
+          <div className="perspective-backdrop" aria-hidden="true" />
           <div className="page-width">
             <div className="perspective-layout">
               <h2>
@@ -295,11 +299,16 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                 We'll bring the strategy and the systems.
               </p>
             </div>
-            <div className="outcomes-grid">
-              {outcomes.map(([title, heading, body]) => (
-                <article key={title}>
-                  <span className="outcome-title">{title}</span>
-                  <h3>{heading}</h3>
+            <ol className="outcomes-grid">
+              {outcomes.map(([title, heading, body], i) => (
+                <li key={title} className="reveal">
+                  <span className="outcome-number" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <span className="outcome-title">{title}</span>
+                    <h3>{heading}</h3>
+                  </div>
                   <p>{body}</p>
                   <a
                     href="#capabilities"
@@ -307,9 +316,9 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                   >
                     <ArrowUpRight size={20} />
                   </a>
-                </article>
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </section>
         <Capabilities />
@@ -544,6 +553,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
           </div>
         </section>
         <section className="local-interlude">
+          <div className="fog-seam" aria-hidden="true" />
           <img
             src="/atmosphere/downtown-auburn-1200.webp"
             alt="Historic downtown Auburn in Northern California"
@@ -562,6 +572,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
           </div>
         </section>
         <section id="contact" className="contact-section section-space">
+          <div className="contact-backdrop" aria-hidden="true" />
           <div className="page-width">
             <p className="eyebrow">The next step starts with a conversation</p>
             <h2>
@@ -574,7 +585,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
               <br className="desktop-break" /> simpler, not more complicated.
             </p>
             <a
-              className="button button-light"
+              className="text-link contact-cta"
               href={BOOKING_URL}
               onClick={(e) => {
                 e.preventDefault();
@@ -583,12 +594,12 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             >
               Book a 20-minute introductory call <ArrowUpRight size={17} />
             </a>
-            <button
+            <a
               className="contact-alternative"
-              onClick={() => openContactModal({ source: "Final invitation" })}
+              href="mailto:hello@sentientpartners.ai"
             >
-              Prefer to write? Send us a note <Mail size={14} />
-            </button>
+              <Mail size={14} /> Prefer to write? hello@sentientpartners.ai
+            </a>
           </div>
         </section>
       </main>

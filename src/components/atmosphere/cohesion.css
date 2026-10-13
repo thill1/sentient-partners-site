@@ -1,0 +1,540 @@
+/*
+ * "The fog rolls down the page": below the hero, every section stays in the
+ * hero's world — deep navy, champagne light, Coastal Fog text, and soft fog
+ * seams instead of hard color cuts. Loaded after atmosphere.css.
+ */
+.atmosphere-page {
+  --c-deep: #081536;
+  --c-navy: #0d1f4e;
+  --c-tint-1: #23366a;
+  --c-tint-2: #3a4d80;
+  --c-tint-3: #5a6a94;
+  --c-fog: #a6b1bd;
+  --c-gold: #c8b795;
+  --c-ivory: #f3f0e8;
+  --c-body: #c4cbd6;
+  --c-rule: rgba(200, 183, 149, 0.22);
+  background: var(--c-deep);
+  color: var(--c-ivory);
+}
+.atmosphere-page ::selection {
+  background: var(--c-gold);
+  color: var(--c-navy);
+}
+
+/* Shared section language */
+.atmosphere-page main > section:not(.golden-gate) {
+  position: relative;
+  isolation: isolate;
+  color: var(--c-ivory);
+}
+.atmosphere-page
+  main
+  > section:not(.golden-gate):not(.local-interlude)::before {
+  /* A drifting fog seam softens the boundary with the section above. */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -10%;
+  right: -10%;
+  top: -120px;
+  height: 260px;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      55% 60% at 22% 50%,
+      rgba(166, 177, 189, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 55% at 78% 45%,
+      rgba(166, 177, 189, 0.11),
+      transparent 70%
+    );
+  filter: blur(22px);
+  animation: fog-seam-drift 38s ease-in-out infinite alternate;
+}
+@keyframes fog-seam-drift {
+  from {
+    transform: translate3d(-2%, 0, 0);
+  }
+  to {
+    transform: translate3d(3%, 10px, 0);
+  }
+}
+.atmosphere-page main > section:not(.golden-gate) h2 em,
+.atmosphere-page main > section:not(.golden-gate) h3 em {
+  color: var(--c-gold);
+}
+.atmosphere-page main > section:not(.golden-gate) .eyebrow,
+.section-heading .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--c-gold);
+  letter-spacing: 0.24em;
+}
+.atmosphere-page main > section:not(.golden-gate) .eyebrow::before {
+  content: "";
+  width: 36px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+  flex: none;
+}
+.atmosphere-page main > section:not(.golden-gate) h2 {
+  font-size: clamp(44px, 5.6vw, 88px);
+  line-height: 0.98;
+}
+.section-heading > p {
+  color: var(--c-fog);
+  max-width: 360px;
+}
+.atmosphere-page main > section:not(.golden-gate) .text-link {
+  color: var(--c-ivory);
+  border-bottom-color: var(--c-gold);
+}
+.illustration-note,
+.work-disclosure {
+  color: var(--c-tint-3) !important;
+}
+
+/* 1. Perspective — the Bay continues out of the hero and dissolves into navy */
+.perspective-section {
+  background: var(--c-deep);
+  padding-top: 0;
+  overflow: hidden;
+}
+.perspective-backdrop {
+  height: 300px;
+  margin-bottom: -40px;
+  background: url("/atmosphere/bay.webp") center 70% / cover;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.4) 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.4) 65%,
+    transparent 100%
+  );
+  opacity: 0.55;
+  filter: saturate(0.7) brightness(0.8);
+}
+.perspective-section {
+  margin-top: -1px;
+  background: linear-gradient(
+    180deg,
+    #0d1f2e 0%,
+    #0b1a3c 200px,
+    var(--c-deep) 380px
+  );
+}
+.perspective-section::before {
+  /* A heavier fog bank rides the seam where the hero hands off. */
+  top: 110px !important;
+  height: 300px !important;
+  z-index: 1 !important;
+  background:
+    radial-gradient(
+      60% 55% at 30% 50%,
+      rgba(166, 177, 189, 0.24),
+      transparent 72%
+    ),
+    radial-gradient(
+      50% 50% at 75% 45%,
+      rgba(166, 177, 189, 0.18),
+      transparent 72%
+    ) !important;
+}
+.perspective-layout {
+  align-items: end;
+}
+.perspective-layout h2 {
+  font-size: clamp(48px, 6vw, 92px) !important;
+}
+.lead-copy {
+  font-family: var(--a-serif);
+  font-size: 30px;
+  line-height: 1.2;
+}
+.perspective-copy > p:not(.lead-copy) {
+  color: var(--c-body);
+  font-size: 14px;
+}
+
+/* 2. Outcomes — editorial ruled rows with champagne numerals, no cards */
+.outcomes-section {
+  background: linear-gradient(180deg, var(--c-deep), var(--c-navy) 55%);
+  padding-bottom: 120px;
+}
+.outcomes-grid {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.outcomes-grid li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1.1fr) minmax(0, 1.2fr) 44px;
+  gap: 36px;
+  align-items: baseline;
+  padding: 40px 0;
+  border-top: 1px solid var(--c-rule);
+  transition: background 0.5s;
+}
+.outcomes-grid li:last-child {
+  border-bottom: 1px solid var(--c-rule);
+}
+.outcomes-grid li:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(200, 183, 149, 0.07),
+    transparent 70%
+  );
+}
+.outcome-number {
+  font-family: var(--a-serif);
+  font-size: 60px;
+  line-height: 0.8;
+  color: var(--c-gold);
+  opacity: 0.6;
+}
+.outcome-title {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-fog);
+  margin-bottom: 14px;
+}
+.outcomes-grid h3 {
+  font-size: clamp(28px, 2.6vw, 40px);
+  margin: 0;
+}
+.outcomes-grid p {
+  color: var(--c-body);
+  font-size: 14px;
+}
+.outcomes-grid a {
+  position: static;
+  border-color: var(--c-rule);
+  color: var(--c-gold);
+}
+.outcomes-grid a:hover {
+  background: rgba(200, 183, 149, 0.12);
+}
+
+/* 3. Capabilities — navy stage; the demo window stays a lit "screen" */
+.capabilities-section {
+  --cx-ink: var(--c-ivory);
+  --cx-muted: var(--c-fog);
+  --cx-soft: var(--c-tint-3);
+  --cx-line: rgba(166, 177, 189, 0.22);
+  --cx-gold-deep: var(--c-gold);
+  background: linear-gradient(
+    180deg,
+    var(--c-navy),
+    var(--c-tint-1) 60%,
+    var(--c-navy)
+  );
+}
+.capabilities-section .cx-nav,
+.capabilities-section .cx-nav button {
+  border-color: rgba(166, 177, 189, 0.22);
+}
+.capabilities-section .cx-index {
+  color: var(--c-tint-3);
+}
+.capabilities-section .cx-panel {
+  --cx-ink: #102434;
+  --cx-muted: #53646e;
+  --cx-soft: #6b7b82;
+  --cx-line: #d6dcd7;
+  --cx-gold-deep: #8e733f;
+  box-shadow: 0 40px 90px rgba(4, 10, 30, 0.55);
+}
+
+/* 4. Connected intelligence */
+.connected-section {
+  background: var(--c-navy);
+}
+.connected-inner > div > p:not(.eyebrow),
+.journey-detail p,
+.connection-story > small {
+  color: var(--c-body);
+}
+.journey-line button span {
+  background: var(--c-navy);
+  border-color: var(--c-tint-3);
+}
+.journey-line button[aria-pressed="true"] span {
+  background: var(--c-gold);
+  border-color: var(--c-gold);
+  color: var(--c-navy);
+}
+.journey-detail {
+  border-color: var(--c-rule);
+}
+
+/* 5. Our work — the illustrations sit on navy tints */
+.work-section {
+  background: linear-gradient(180deg, var(--c-navy), var(--c-deep));
+}
+.work-visual {
+  border: 1px solid rgba(166, 177, 189, 0.14);
+}
+.field-visual {
+  background: linear-gradient(160deg, var(--c-tint-2), var(--c-tint-1));
+}
+.customer-visual {
+  background: linear-gradient(160deg, var(--c-tint-3), var(--c-tint-2));
+}
+.relay-visual {
+  background: linear-gradient(160deg, var(--c-tint-1), var(--c-navy));
+}
+.work-grid .eyebrow {
+  font-size: 9px !important;
+}
+.work-grid article > p:not(.eyebrow) {
+  color: var(--c-body);
+  font-size: 13px;
+}
+.work-grid h3 {
+  font-size: 34px;
+}
+
+/* 6. Founder — portrait in low light, no boxed caption */
+.founder-section {
+  background:
+    radial-gradient(
+      60% 70% at 20% 50%,
+      rgba(58, 77, 128, 0.45),
+      transparent 70%
+    ),
+    var(--c-deep);
+}
+.founder-portrait {
+  background: none;
+}
+.founder-portrait img {
+  filter: saturate(0.85) brightness(0.95);
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, #000 70%, transparent);
+}
+.founder-portrait > div {
+  background: none;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0;
+  margin-top: -36px;
+  position: relative;
+}
+.founder-portrait span {
+  color: var(--c-gold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.founder-copy h2 {
+  font-size: clamp(44px, 4.6vw, 72px) !important;
+}
+.founder-copy .lead-copy {
+  font-size: 26px;
+}
+.founder-copy > p:not(.eyebrow):not(.lead-copy) {
+  color: var(--c-body);
+  font-size: 14px;
+}
+
+/* 7. Process — ruled steps with large serif numerals */
+.process-section {
+  background: linear-gradient(180deg, var(--c-deep), var(--c-navy));
+}
+.process-grid article {
+  border-top: 1px solid var(--c-rule);
+}
+.process-grid article > span {
+  display: block;
+  font-family: var(--a-serif);
+  font-size: 64px;
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: var(--c-gold);
+  opacity: 0.6;
+}
+.process-grid h3 {
+  font-size: 42px;
+  margin-top: 18px;
+}
+.process-grid p {
+  color: var(--c-body);
+  font-size: 14px;
+}
+
+/* 8. Auburn — fog rolls in at both edges */
+.local-interlude {
+  background: var(--c-navy);
+  height: 540px;
+}
+.local-interlude:after {
+  background:
+    linear-gradient(
+      180deg,
+      var(--c-navy) 0%,
+      rgba(13, 31, 78, 0.35) 22%,
+      rgba(13, 31, 78, 0.35) 72%,
+      var(--c-navy) 100%
+    ),
+    linear-gradient(90deg, rgba(8, 21, 54, 0.85), rgba(8, 21, 54, 0.25));
+}
+.local-interlude span {
+  color: var(--c-fog);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* 9. Contact — back to the bridge at dusk */
+.contact-section {
+  background: var(--c-navy);
+  overflow: hidden;
+  padding-block: 170px 150px;
+}
+.contact-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url("/atmosphere/bridge.webp") center 40% / cover;
+  opacity: 0.45;
+  filter: saturate(0.7);
+}
+.contact-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    var(--c-navy) 0%,
+    rgba(13, 31, 78, 0.6) 35%,
+    rgba(13, 31, 78, 0.7) 70%,
+    var(--c-deep) 100%
+  );
+}
+.contact-section .eyebrow {
+  justify-content: center;
+}
+.contact-section .eyebrow::after {
+  content: "";
+  width: 36px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.contact-section h2 {
+  font-size: clamp(48px, 7vw, 104px) !important;
+}
+.contact-section p:not(.eyebrow) {
+  color: #d3d8e0;
+  font-size: 15px;
+}
+.contact-cta {
+  font-size: 13px !important;
+}
+.contact-alternative {
+  color: var(--c-fog);
+  font-size: 12px !important;
+  margin-top: 26px;
+}
+.contact-alternative:hover {
+  color: var(--c-ivory);
+}
+
+/* Footer */
+.atmosphere-footer {
+  background: var(--c-deep);
+  color: var(--c-fog);
+}
+.footer-top {
+  border-top-color: var(--c-rule);
+}
+
+/* Scroll reveal (enabled by useScrollReveal only when motion is welcome) */
+.reveal-ready .reveal-item {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition:
+    opacity 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms),
+    transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms);
+}
+.reveal-ready .reveal-item.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 850px) {
+  .outcomes-grid li {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 10px 16px;
+    padding: 30px 0;
+  }
+  .outcome-number {
+    font-size: 40px;
+  }
+  .outcomes-grid li > p {
+    grid-column: 2;
+  }
+  .outcomes-grid a {
+    display: none;
+  }
+  .perspective-backdrop {
+    height: 200px;
+  }
+  .contact-section {
+    padding-block: 120px 110px;
+  }
+}
+
+@media (max-width: 600px) {
+  .process-grid article {
+    grid-template-columns: 52px 1fr !important;
+  }
+  .process-grid article > span {
+    font-size: 44px;
+  }
+  .process-grid h3 {
+    font-size: 34px;
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere-page main > section::before {
+    animation: none !important;
+  }
+  .reveal-ready .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Illustrations keep their own "paper" ink so they read as lit screens. */
+.capabilities-section .cx-caption,
+.capabilities-section .cx-discuss,
+.field-preview,
+.estimate-preview {
+  --cx-ink: #102434;
+  --cx-muted: #53646e;
+  --cx-line: #d6dcd7;
+  --cx-gold-deep: #8e733f;
+  color: #102434;
+}
+.estimate-preview {
+  color: #4f5140;
+}
