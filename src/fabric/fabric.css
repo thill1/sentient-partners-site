@@ -1,0 +1,107 @@
+@import "./tokens.css";
+
+.page-atmosphere {
+  --progress: 0;
+  --velocity: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  contain: strict;
+}
+.pa-fog,
+.pa-grain {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out);
+}
+.pa-fog {
+  width: 90vmax;
+  height: 60vmax;
+  background: radial-gradient(
+    closest-side,
+    rgba(166, 177, 189, 0.13),
+    rgba(166, 177, 189, 0.05) 55%,
+    transparent
+  );
+  will-change: transform;
+}
+.pa-fog-a {
+  left: -30vmax;
+  top: 10vh;
+  animation: pa-drift-a 46s var(--ease-in-out) infinite alternate;
+}
+.pa-fog-b {
+  right: -35vmax;
+  bottom: -20vh;
+  animation: pa-drift-b 58s var(--ease-in-out) infinite alternate;
+}
+.is-past-hero .pa-fog {
+  opacity: calc(0.55 + var(--velocity) * 0.45);
+}
+.pa-stir {
+  position: absolute;
+  inset: 0;
+}
+.pa-stir-a {
+  transform: translate3d(calc(var(--velocity) * 6vw), 0, 0);
+}
+.pa-stir-b {
+  transform: translate3d(calc(var(--velocity) * -7vw), 0, 0);
+}
+@keyframes pa-drift-a {
+  to {
+    transform: translate3d(18vw, 8vh, 0) scale(1.15);
+  }
+}
+@keyframes pa-drift-b {
+  to {
+    transform: translate3d(-16vw, -10vh, 0) scale(1.1);
+  }
+}
+.pa-grain {
+  inset: -50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  animation: pa-grain 0.9s steps(4) infinite;
+}
+.is-past-hero .pa-grain {
+  opacity: 0.09;
+}
+@keyframes pa-grain {
+  25% {
+    transform: translate(-3%, 2%);
+  }
+  50% {
+    transform: translate(2%, -3%);
+  }
+  75% {
+    transform: translate(-1%, 3%);
+  }
+  100% {
+    transform: translate(3%, -1%);
+  }
+}
+.pa-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(200, 183, 149, 0.4), var(--f-gold));
+  transform-origin: left;
+  transform: scaleX(var(--progress));
+  opacity: 0;
+  transition: opacity 0.6s;
+  box-shadow: 0 0 12px rgba(200, 183, 149, 0.45);
+}
+.is-past-hero .pa-progress {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-fog,
+  .pa-grain {
+    animation: none;
+  }
+}

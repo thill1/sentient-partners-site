@@ -35,6 +35,16 @@
       })();
     </script>
 
+    <!-- Motion preference before first paint, so pinned sections never shift. -->
+    <script>
+      (function () {
+        try {
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          document.documentElement.classList.add(reduce ? "motion-reduce" : "motion-ok");
+        } catch (e) {}
+      })();
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Sentient Partners | Global Experience. Local Impact. Your Local Business and Technology Partner</title>

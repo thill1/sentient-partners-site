@@ -12,6 +12,8 @@ import { Capabilities } from "./Capabilities";
 import "./atmosphere.css";
 import "./cohesion.css";
 import { useScrollReveal } from "./useScrollReveal";
+import Perspective from "./Perspective";
+import PageAtmosphere from "../../fabric/PageAtmosphere";
 
 const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
@@ -241,47 +243,11 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
+      <PageAtmosphere />
       <Navigation />
       <main id="main-content">
         <GoldenGate />
-        <section id="perspective" className="perspective-section section-space">
-          <div className="perspective-backdrop" aria-hidden="true" />
-          <div className="page-width">
-            <div className="perspective-layout">
-              <h2>
-                The discipline of
-                <br />
-                proven technology.
-                <br />
-                <em>
-                  The commitment
-                  <br />
-                  of a local partner.
-                </em>
-              </h2>
-              <div className="perspective-copy">
-                <p className="lead-copy">
-                  Seasoned experience.
-                  <br />
-                  Built for your business.
-                </p>
-                <p>
-                  Growing businesses deserve the same thoughtful strategy,
-                  reliable systems, and disciplined execution as anyone.
-                </p>
-                <p>
-                  We make that expertise practical. From Auburn and Placer
-                  County to Greater Sacramento and beyond, we help you connect
-                  the right technology to the work you do every day.
-                </p>
-                <a className="text-link" href="#founder">
-                  The experience behind the partnership{" "}
-                  <ArrowUpRight size={16} />
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+        <Perspective />
         <section id="services" className="outcomes-section section-space">
           <div className="page-width">
             <div className="section-heading">
@@ -301,7 +267,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </div>
             <ol className="outcomes-grid">
               {outcomes.map(([title, heading, body], i) => (
-                <li key={title} className="reveal">
+                <li key={title}>
                   <span className="outcome-number" aria-hidden="true">
                     {String(i + 1).padStart(2, "0")}
                   </span>

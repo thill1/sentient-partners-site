@@ -1,0 +1,279 @@
+/* Perspective — a pinned showpiece over Bay water (see Perspective.tsx). */
+.perspective-v2 {
+  position: relative;
+  z-index: 20; /* above the hero's own layers so the seam can veil them */
+  color: var(--f-ivory);
+  background: var(--f-deep);
+}
+.motion-ok .perspective-v2 {
+  height: 260svh;
+}
+.pv-stage {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: var(--space-3xl) var(--space-2xl);
+}
+.motion-ok .pv-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  padding-block: 110px var(--space-xl);
+}
+
+/* The seam: the hero's floor dissolves through fog into navy. It overlaps the
+   hero's last screen from inside this section, so the hero itself is untouched. */
+.pv-seam {
+  display: none; /* shown once the hero has settled its height (no layout shift) */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 75svh;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 31, 46, 0) 0%,
+    rgba(13, 31, 46, 0.35) 40%,
+    rgba(11, 26, 52, 0.85) 78%,
+    var(--f-deep) 100%
+  );
+}
+.fabric-ready .pv-seam {
+  display: block;
+}
+.pv-seam-fog {
+  position: absolute;
+  will-change: transform;
+  left: -15%;
+  width: 130%;
+  height: 110%;
+  bottom: -55%;
+  background: var(--fog-bank);
+  filter: blur(20px);
+  opacity: 0.9;
+}
+.pv-seam-fog-b {
+  bottom: -5%;
+  opacity: 0.6;
+  transform: scaleX(-1);
+}
+.motion-ok .pv-seam-fog-a {
+  animation: pv-seam 40s var(--ease-in-out) infinite alternate;
+}
+.motion-ok .pv-seam-fog-b {
+  animation: pv-seam-b 52s var(--ease-in-out) infinite alternate;
+}
+@keyframes pv-seam {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(6%, 0, 0);
+  }
+}
+@keyframes pv-seam-b {
+  from {
+    transform: scaleX(-1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scaleX(-1) translate3d(-6%, 0, 0);
+  }
+}
+
+/* Depth layers */
+.pv-layers {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 30%,
+    #000 72%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 30%,
+    #000 72%,
+    transparent 100%
+  );
+}
+.pv-layers > div {
+  position: absolute;
+  inset: 0;
+}
+.pv-water {
+  inset: -8% !important;
+  background: url("/atmosphere/bay.webp") center 65% / cover;
+  filter: saturate(0.65) brightness(0.62) contrast(1.05);
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 28%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 28%,
+    #000 70%,
+    transparent 100%
+  );
+  will-change: transform;
+}
+.pv-fog-far {
+  background:
+    radial-gradient(
+      70% 40% at 30% 35%,
+      rgba(166, 177, 189, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 30% at 80% 60%,
+      rgba(166, 177, 189, 0.1),
+      transparent 70%
+    );
+}
+.pv-fog-near {
+  inset: auto -20% -10% -20% !important;
+  height: 55%;
+  background: radial-gradient(
+    60% 60% at 50% 70%,
+    rgba(200, 210, 222, 0.2),
+    transparent 72%
+  );
+  filter: blur(10px);
+}
+.pv-dusk {
+  background: linear-gradient(180deg, transparent, var(--f-deep) 85%);
+  opacity: 0;
+}
+.pv-layers::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 21, 54, 0.82) 0%,
+      rgba(8, 21, 54, 0.35) 55%,
+      rgba(8, 21, 54, 0.55) 100%
+    ),
+    linear-gradient(
+      180deg,
+      var(--f-deep) 0%,
+      transparent 18%,
+      transparent 82%,
+      var(--f-deep) 100%
+    );
+}
+
+/* Composition */
+.pv-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+  grid-template-areas:
+    "eyebrow ."
+    "headline copy";
+  column-gap: var(--space-2xl);
+  align-items: end;
+}
+.pv-eyebrow {
+  grid-area: eyebrow;
+  margin-bottom: var(--space-m);
+}
+.atmosphere-page .pv-headline {
+  grid-area: headline;
+  font-size: var(--step-6);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+}
+.pv-headline em {
+  color: var(--f-gold);
+}
+.pv-copy {
+  grid-area: copy;
+  max-width: 440px;
+  padding-bottom: 0.6em;
+}
+.pv-rule {
+  display: block;
+  width: 64px;
+  height: 1px;
+  background: var(--f-gold);
+  margin-bottom: var(--space-m);
+  transform-origin: left;
+}
+.pv-copy .lead-copy {
+  font-family: var(--a-serif);
+  font-size: var(--step-3);
+  line-height: 1.12;
+  color: var(--f-ivory);
+  margin-bottom: var(--space-m) !important;
+}
+.pv-copy > p:not(.lead-copy) {
+  color: var(--f-body);
+  font-size: var(--step-0);
+  line-height: 1.8;
+  margin-bottom: var(--space-s);
+}
+.pv-copy .text-link {
+  margin-top: var(--space-xs);
+  font-size: var(--step--1);
+}
+.pv-places {
+  position: relative;
+  z-index: 1;
+  width: min(1280px, calc(100% - 144px));
+  margin: var(--space-xl) auto 0;
+  display: flex;
+  gap: var(--space-l);
+  padding-top: var(--space-s);
+  border-top: 1px solid rgba(166, 177, 189, 0.18);
+  font-size: var(--step--2);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--f-fog);
+}
+
+@media (max-width: 899px), (max-height: 639px) {
+  .motion-ok .perspective-v2 {
+    height: auto;
+  }
+  .motion-ok .pv-stage {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+    padding-block: var(--space-3xl) var(--space-2xl);
+  }
+}
+@media (max-width: 899px) {
+  .pv-content {
+    grid-template-columns: 1fr;
+    grid-template-areas: "eyebrow" "headline" "copy";
+    row-gap: var(--space-xl);
+  }
+  .atmosphere-page .pv-headline {
+    font-size: clamp(2.9rem, 1.6rem + 6vw, 4.4rem);
+  }
+  .pv-places {
+    width: calc(100% - 2 * var(--gutter));
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-m);
+  }
+}
+@media (max-width: 600px) {
+  .pv-content {
+    width: calc(100% - 2 * var(--gutter));
+  }
+}
