@@ -19,7 +19,8 @@ export function useScrollReveal() {
       const root = document.querySelector<HTMLElement>(".atmosphere-page");
       if (!f || !alive || !root) return;
       ctx = f.gsap.context(() => {
-        const below = "main > section:not(.golden-gate):not(.perspective-v2)";
+        const below =
+          "main > section:not(.golden-gate):not(.perspective-v2):not(.outcomes-v2)";
         root
           .querySelectorAll<HTMLElement>(
             `${below} h2, .local-interlude p:not(.eyebrow)`,
@@ -30,7 +31,6 @@ export function useScrollReveal() {
             [
               `${below} .eyebrow`,
               ".section-heading > p",
-              ".outcomes-grid > li",
               ".connected-inner > div > p",
               ".connection-story",
               ".work-grid > article",

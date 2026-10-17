@@ -13,6 +13,7 @@ import "./atmosphere.css";
 import "./cohesion.css";
 import { useScrollReveal } from "./useScrollReveal";
 import Perspective from "./Perspective";
+import Outcomes from "./Outcomes";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
 const book = (source: string) =>
@@ -160,28 +161,6 @@ function Navigation() {
     </header>
   );
 }
-const outcomes = [
-  [
-    "Attract & Convert",
-    "Make it easier to find you. And choose you.",
-    "Distinctive websites, local search visibility, and a clear path from first impression to inquiry.",
-  ],
-  [
-    "Automate & Communicate",
-    "Be responsive, without being everywhere.",
-    "Helpful voice and chat experiences, timely follow-up, and fewer routine tasks for your team.",
-  ],
-  [
-    "Operate & Scale",
-    "Give your business room to grow.",
-    "Connected scheduling, customer operations, applications, and invoicing that work together.",
-  ],
-  [
-    "Advise & Grow",
-    "Move forward with a practical plan.",
-    "A clear-eyed view of your business, a sensible technology roadmap, and hands-on implementation.",
-  ],
-];
 const stages = [
   ["Inquiry", "Capture the question and the context."],
   ["Booking", "Find a time. Confirm the details."],
@@ -248,45 +227,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
       <main id="main-content">
         <GoldenGate />
         <Perspective />
-        <section id="services" className="outcomes-section section-space">
-          <div className="page-width">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">What we help you accomplish</p>
-                <h2>
-                  Better business.
-                  <br />
-                  <em>By intention.</em>
-                </h2>
-              </div>
-              <p>
-                Start with what needs to work better.
-                <br />
-                We'll bring the strategy and the systems.
-              </p>
-            </div>
-            <ol className="outcomes-grid">
-              {outcomes.map(([title, heading, body], i) => (
-                <li key={title}>
-                  <span className="outcome-number" aria-hidden="true">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <span className="outcome-title">{title}</span>
-                    <h3>{heading}</h3>
-                  </div>
-                  <p>{body}</p>
-                  <a
-                    href="#capabilities"
-                    aria-label={`Explore ${title.toLowerCase()} capabilities`}
-                  >
-                    <ArrowUpRight size={20} />
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+        <Outcomes />
         <Capabilities />
         <Connected />
         <section id="work" className="work-section section-space">
