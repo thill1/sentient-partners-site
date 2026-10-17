@@ -710,13 +710,19 @@ export function WebsiteDemo() {
           ))}
         </div>
         <div className={`cx-device is-${device}`}>
-          <div className="cx-site" ref={site}>
+          <div className="cx-site" ref={site} aria-hidden="true">
             <nav className="cx-site-nav">
               <strong>Hearth &amp; Home</strong>
               <span>
-                <button onClick={() => go("services")}>Services</button>
-                <button onClick={() => go("reviews")}>Reviews</button>
-                <button onClick={() => go("contact")}>Contact</button>
+                <button tabIndex={-1} onClick={() => go("services")}>
+                  Services
+                </button>
+                <button tabIndex={-1} onClick={() => go("reviews")}>
+                  Reviews
+                </button>
+                <button tabIndex={-1} onClick={() => go("contact")}>
+                  Contact
+                </button>
               </span>
             </nav>
             <section className="cx-site-hero">
@@ -727,7 +733,7 @@ export function WebsiteDemo() {
                 <em>with good care.</em>
               </h5>
               <p>Honest service for the place you call home.</p>
-              <button onClick={() => go("contact")}>
+              <button tabIndex={-1} onClick={() => go("contact")}>
                 Book a visit <ArrowRight size={11} />
               </button>
             </section>

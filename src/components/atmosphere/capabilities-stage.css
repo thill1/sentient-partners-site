@@ -1,0 +1,271 @@
+/* Capabilities — pinned showpiece (see Capabilities.tsx). */
+.capabilities-v2 {
+  position: relative;
+  padding-block: 0 !important;
+  background: linear-gradient(
+    180deg,
+    var(--f-navy) 0%,
+    var(--f-tint-1) 50%,
+    var(--f-navy) 100%
+  ) !important;
+}
+.cv-stage {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--space-3xl);
+}
+.cv-layers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cv-layers > div {
+  position: absolute;
+}
+.cv-glow {
+  inset: 0 -10% 0 25%;
+  background:
+    radial-gradient(
+      40% 45% at 55% 50%,
+      rgba(200, 183, 149, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(55% 60% at 60% 55%, rgba(58, 77, 128, 0.6), transparent 72%);
+  will-change: transform;
+}
+.cv-fog-a,
+.cv-fog-b {
+  left: -20%;
+  width: 140%;
+  height: 40%;
+  background: var(--fog-bank);
+  filter: blur(26px);
+  will-change: transform;
+}
+.cv-fog-a {
+  top: -6%;
+  opacity: 0.7;
+}
+.cv-fog-b {
+  bottom: -10%;
+  opacity: 0.55;
+  transform: scaleX(-1);
+}
+.cv-dusk {
+  inset: 0;
+  background:
+    var(--fog-bank), linear-gradient(180deg, transparent 35%, var(--f-navy) 92%);
+  opacity: 0;
+}
+.cv-content {
+  position: relative;
+  z-index: 1;
+}
+.atmosphere-page main .capabilities-v2 .cv-heading {
+  font-size: var(--step-5);
+  line-height: 0.96;
+}
+.capabilities-v2 .word-mask {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+/* Navigation as a champagne rail */
+.capabilities-v2 .cx-nav {
+  position: relative;
+  top: auto;
+  border-top: 0;
+  padding-left: 18px;
+}
+.cv-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(166, 177, 189, 0.2);
+}
+.cv-rail-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--f-gold);
+  transform-origin: top;
+  transform: scaleY(0);
+  box-shadow: 0 0 10px rgba(200, 183, 149, 0.55);
+}
+.capabilities-v2 .cx-nav button::after {
+  background: var(--f-gold);
+}
+.capabilities-v2 .cx-nav button[aria-selected="true"] .cx-index {
+  color: var(--f-gold);
+}
+
+/* Navy glass frame around a lit screen */
+.capabilities-v2 .cx-panel {
+  --cx-paper: transparent;
+  background: linear-gradient(
+    160deg,
+    rgba(35, 54, 106, 0.55),
+    rgba(8, 21, 54, 0.75)
+  );
+  border: 1px solid rgba(200, 183, 149, 0.28);
+  border-radius: 14px;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 50px 110px -30px rgba(2, 8, 28, 0.85),
+    0 0 0 1px rgba(8, 21, 54, 0.4);
+  transform-origin: 50% 100%;
+}
+.capabilities-v2 .cx-chrome {
+  color: var(--f-fog);
+  border-bottom-color: rgba(166, 177, 189, 0.16);
+}
+.capabilities-v2 .cx-chrome > span:first-child i {
+  background: rgba(200, 183, 149, 0.45);
+}
+.capabilities-v2 .cx-chrome small {
+  color: var(--f-gold);
+}
+.capabilities-v2 .cx-path b {
+  color: var(--f-tint-3);
+}
+.capabilities-v2 .cx-stage {
+  animation: none;
+  margin: 0 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(200, 183, 149, 0.16);
+}
+.atmosphere-page .capabilities-v2 .cx-caption {
+  --cx-ink: var(--f-ivory);
+  --cx-muted: var(--f-body);
+  --cx-gold-deep: var(--f-gold);
+  color: var(--f-ivory);
+  border-top: 0;
+}
+.atmosphere-page .capabilities-v2 .cx-caption h3 {
+  animation: none;
+  font-size: var(--step-3);
+}
+.atmosphere-page .capabilities-v2 .cx-discuss {
+  --cx-ink: var(--f-ivory);
+  color: var(--f-ivory);
+}
+.capabilities-v2 .cx-discuss > span {
+  border-bottom-color: var(--f-gold);
+  padding-bottom: 4px;
+}
+.capabilities-v2 .cx-discuss > i {
+  border-color: rgba(200, 183, 149, 0.45);
+  color: var(--f-gold);
+}
+.capabilities-v2 .cx-discuss:hover > i {
+  background: rgba(200, 183, 149, 0.14);
+}
+
+/* Pinned composition — size fixed in CSS at first paint (no layout shift). */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .motion-ok .capabilities-v2 {
+    height: 560svh;
+  }
+  .motion-ok .cv-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding-block: 104px 28px;
+    display: flex;
+    align-items: center;
+  }
+  .motion-ok .cv-content {
+    display: grid;
+    grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "head panel"
+      "nav panel"
+      "nav note";
+    column-gap: var(--space-2xl);
+    width: min(1360px, calc(100% - 96px));
+    max-height: 100%;
+  }
+  .motion-ok .capabilities-v2 .section-heading {
+    grid-area: head;
+    display: block;
+    margin: 0 0 var(--space-m);
+  }
+  .motion-ok .capabilities-v2 .section-heading > p {
+    margin-top: var(--space-s);
+    font-size: var(--step--1);
+    max-width: 30ch;
+  }
+  .atmosphere-page main .motion-ok .capabilities-v2 .cv-heading,
+  .motion-ok .atmosphere-page main .capabilities-v2 .cv-heading {
+    font-size: clamp(2.4rem, 3.4vw, 3.4rem);
+  }
+  .motion-ok .capabilities-v2 .cx-stage {
+    height: min(470px, calc(100svh - 400px));
+  }
+  .motion-ok .capabilities-v2 .cx-stage > * {
+    height: 100%;
+    min-height: 0;
+  }
+  .motion-ok .capabilities-v2 .cx-atelier {
+    display: contents;
+  }
+  .motion-ok .capabilities-v2 .cx-nav {
+    grid-area: nav;
+    position: relative;
+    top: auto;
+    align-self: start;
+  }
+  .motion-ok .capabilities-v2 .cx-nav button {
+    padding-block: 9px 8px;
+    border-bottom: 0;
+  }
+  .motion-ok .capabilities-v2 .cx-panel {
+    grid-area: panel;
+    align-self: center;
+    perspective: 1200px;
+  }
+  .motion-ok .capabilities-v2 .illustration-note {
+    grid-area: note;
+    margin-top: 10px !important;
+  }
+}
+@media (min-width: 1024px) and (min-height: 700px) and (max-height: 880px) {
+  .motion-ok .capabilities-v2 .cx-caption {
+    padding: 16px 24px 18px;
+  }
+  .motion-ok .capabilities-v2 .cx-caption ul {
+    margin-top: 10px;
+  }
+  .motion-ok .capabilities-v2 .cx-nav-name small {
+    display: none;
+  }
+}
+
+@media (max-width: 850px) {
+  .capabilities-v2 .cx-nav {
+    padding-left: 24px;
+    border-bottom-color: rgba(166, 177, 189, 0.2);
+  }
+  .cv-rail {
+    display: none;
+  }
+}
+@media (min-width: 851px) and (max-width: 1023px), (min-width: 851px) and (max-height: 699px) {
+  .capabilities-v2 .cx-nav {
+    position: sticky;
+    top: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capabilities-v2 .cx-stage,
+  .atmosphere-page .capabilities-v2 .cx-caption h3 {
+    animation: none;
+  }
+}

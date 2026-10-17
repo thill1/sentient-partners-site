@@ -20,7 +20,7 @@ export function useScrollReveal() {
       if (!f || !alive || !root) return;
       ctx = f.gsap.context(() => {
         const below =
-          "main > section:not(.golden-gate):not(.perspective-v2):not(.outcomes-v2)";
+          "main > section:not(.golden-gate):not(.perspective-v2):not(.outcomes-v2):not(.capabilities-v2)";
         root
           .querySelectorAll<HTMLElement>(
             `${below} h2, .local-interlude p:not(.eyebrow)`,
@@ -30,7 +30,7 @@ export function useScrollReveal() {
           ...root.querySelectorAll(
             [
               `${below} .eyebrow`,
-              ".section-heading > p",
+              `${below} .section-heading > p`,
               ".connected-inner > div > p",
               ".connection-story",
               ".work-grid > article",
