@@ -30,9 +30,9 @@
 }
 .atmosphere-page
   main
-  > section:not(.golden-gate):not(.local-interlude):not(
-    .perspective-v2):not(.contact-v2):not(.outcomes-v2
-  )::before {
+  > section:not(.golden-gate):not(.local-interlude):not(.perspective-v2):not(
+    .contact-v2
+  ):not(.outcomes-v2)::before {
   /* A drifting fog seam softens the boundary with the section above. */
   content: "";
   position: absolute;
@@ -465,4 +465,36 @@
 }
 .contact-backdrop {
   inset: -8% 0 !important;
+}
+
+/* Mobile and tablet rhythm: every section boundary uses the same spacing
+   as .section-space, so no pinned-layout padding leaks onto phones. */
+@media (max-width: 899px) {
+  .atmosphere-page main {
+    --rhythm: 85px;
+  }
+  .atmosphere-page main .ov-stage,
+  .atmosphere-page main .cv-stage {
+    padding-block: var(--rhythm);
+  }
+  .atmosphere-page main .ov-list {
+    margin-top: var(--space-xl);
+  }
+  .atmosphere-page main .pv-stage {
+    padding-bottom: var(--rhythm);
+    min-height: auto;
+  }
+  .atmosphere-page main .cf-stage {
+    padding-block: var(--rhythm);
+  }
+}
+@media (max-width: 600px) {
+  .atmosphere-page main {
+    --rhythm: 65px;
+  }
+  /* Outcomes rows: numeral above the text, everything on one left edge. */
+  .atmosphere-page main .ov-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xs);
+  }
 }
