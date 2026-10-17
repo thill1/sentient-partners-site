@@ -277,3 +277,16 @@
     width: calc(100% - 2 * var(--gutter));
   }
 }
+
+/* Place list sits on the copy column's gutter, never against the screen edge. */
+.atmosphere-page main .perspective-v2 .pv-places {
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .atmosphere-page main .perspective-v2 .pv-places {
+    width: calc(100% - 2 * var(--gutter));
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+}
