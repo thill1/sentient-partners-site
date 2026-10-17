@@ -88,7 +88,7 @@ export const ContactModal: React.FC = () => {
         onClick={() => setIsOpen(false)}
       />
 
-      <div className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto bg-white dark:bg-dark-card rounded-2xl shadow-2xl animate-slide-up ring-1 ring-white/10">
+      <div className="contact-modal-panel relative w-full max-w-lg max-h-[90dvh] overflow-y-auto bg-white dark:bg-dark-card rounded-2xl shadow-2xl animate-slide-up ring-1 ring-white/10">
         <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5">
           <div>
             <h3
@@ -189,7 +189,7 @@ export const ContactModal: React.FC = () => {
                   }
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all dark:text-white resize-none"
-                  placeholder="Tell us about your automation needs..."
+                  placeholder="Tell us a little about your business..."
                 />
               </div>
 

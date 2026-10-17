@@ -31,7 +31,7 @@
 .atmosphere-page
   main
   > section:not(.golden-gate):not(.local-interlude):not(
-    .perspective-v2):not(.outcomes-v2
+    .perspective-v2):not(.contact-v2):not(.outcomes-v2
   )::before {
   /* A drifting fog seam softens the boundary with the section above. */
   content: "";

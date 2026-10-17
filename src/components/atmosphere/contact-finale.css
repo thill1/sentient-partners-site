@@ -1,0 +1,341 @@
+/* Contact finale — pinned dusk (see Contact.tsx). */
+.contact-v2 {
+  position: relative;
+  padding-block: 0 !important;
+  background: var(--f-deep) !important;
+  text-align: center;
+  isolation: isolate;
+  overflow: visible !important;
+}
+.contact-v2::after {
+  display: none;
+}
+.cf-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding-block: var(--space-3xl);
+}
+.cf-layers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cf-layers > div {
+  position: absolute;
+  inset: 0;
+}
+.cf-photo {
+  background: url("/atmosphere/bridge.webp") center 40% / cover;
+  filter: saturate(0.75) brightness(0.85);
+  transform-origin: 50% 45%;
+  will-change: transform;
+}
+.cf-veil {
+  background:
+    radial-gradient(60% 50% at 50% 50%, rgba(8, 21, 54, 0.55), transparent 75%),
+    linear-gradient(
+      180deg,
+      var(--f-navy) 0%,
+      rgba(13, 31, 78, 0.55) 22%,
+      rgba(13, 31, 78, 0.45) 65%,
+      var(--f-deep) 100%
+    );
+  opacity: 0.55;
+}
+.cf-fog-a,
+.cf-fog-b {
+  inset: auto -25% !important;
+  height: 70%;
+  background: var(--fog-bank);
+  filter: blur(30px);
+  opacity: 0.6;
+  will-change: transform, opacity;
+}
+.cf-fog-a {
+  top: -5%;
+}
+.cf-fog-b {
+  bottom: -10%;
+  transform: scaleY(-1);
+}
+.cf-content {
+  position: relative;
+  z-index: 1;
+}
+.contact-v2 .cf-eyebrow {
+  justify-content: center;
+}
+.atmosphere-page main .contact-v2 .cf-headline {
+  font-size: clamp(3rem, 7vw, 6.5rem) !important;
+  line-height: 0.98;
+  text-shadow: 0 2px 30px rgba(8, 21, 54, 0.5);
+}
+.contact-v2 .line-mask {
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.contact-v2 .cf-lede {
+  color: var(--f-body) !important;
+  font-size: var(--step-0) !important;
+  margin: var(--space-m) 0 var(--space-l) !important;
+}
+.cf-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--f-ivory);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: var(--step-2);
+  line-height: 1.2;
+  min-height: 48px;
+}
+.cf-cta-label {
+  position: relative;
+  padding-bottom: 8px;
+}
+.cf-underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(200, 183, 149, 0.2),
+    var(--f-gold) 30%,
+    #ece3cf 60%,
+    var(--f-gold)
+  );
+  transform-origin: left;
+  box-shadow: 0 0 12px rgba(200, 183, 149, 0.45);
+}
+.cf-cta > svg {
+  color: var(--f-gold);
+  transition: transform 0.5s var(--ease-out, ease);
+}
+.cf-cta:hover > svg,
+.cf-cta:focus-visible > svg {
+  transform: translate(3px, -3px);
+}
+.cf-cta:focus-visible,
+.cf-alt:focus-visible,
+.ff-top:focus-visible {
+  outline: 2px solid var(--f-gold);
+  outline-offset: 6px;
+}
+.cf-alt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: var(--space-m) auto 0;
+  min-height: 44px;
+  color: var(--f-fog);
+  font-size: var(--step--1);
+}
+.cf-alt span {
+  color: var(--f-ivory);
+  border-bottom: 1px solid rgba(200, 183, 149, 0.4);
+  transition: border-color 0.3s;
+}
+.cf-alt:hover span {
+  border-color: var(--f-gold);
+}
+
+/* Pinned on desktop: the track is reserved in CSS, so nothing shifts. */
+@media (min-width: 900px) and (min-height: 640px) {
+  .motion-ok .contact-v2 {
+    height: 200svh;
+  }
+  .motion-ok .cf-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+  }
+}
+@media (max-width: 899px), (max-height: 639px) {
+  .cf-stage {
+    min-height: 88svh;
+  }
+}
+
+/* Footer finale */
+.footer-finale {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding-block: var(--space-2xl) var(--space-l);
+}
+.ff-wordmark {
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  font-size: clamp(3.4rem, 11vw, 11rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--f-ivory);
+  opacity: 0.92;
+}
+.ff-wordmark em {
+  color: var(--f-gold);
+}
+.ff-wordmark .char-mask {
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.ff-top {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 0 4px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(200, 183, 149, 0.45);
+  color: var(--f-fog);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.ff-top:hover {
+  color: var(--f-ivory);
+  border-color: var(--f-gold);
+}
+#main-content:focus {
+  outline: none;
+}
+@media (max-width: 700px) {
+  .footer-finale {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Contact form and concierge: navy glass, champagne focus. */
+.contact-modal-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(35, 54, 106, 0.88),
+    rgba(8, 21, 54, 0.94)
+  ) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+  border: 1px solid rgba(200, 183, 149, 0.3);
+  border-radius: 14px !important;
+  color: var(--f-ivory);
+  box-shadow: 0 50px 110px -30px rgba(2, 8, 28, 0.85) !important;
+}
+.contact-modal-panel > div:first-child {
+  background: transparent !important;
+  border-color: rgba(166, 177, 189, 0.16) !important;
+}
+.contact-modal-panel h3,
+.contact-modal-panel h4 {
+  color: var(--f-ivory) !important;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 400 !important;
+  font-size: 1.75rem !important;
+}
+.contact-modal-panel h3 svg {
+  color: var(--f-gold) !important;
+}
+.contact-modal-panel p,
+.contact-modal-panel label {
+  color: var(--f-body) !important;
+}
+.contact-modal-panel form > div:first-child {
+  background: rgba(200, 183, 149, 0.08) !important;
+  border-color: rgba(200, 183, 149, 0.25) !important;
+  color: var(--f-ivory) !important;
+}
+.contact-modal-panel input,
+.contact-modal-panel textarea {
+  background: rgba(8, 21, 54, 0.45) !important;
+  border: 1px solid rgba(166, 177, 189, 0.22) !important;
+  border-radius: 8px !important;
+  color: var(--f-ivory) !important;
+  caret-color: var(--f-gold);
+}
+.contact-modal-panel input::placeholder,
+.contact-modal-panel textarea::placeholder {
+  color: rgba(196, 203, 214, 0.55);
+}
+.contact-modal-panel input:focus,
+.contact-modal-panel textarea:focus {
+  border-color: var(--f-gold) !important;
+  box-shadow: 0 0 0 3px rgba(200, 183, 149, 0.18) !important;
+  outline: none !important;
+}
+.contact-modal-panel button[type="submit"] {
+  background: var(--f-gold) !important;
+  color: var(--f-deep) !important;
+  border-radius: 999px;
+  box-shadow: none !important;
+}
+.contact-modal-panel button[type="submit"]:hover {
+  background: #d8c9a8 !important;
+}
+.contact-modal-panel button:focus-visible {
+  outline: 2px solid var(--f-gold) !important;
+  outline-offset: 3px;
+  --tw-ring-color: transparent;
+}
+.contact-modal-panel button[aria-label] {
+  color: var(--f-fog) !important;
+}
+
+body .concierge-backdrop {
+  background: rgba(4, 12, 34, 0.55);
+}
+body .concierge-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(35, 54, 106, 0.86),
+    rgba(8, 21, 54, 0.94)
+  );
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+  border-color: rgba(200, 183, 149, 0.32);
+  border-radius: 14px;
+  box-shadow: 0 50px 110px -30px rgba(2, 8, 28, 0.85);
+}
+body .concierge-panel.is-fullscreen {
+  border-radius: 0;
+}
+body .concierge-composer:focus-within {
+  border-bottom-color: var(--f-gold);
+  box-shadow: 0 1px 0 var(--f-gold);
+}
+body .concierge-panel input:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-photo {
+    transform: scale(1.04);
+  }
+  .cf-fog-a,
+  .cf-fog-b {
+    opacity: 0.25;
+  }
+}
+
+/* Settle into the footer's deep navy with no edge. */
+.cf-stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--f-deep));
+}
+.atmosphere-footer {
+  background: var(--f-deep) !important;
+}

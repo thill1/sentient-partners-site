@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, Menu, X, Mail } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Menu, X } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL } from "../../content/siteContent";
 import {
@@ -14,6 +14,8 @@ import "./cohesion.css";
 import { useScrollReveal } from "./useScrollReveal";
 import Perspective from "./Perspective";
 import Outcomes from "./Outcomes";
+import Contact from "./Contact";
+import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
 const book = (source: string) =>
@@ -224,7 +226,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
       </a>
       <PageAtmosphere />
       <Navigation />
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <GoldenGate />
         <Perspective />
         <Outcomes />
@@ -478,39 +480,10 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             <span>Auburn · Placer County · Greater Sacramento</span>
           </div>
         </section>
-        <section id="contact" className="contact-section section-space">
-          <div className="contact-backdrop" aria-hidden="true" />
-          <div className="page-width">
-            <p className="eyebrow">The next step starts with a conversation</p>
-            <h2>
-              Let's build what's next
-              <br />
-              <em>for your business.</em>
-            </h2>
-            <p>
-              The right technology should make running your business
-              <br className="desktop-break" /> simpler, not more complicated.
-            </p>
-            <a
-              className="text-link contact-cta"
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                book("Final invitation");
-              }}
-            >
-              Book a 20-minute introductory call <ArrowUpRight size={17} />
-            </a>
-            <a
-              className="contact-alternative"
-              href="mailto:hello@sentientpartners.ai"
-            >
-              <Mail size={14} /> Prefer to write? hello@sentientpartners.ai
-            </a>
-          </div>
-        </section>
+        <Contact onBook={() => book("Final invitation")} />
       </main>
       <footer className="atmosphere-footer">
+        <FooterFinale />
         <div className="page-width">
           <div className="footer-top">
             <div>

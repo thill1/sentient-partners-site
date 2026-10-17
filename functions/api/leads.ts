@@ -85,7 +85,7 @@ async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
     body: JSON.stringify({
       _subject:
         lead.intent === "blueprint"
-          ? `New AI Blueprint Request - ${lead.name}`
+          ? `New Business Inquiry - ${lead.name}`
           : `New Website Inquiry - ${lead.name}`,
       _template: "table",
       _captcha: "false",
