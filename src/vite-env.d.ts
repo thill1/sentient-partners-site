@@ -58,4 +58,4 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv
-}
+}declare const __INSIGHTS_LIVE__: boolean;

@@ -24,6 +24,7 @@ import {
   useWorkMotion,
 } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
+import SignupBand from "./SignupBand";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
@@ -504,6 +505,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
           </div>
         </section>
         <Contact onBook={() => book("Final invitation")} />
+        <SignupBand />
       </main>
       <footer className="atmosphere-footer">
         <FooterFinale />
@@ -519,6 +521,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
               <a href="#work">Our work</a>
               <a href="#founder">Our founder</a>
               <a href="#process">Our approach</a>
+              {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
             </div>
             <div>
               <span>Let's connect</span>

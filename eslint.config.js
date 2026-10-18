@@ -5,7 +5,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["dist", "node_modules", ".wrangler", "*.config.js", "*.config.ts", "functions", ".worktrees", "output", "test-results"],
+    ignores: ["dist", "dist-preview", "node_modules", ".wrangler", "*.config.js", "*.config.ts", "functions", ".worktrees", "output", "test-results"],
   },
   {
     files: ["**/*.d.ts"],

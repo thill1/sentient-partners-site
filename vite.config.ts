@@ -1,9 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { loadIssues } from "./insights/lib.mjs";
 
 export default defineConfig(() => {
+  // The footer's Insights link only appears when this build has issues.
+  const insightsLive = loadIssues().length > 0;
   return {
     plugins: [react()],
+    define: { __INSIGHTS_LIVE__: JSON.stringify(insightsLive) },
     base: "/",
     server: {
       proxy: {
