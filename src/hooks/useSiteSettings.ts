@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { defaultSiteSettings, normalizeSiteSettings, type SiteSettings } from '../lib/siteSettingsSchema';
+import { applyLegacyBannerOverride, defaultSiteSettings, normalizeSiteSettings, type SiteSettings } from '../lib/siteSettingsSchema';
 import type { BannerDisplayState, SiteSettingsState } from '../types';
 
 export function getBannerDisplayState(settings: SiteSettings): BannerDisplayState {
@@ -19,7 +19,7 @@ async function fetchPublicSiteSettings(): Promise<SiteSettings> {
   }
 
   const data = (await response.json()) as unknown;
-  return normalizeSiteSettings(data);
+  return applyLegacyBannerOverride(normalizeSiteSettings(data));
 }
 
 export function useSiteSettings(): SiteSettingsState {

@@ -25,9 +25,9 @@ export interface SiteSettings {
 export const defaultSiteSettings: SiteSettings = {
   banner: {
     enabled: true,
-    message: 'Free AI Opportunity Review',
-    ctaText: 'Get Review',
-    ctaUrl: '#blueprint',
+    message: 'Book a 20-minute introductory call',
+    ctaText: 'Book a 20-minute introductory call',
+    ctaUrl: 'https://cal.com/sentient-partners-strategy/introductory-call',
     variant: 'info',
   },
   ai: {
@@ -79,5 +79,31 @@ export function normalizeSiteSettings(input: unknown): SiteSettings {
       siteMemory: asString(ai.siteMemory, defaultSiteSettings.ai.siteMemory),
       voiceProvider: asVoiceProvider(ai.voiceProvider, defaultSiteSettings.ai.voiceProvider),
     },
+  };
+}
+
+export const INTRO_CALL_TEXT = 'Book a 20-minute introductory call';
+export const INTRO_CALL_URL = 'https://cal.com/sentient-partners-strategy/introductory-call';
+
+const LEGACY_OFFER_PATTERN = /ai opportunity review|get review|audit/i;
+
+function isLegacyOffer(banner: SiteBannerSettings): boolean {
+  return (
+    LEGACY_OFFER_PATTERN.test(banner.message) ||
+    LEGACY_OFFER_PATTERN.test(banner.ctaText) ||
+    LEGACY_OFFER_PATTERN.test(banner.ctaUrl) ||
+    banner.ctaUrl.trim().toLowerCase().endsWith('#blueprint')
+  );
+}
+
+/**
+ * Display-time override for banners still carrying the retired audit /
+ * "AI Opportunity Review" offer. Returns a new object; stored data is untouched.
+ */
+export function applyLegacyBannerOverride(settings: SiteSettings): SiteSettings {
+  if (!isLegacyOffer(settings.banner)) return settings;
+  return {
+    ...settings,
+    banner: { ...settings.banner, message: INTRO_CALL_TEXT, ctaText: INTRO_CALL_TEXT, ctaUrl: INTRO_CALL_URL },
   };
 }
