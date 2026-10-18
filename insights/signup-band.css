@@ -1,0 +1,82 @@
+/* Newsletter signup band: shared by the home page and the Insights pages. */
+.signup-band {
+  background: #081536;
+  border-top: 1px solid rgba(200, 183, 149, 0.22);
+  color: #f3f0e8;
+  padding: clamp(56px, 8vw, 104px) clamp(22px, 5vw, 72px);
+}
+.signup-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(28px, 4vw, 64px);
+  grid-template-columns: 1fr;
+  align-items: end;
+}
+@media (min-width: 900px) {
+  .signup-inner { grid-template-columns: 1.1fr 1fr; }
+}
+.signup-eyebrow {
+  margin: 0 0 18px;
+  font: 500 11px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #c8b795;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.signup-eyebrow::before {
+  content: "";
+  width: 36px;
+  height: 1px;
+  background: #c8b795;
+  opacity: 0.7;
+}
+.signup-title {
+  margin: 0;
+  font: 400 clamp(26px, 3.2vw, 40px)/1.15 "Cormorant Garamond", Georgia, serif;
+  color: #f3f0e8;
+  max-width: 22ch;
+}
+.signup-label {
+  display: block;
+  font: 500 12px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  color: #c4cbd6;
+  margin-bottom: 10px;
+}
+.signup-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.signup-row input[type="email"] {
+  flex: 1 1 220px;
+  min-height: 48px;
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(243, 240, 232, 0.4);
+  color: #f3f0e8;
+  font: 400 17px Inter, system-ui, sans-serif;
+  border-radius: 0;
+}
+.signup-row input[type="email"]:focus { outline: none; border-bottom-color: #c8b795; }
+.signup-row input[type="email"]:focus-visible { outline: 2px solid #c8b795; outline-offset: 4px; }
+.signup-row input[aria-invalid="true"] { border-bottom-color: #e7b8a8; }
+.signup-row button {
+  min-height: 48px;
+  padding: 0 26px;
+  background: transparent;
+  color: #f3f0e8;
+  border: 1px solid #c8b795;
+  border-radius: 999px;
+  font: 500 14px Inter, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color 0.25s, color 0.25s;
+}
+.signup-row button:hover { background: #c8b795; color: #081536; }
+.signup-row button:focus-visible { outline: 2px solid #c8b795; outline-offset: 3px; }
+.signup-row button:disabled { opacity: 0.6; cursor: progress; }
+.signup-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.signup-msg { min-height: 1.5em; margin: 12px 0 0; font: 400 14px/1.5 Inter, system-ui, sans-serif; color: #e7b8a8; }
+.signup-msg a, .signup-status a { color: #f3f0e8; }
+.signup-status { margin: 0; font: 400 17px/1.5 Inter, system-ui, sans-serif; color: #c8b795; }

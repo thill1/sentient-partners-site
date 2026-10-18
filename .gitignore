@@ -43,3 +43,4 @@ coverage/
 # Local cinematic homepage QA captures; curated evidence lives in docs.
 /output/playwright/atmosphere/
 ._*
+dist-preview/

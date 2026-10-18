@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/prerender.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs && node insights/build.mjs",
+    "build:preview": "INSIGHTS_INCLUDE_DRAFTS=1 npm run build && rm -rf dist-preview && cp -r dist dist-preview && npm run build",
     "deploy:cloudflare": "wrangler pages deploy dist --project-name sentient-partners-site --branch main",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
@@ -29,6 +30,8 @@
     "autoprefixer": "^10.4.19",
     "beasties": "^0.5.5",
     "eslint": "^9.15.0",
+    "js-yaml": "^5.5.0",
+    "marked": "^18.1.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3",
