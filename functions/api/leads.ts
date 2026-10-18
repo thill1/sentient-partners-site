@@ -37,10 +37,16 @@ function isValidEmail(email: string) {
 
 function normalizePayload(body: Record<string, unknown>): LeadPayload | null {
   const name = String(body.name || "").trim();
-  const email = String(body.email || "").trim().toLowerCase();
+  const email = String(body.email || "")
+    .trim()
+    .toLowerCase();
   const inquiry = String(body.inquiry || "").trim();
   const intent =
-    body.intent === "blueprint" ? "blueprint" : body.intent === "contact" ? "contact" : "";
+    body.intent === "blueprint"
+      ? "blueprint"
+      : body.intent === "contact"
+        ? "contact"
+        : "";
   const source = String(body.source || "").trim();
   const ctaLabel = String(body.ctaLabel || "").trim();
 
@@ -75,12 +81,18 @@ async function sendToWebhook(url: string, lead: StoredLead) {
   return response.ok;
 }
 
-async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
+// FormSubmit rejects requests without a Referer, and ties activation to the
+// sending domain, so always present the production site.
+export const FORMSUBMIT_SITE = "https://sentientpartners.ai";
+
+export async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
   const response = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       accept: "application/json",
+      referer: `${FORMSUBMIT_SITE}/`,
+      origin: FORMSUBMIT_SITE,
     },
     body: JSON.stringify({
       _subject:
@@ -102,7 +114,22 @@ async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
     }),
   });
 
-  return response.ok;
+  // FormSubmit answers 200 with { success: "false" } on errors, so check both.
+  let data: { success?: unknown; message?: unknown } = {};
+  try {
+    data = (await response.json()) as typeof data;
+  } catch {
+    // Non-JSON reply: treated as a failure below.
+  }
+  const delivered = response.ok && String(data.success) === "true";
+  if (!delivered) {
+    console.error("FormSubmit delivery failed", {
+      status: response.status,
+      message: typeof data.message === "string" ? data.message : "(no message)",
+      leadId: lead.leadId,
+    });
+  }
+  return delivered;
 }
 
 export const onRequestGet = async () => {
