@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-12
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7515494215947300864/"
 excerpt: "88% of small businesses have backups but only 61% have tested them. Run one small restore on purpose."
-status: draft
+status: approved
 ---
 A backup you've never restored from is a guess.
 

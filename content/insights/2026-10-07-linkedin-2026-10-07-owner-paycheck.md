@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-07
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7513673942956433409/"
 excerpt: "When costs rise and prices don't, the owner's pay often becomes the cushion, which hides the real margin."
-status: draft
+status: approved
 ---
 When costs go up and prices don't, someone covers the difference. In a lot of small businesses, it's the owner.
 

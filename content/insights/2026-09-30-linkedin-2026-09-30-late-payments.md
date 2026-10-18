@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-09-30
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7511092609336057856/"
 excerpt: "Revenue on the books isn't cash you can use: QuickBooks data on overdue invoices, and why late payment is a timing problem."
-status: draft
+status: approved
 ---
 QuickBooks’ 2026 late-payments report put a number on something owners already feel.
 

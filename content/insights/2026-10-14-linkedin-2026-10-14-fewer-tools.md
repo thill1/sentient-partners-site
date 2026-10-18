@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-14
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7516276779867598848/"
 excerpt: "43% of service businesses would pay more to use fewer tools. Another login rarely fixes the week."
-status: draft
+status: approved
 ---
 Another login rarely fixes the week.
 

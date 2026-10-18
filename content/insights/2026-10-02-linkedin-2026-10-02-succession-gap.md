@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-02
 external_url: "https://www.linkedin.com/feed/update/urn:li:activity:7511866871881777152/"
 excerpt: "Chase found 40% of owners plan to retire within a decade, but only 8% are fully ready to hand off the business."
-status: draft
+status: approved
 ---
 Chase surveyed about a thousand small business owners earlier this year.
 

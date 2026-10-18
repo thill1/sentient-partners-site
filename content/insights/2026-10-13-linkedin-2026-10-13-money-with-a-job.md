@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-13
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7515809988154413056/"
 excerpt: "One bank balance makes every dollar look available. Give taxes, payroll and a reserve their own place."
-status: draft
+status: approved
 ---
 One bank balance makes every dollar look like it's available.
 

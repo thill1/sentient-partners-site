@@ -4,7 +4,7 @@ type: linkedin
 date: 2026-10-16
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7516894198176997376/"
 excerpt: "Bluevine: 65% of owners say running lean hurt the business or their well-being. Growth without a hire still has a cost."
-status: draft
+status: approved
 ---
 Growth without a new hire still has a cost.
 
