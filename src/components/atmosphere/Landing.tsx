@@ -16,6 +16,7 @@ import Perspective from "./Perspective";
 import Outcomes from "./Outcomes";
 import Contact from "./Contact";
 import { Connected } from "./Connected";
+import { useWorkMotion } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
@@ -73,7 +74,9 @@ function Navigation() {
       const under = document
         .elementsFromPoint(innerWidth / 2, 50)
         .find((element) => !header.current?.contains(element));
-      let element: Element | null = under ?? null;
+      // Illustrations (paper mock-ups, demo screens) never flip the header;
+      // only the section's own background counts.
+      let element: Element | null = under?.closest("section") ?? under ?? null;
       while (element) {
         const [r, g, b, a = 1] = (
           getComputedStyle(element).backgroundColor.match(/[\d.]+/g) ?? []
@@ -167,6 +170,7 @@ function Navigation() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Landing(_props: { banner: BannerDisplayState }) {
   useScrollReveal();
+  useWorkMotion();
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">

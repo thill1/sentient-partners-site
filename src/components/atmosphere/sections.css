@@ -88,3 +88,24 @@
     width: min(1280px, calc(100% - 144px));
   }
 }
+
+/* ——— Our Work: tilting frames, paper mock-ups drifting inside ——— */
+.work-section .work-grid {
+  perspective: 1400px;
+}
+.work-section .work-visual {
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 40px 80px -40px rgba(2, 8, 28, 0.8);
+  transition: box-shadow 0.5s;
+}
+.work-section article:hover .work-visual {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 0 1px rgba(200, 183, 149, 0.35),
+    0 50px 90px -40px rgba(2, 8, 28, 0.9);
+}
