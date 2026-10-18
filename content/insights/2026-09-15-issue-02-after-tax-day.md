@@ -3,7 +3,7 @@ title: "After tax day: rates, hiring, and Windows Update"
 slug: "issue-02-after-tax-day"
 issue: 2
 date: 2026-09-15
-summary: "Tax day is behind you and the Fed raised rates. Protect cash, audit AI Max search terms, hire only for measured gaps, and push Windows Update before Sep 22."
+summary: "Tax day is behind you and the Fed raised rates. Protect cash, review AI Max search terms, hire only for measured gaps, and push Windows Update before Sep 22."
 reading_minutes: 4
 status: draft
 ---
@@ -20,7 +20,7 @@ The Fed met Sep 15 to 16. Going in, the funds rate was 3.50% to 3.75%. On Sep 16
 
 Main Street sales were already soft in the August NFIB reading (net -9% on recent sales). Hiring plans cooled to net 17% planning to add jobs, while openings stay hard to fill. Optimism slipped to 98.7 but stayed above the long-run average.
 
-Thesis: protect cash after the Sep 15 payment. Audit ad waste. Hire only after coverage is measured. Patch Windows this week.
+Thesis: protect cash after the Sep 15 payment. Check for ad waste. Hire only after coverage is measured. Patch Windows this week.
 
 ## Hiring, coverage, and AI Max mid-month
 
@@ -65,9 +65,7 @@ Cash just left for estimated taxes. Rates just went up. That is a bad week to bu
 
 Start by measuring coverage: percent of inquiries answered, speed-to-lead, and booked jobs from those contacts. Fix the workflow around booked work. Then decide whether the next dollar goes to hiring, ads, or systems.
 
-We help service businesses install voice, chat, web, and follow-up that answer every inquiry and book the work. If it would help to talk that through, book a 20-minute intro call. We'll get to know your business: how you work, what's going well, and what's eating your time. No pitch deck, no pressure.
-
-[Book a 20-minute intro call](https://cal.com/sentient-partners-strategy/introductory-call) · [sentientpartners.ai](https://sentientpartners.ai/)
+We help local businesses pick and set up the right tools for answering inquiries, following up, and booking the work.
 
 ## Sources
 

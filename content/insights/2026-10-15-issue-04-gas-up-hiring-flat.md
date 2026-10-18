@@ -72,11 +72,7 @@ Business Strategy. Intelligent Systems. Measurable Results.
 
 When gas costs more, every wasted trip and every missed call costs more too. Before you raise prices again or add a hire, look at what already comes in the door: how many calls and messages got answered, how fast someone replied, and how many turned into booked work.
 
-That is where we start with local owners. Strategy first, then the systems that carry it: one customer platform for calls, texts, reviews, and follow-up. Missed-call text-back, one inbox on your phone, online booking, quote follow-up, and pay by text. Websites and Google profiles that stay accurate while the platforms change around them. You approve everything before it goes out.
-
-If it would help to talk through your Q4, book a 20-minute intro call. We'll get to know your business: how you work, what's going well, and what's eating your time. No pitch deck, no pressure.
-
-[Book a 20-minute intro call](https://cal.com/sentient-partners-strategy/introductory-call) · [sentientpartners.ai](https://sentientpartners.ai/)
+That is where we start with local owners. Strategy first, then the right tools to carry it. We help owners choose and set up tools for calls, texts, follow-up, and reviews, and keep websites and Google profiles accurate while the platforms change around them. You approve everything before it goes out.
 
 ## Sources
 

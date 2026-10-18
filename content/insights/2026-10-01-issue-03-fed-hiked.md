@@ -66,9 +66,7 @@ Rates are higher. Holiday demand is coming. That is a bad month to buy another t
 
 Start by measuring what already comes in the door: percent of inquiries answered, speed-to-lead, booked jobs from those contacts, and ad spend that produced a booked call (not a click). Fix coverage and search-term waste first. Then decide whether the next dollar goes to hiring, ads, or systems.
 
-We help service businesses install voice, chat, web, and follow-up that answer every inquiry and book the work. If it would help to talk through your Q4, book a 20-minute intro call. We'll get to know your business: how you work, what's going well, and what's eating your time. No pitch deck, no pressure.
-
-[Book a 20-minute intro call](https://cal.com/sentient-partners-strategy/introductory-call) · [sentientpartners.ai](https://sentientpartners.ai/)
+We help local businesses pick and set up the right tools for answering inquiries, following up, and booking the work.
 
 ## Sources
 

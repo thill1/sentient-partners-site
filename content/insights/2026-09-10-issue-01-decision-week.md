@@ -3,7 +3,7 @@ title: "Decision week: prices, ads, and a 15-minute security pass"
 slug: "issue-01-decision-week"
 issue: 1
 date: 2026-09-10
-summary: "Owners are still raising prices while sales soften. Audit Google Ads as AI Max rolls out, update Chrome against an exploited zero-day, and get Sep 15 cash lined up."
+summary: "Owners are still raising prices while sales soften. Check Google Ads as AI Max rolls out, update Chrome against an exploited zero-day, and get Sep 15 cash lined up."
 reading_minutes: 3
 status: draft
 ---
@@ -73,9 +73,7 @@ Business Strategy. Intelligent Systems. Measurable Results.
 
 If coverage is the leak (missed calls, slow follow-up, no-shows), fix that before you add another hire or another AI subscription. Design the workflow around booked work. Measure recovered appointments and speed-to-lead for 30 days. Then decide what to expand.
 
-We help service businesses install voice, chat, web, and follow-up that answer every inquiry and book the work. If it would help to talk that through, book a 20-minute intro call. We'll get to know your business: how you work, what's going well, and what's eating your time. No pitch deck, no pressure.
-
-[Book a 20-minute intro call](https://cal.com/sentient-partners-strategy/introductory-call) · [sentientpartners.ai](https://sentientpartners.ai/)
+We help local businesses pick and set up the right tools for answering inquiries, following up, and booking the work.
 
 ## Sources
 
