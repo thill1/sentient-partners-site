@@ -6,6 +6,7 @@ date: 2026-09-10
 summary: "Owners are still raising prices while sales soften. Check Google Ads as AI Max rolls out, update Chrome against an exploited zero-day, and get Sep 15 cash lined up."
 reading_minutes: 3
 status: approved
+type: newsletter
 ---
 
 > Originally written for owners on September 10, 2026. Figures and deadlines reflect that date; some have since changed.

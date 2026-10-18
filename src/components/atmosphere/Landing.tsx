@@ -57,6 +57,8 @@ const links = [
   ["Capabilities", "#capabilities"],
   ["Our work", "#work"],
   ["Our founder", "#founder"],
+  // Hidden when the build has no published Insights (see insights/lib.mjs).
+  ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
 function Navigation() {
   const [menu, setMenu] = useState(false),
@@ -133,16 +135,15 @@ function Navigation() {
         return;
       }
       if (e.key !== "Tab") return;
+      // The menu is portaled to <body>, so DOM order doesn't match the visual
+      // order: always move focus explicitly within [toggle, ...menu links].
       const items = focusables();
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last?.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first?.focus();
-      }
+      if (!items.length) return;
+      e.preventDefault();
+      const at = items.indexOf(document.activeElement as HTMLElement);
+      const step = e.shiftKey ? -1 : 1;
+      const next = at < 0 ? 0 : (at + step + items.length) % items.length;
+      items[next]?.focus();
     };
     addEventListener("keydown", onKey);
     return () => {
