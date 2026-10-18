@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL } from "../../content/siteContent";
 import {
@@ -15,6 +15,7 @@ import { useScrollReveal } from "./useScrollReveal";
 import Perspective from "./Perspective";
 import Outcomes from "./Outcomes";
 import Contact from "./Contact";
+import { Connected } from "./Connected";
 import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
@@ -161,59 +162,6 @@ function Navigation() {
         </nav>
       )}
     </header>
-  );
-}
-const stages = [
-  ["Inquiry", "Capture the question and the context."],
-  ["Booking", "Find a time. Confirm the details."],
-  ["Service", "Give your team what they need."],
-  ["Billing", "Prepare an accurate invoice for review."],
-  ["Follow-up", "Keep the relationship moving forward."],
-];
-function Connected() {
-  const [stage, setStage] = useState(0);
-  return (
-    <section className="connected-section section-space">
-      <div className="page-width connected-inner">
-        <div>
-          <p className="eyebrow">Connected intelligence</p>
-          <h2>
-            Less friction.
-            <br />
-            <em>More forward.</em>
-          </h2>
-          <p>
-            When your systems work together, your people can focus on the work
-            that matters. We connect the journey, with you in control.
-          </p>
-        </div>
-        <div className="connection-story">
-          <div className="journey-line">
-            {stages.map(([name], i) => (
-              <button
-                key={name}
-                aria-pressed={stage === i}
-                onClick={() => setStage(i)}
-              >
-                <span>{i < stage ? <Check size={15} /> : i + 1}</span>
-                <strong>{name}</strong>
-              </button>
-            ))}
-          </div>
-          <div className="journey-detail" aria-live="polite">
-            <span>{stages[stage][0]}</span>
-            <p>{stages[stage][1]}</p>
-            <button
-              aria-label="Explore next workflow step"
-              onClick={() => setStage((stage + 1) % stages.length)}
-            >
-              <ArrowRight size={20} />
-            </button>
-          </div>
-          <small>Connected systems. Clear handoffs. Human oversight.</small>
-        </div>
-      </div>
-    </section>
   );
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
