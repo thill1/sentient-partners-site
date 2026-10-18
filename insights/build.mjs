@@ -1,10 +1,10 @@
 /* global process, console */
-// Build step: prerenders /insights and /insights/<slug>/ as static HTML in dist.
+// Build step: prerenders the Insights hub (archive, filter pages, item pages) as static HTML.
 // Production includes approved issues only; INSIGHTS_INCLUDE_DRAFTS=1 adds drafts.
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { marked } from "marked";
-import { BOOKING_URL, SITE, includeDrafts, loadIssues } from "./lib.mjs";
+import { BOOKING_URL, FILTERS, SITE, SOCIAL, groupOf, includeDrafts, isSocial, loadIssues } from "./lib.mjs";
 
 const OUT = process.argv[2] || "dist";
 const drafts = includeDrafts();
@@ -93,6 +93,7 @@ ${body}
   </nav>
 </footer>
 <script src="/insights/signup.js" defer></script>
+<script src="/insights/filter.js" defer></script>
 </body>
 </html>
 `;
@@ -108,36 +109,56 @@ function renderBody(md) {
 
 const dir = join(OUT, "insights");
 mkdirSync(dir, { recursive: true });
-for (const f of ["insights.css", "signup-band.css", "signup.js"]) copyFileSync(join("insights", f), join(dir, f));
+for (const f of ["insights.css", "signup-band.css", "signup.js", "filter.js"]) copyFileSync(join("insights", f), join(dir, f));
 
-const cards = issues
-  .map(
-    (i) => `<li class="card"><a href="/insights/${i.slug}/">
-  <div class="card-meta">Issue ${pad(i.issue)}${draftTag(i)}<span>${longDate(i.date)}${i.reading_minutes ? ` · ${i.reading_minutes} min read` : ""}</span></div>
-  <div><h2>${esc(i.title)}</h2><p>${esc(i.summary)}</p><span class="read">Read issue ${pad(i.issue)}</span></div>
-</a></li>`,
-  )
-  .join("\n");
+const typeLabel = (i) =>
+  i.type === "newsletter" ? `Newsletter · Issue ${pad(i.issue)}` : i.type === "article" ? "Article" : SOCIAL[i.type];
+const metaLine = (i) => `${longDate(i.date)}${i.reading_minutes ? ` · ${i.reading_minutes} min read` : ""}`;
+const readLabel = (i) =>
+  i.type === "newsletter" ? `Read issue ${pad(i.issue)}` : i.type === "article" ? "Read article" : "Read post";
+const external = (i) =>
+  `<a class="external" href="${esc(i.external_url)}" rel="noopener" target="_blank">View on ${SOCIAL[i.type]}<span class="sr-only"> (opens in a new tab)</span> <span aria-hidden="true">↗</span></a>`;
 
-writeFileSync(
-  join(dir, "index.html"),
-  page({
-    title: "Insights | Sentient Partners",
-    description: "A short, practical note for local business owners, every other week.",
-    path: "/insights/",
-    noindex: !issues.some((i) => i.status === "approved"),
-    body: `<section class="archive">
+const card = (i) => `<li class="card card-${i.type}" data-group="${groupOf(i)}">
+  <div class="card-meta"><span class="type">${typeLabel(i)}</span>${draftTag(i)}<span class="date">${metaLine(i)}</span></div>
+  <div class="card-body"><h2><a href="/insights/${i.slug}/">${esc(i.title)}</a></h2><p>${esc(i.summary)}</p>
+    <div class="card-links"><a class="read" href="/insights/${i.slug}/" aria-hidden="true" tabindex="-1">${readLabel(i)}</a>${isSocial(i) ? external(i) : ""}</div></div>
+</li>`;
+
+const filterNav = (active) => `<nav class="filters" aria-label="Filter insights">
+  <ul>${FILTERS.map((f) => `<li><a href="${f.path}" data-filter="${f.key}"${f.key === active ? ' aria-current="page"' : ""}>${f.label}</a></li>`).join("")}</ul>
+</nav>`;
+
+for (const f of FILTERS) {
+  const list = issues.filter((i) => f.key === "all" || groupOf(i) === f.key);
+  const out = join(OUT, f.path);
+  mkdirSync(out, { recursive: true });
+  const empty = !issues.length
+    ? `<div class="soon"><h2>First issue coming soon</h2><p>Sign up below and we'll send it when it's ready.</p></div>`
+    : `<p class="empty"${list.length ? " hidden" : ""}>Nothing here yet.</p>`;
+  writeFileSync(
+    join(out, "index.html"),
+    page({
+      title: f.key === "all" ? "Insights | Sentient Partners" : `${f.label} | Sentient Partners Insights`,
+      description: "Newsletters, articles and posts from Sentient Partners for local business owners.",
+      path: f.path,
+      noindex: f.key !== "all" || !issues.some((i) => i.status === "approved"),
+      body: `<section class="archive">
   <p class="eyebrow">Insights</p>
   <h1>Notes for local business owners</h1>
-  <p class="lede">A short, practical note for local business owners, every other week.</p>
-  ${issues.length ? `<ol class="cards" reversed>${cards}</ol>` : `<div class="soon"><h2>First issue coming soon</h2><p>Sign up below and we'll send it when it's ready.</p></div>`}
+  <p class="lede">Newsletters, articles and posts from Sentient Partners, all in one place.</p>
+  ${issues.length ? filterNav(f.key) : ""}
+  ${empty}
+  ${issues.length ? `<ul class="cards" id="insights-list">${issues.map((i) => (list.includes(i) ? card(i) : card(i).replace("<li ", "<li hidden "))).join("\n")}</ul>` : ""}
 </section>`,
-  }),
-);
+    }),
+  );
+}
 
 for (const i of issues) {
   const path = `/insights/${i.slug}/`;
   mkdirSync(join(OUT, path), { recursive: true });
+  const social = isSocial(i);
   writeFileSync(
     join(OUT, path, "index.html"),
     page({
@@ -145,33 +166,36 @@ for (const i of issues) {
       description: i.summary,
       path,
       type: "article",
-      noindex: i.status !== "approved",
+      noindex: i.status !== "approved" || i.sample,
       jsonLd: {
         "@context": "https://schema.org",
-        "@type": "Article",
+        "@type": social ? "SocialMediaPosting" : "Article",
         headline: i.title,
         description: i.summary,
         datePublished: i.date,
         mainEntityOfPage: `${SITE}${path}`,
-        image: `${SITE}${i.hero_image || "/og-image.jpg"}`,
+        image: `${SITE}${i.image || i.hero_image || "/og-image.jpg"}`,
+        ...(social ? { sharedContent: i.external_url, url: i.external_url } : {}),
+        ...(i.tags.length ? { keywords: i.tags.join(", ") } : {}),
         author: { "@type": "Organization", name: "Sentient Partners", url: SITE },
         publisher: { "@type": "Organization", name: "Sentient Partners", url: SITE },
       },
-      body: `<article class="article">
-  <p class="eyebrow">Insights · Issue ${pad(i.issue)}${draftTag(i)}</p>
+      body: `<article class="article${social ? " article-social" : ""}">
+  <p class="eyebrow">Insights · ${typeLabel(i)}${draftTag(i)}</p>
   <h1>${esc(i.title)}</h1>
-  <p class="summary">${esc(i.summary)}</p>
+  ${social ? "" : `<p class="summary">${esc(i.summary)}</p>`}
   <p class="byline"><time datetime="${i.date}">${longDate(i.date)}</time>${i.reading_minutes ? ` · ${i.reading_minutes} min read` : ""}</p>
   <div class="prose">${renderBody(i.body)}</div>
+  ${social ? `<p class="original">${external(i)}</p>` : ""}
   <div class="cta"><a href="${BOOKING_URL}">Book a 20-minute introductory call <span aria-hidden="true">↗</span></a></div>
-  <a class="back" href="/insights/">← All issues</a>
+  <a class="back" href="/insights/">← All insights</a>
 </article>`,
     }),
   );
 }
 
 // Sitemap: approved issues only (and the archive once one exists).
-const approved = issues.filter((i) => i.status === "approved");
+const approved = issues.filter((i) => i.status === "approved" && !i.sample);
 const smPath = join(OUT, "sitemap.xml");
 let sm = readFileSync(smPath, "utf8");
 if (approved.length) {
@@ -182,4 +206,4 @@ if (approved.length) {
   sm = sm.replace("</urlset>", `${urls}</urlset>`);
   writeFileSync(smPath, sm);
 }
-console.log(`insights: ${issues.length} issue(s) built (${approved.length} approved, drafts ${drafts ? "on" : "off"}) into ${OUT}`);
+console.log(`insights: ${issues.length} item(s) built (${approved.length} approved, drafts ${drafts ? "on" : "off"}) into ${OUT}`);
