@@ -96,3 +96,37 @@ wrangler check
 ```
 
 Health verification is available at `/api/health` and reports whether the key bindings and environment variables are present without returning secret values.
+
+## Cinematic homepage review
+
+The `feature/golden-gate-atmosphere` branch contains the Golden Gate redesign.
+See [the design and asset notes](docs/atmosphere-design.md) and
+[the verification report](docs/atmosphere-review.md).
+
+```sh
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5194
+```
+
+For the pre-rendered production artifact, including the no-JavaScript fallback:
+
+```sh
+npm run build
+npm run preview -- --host 127.0.0.1 --port 5195
+```
+
+The local Vite server proxies only read-only booking availability and public
+settings to the existing website. Contact submission, admin authentication, and
+AI provider calls still require Cloudflare Pages Functions and their existing
+configuration. No production lead submissions are proxied by the preview.
+The review's form submission test intercepts `/api/leads` locally.
+
+The build pre-renders the landing page and inlines its stylesheet, then React
+hydrates the markup. Desktop fog is a lazy-loaded, capped-resolution WebGL
+shader. Phones use the lighter parallax layers; reduced motion uses the poster.
+The existing admin announcement appears below the perspective section, and its
+legacy `#blueprint` CTA opens the contact workflow. Admin and concierge settings
+retain their existing API contracts.
+
+This branch is for review. The existing deployment command publishes to
+production and must only be run after explicit deployment approval.

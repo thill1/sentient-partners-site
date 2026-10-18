@@ -13,7 +13,12 @@ function restoreMemoryFromStorage() {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return;
     const safe = parsed
-      .filter((item) => item && (item.role === "user" || item.role === "model") && typeof item.text === "string")
+      .filter(
+        (item) =>
+          item &&
+          (item.role === "user" || item.role === "model") &&
+          typeof item.text === "string",
+      )
       .slice(-20);
     if (safe.length) memory.push(...safe);
   } catch {
@@ -39,7 +44,9 @@ export const dispatchToast = (
   type: "success" | "error" | "info" = "info",
 ) => {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("show-toast", { detail: { message, type } }));
+    window.dispatchEvent(
+      new CustomEvent("show-toast", { detail: { message, type } }),
+    );
   }
 };
 
@@ -73,49 +80,84 @@ interface LeadSubmissionResult {
   leadId?: string;
 }
 
+export const LEAD_EMAIL = "hello@sentientpartners.ai";
+export const FORMSUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${LEAD_EMAIL}`;
+
+/** The exact JSON body the browser posts to FormSubmit for a lead. */
+export const buildFormSubmitLead = (
+  payload: LeadSubmission,
+  leadId: string,
+  honey = "",
+) => ({
+  _subject:
+    payload.intent === "blueprint"
+      ? `New Business Inquiry - ${payload.name}`
+      : `New Website Inquiry - ${payload.name}`,
+  _template: "table",
+  _captcha: "false",
+  _replyto: payload.email,
+  _honey: honey,
+  name: payload.name,
+  email: payload.email,
+  inquiry: payload.inquiry,
+  source: payload.source,
+  intent: payload.intent,
+  cta_label: payload.ctaLabel || "",
+  lead_id: leadId,
+});
+
+const newLeadId = () =>
+  globalThis.crypto?.randomUUID?.() ??
+  `lead-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * Sends a lead straight from the browser to FormSubmit (activated for
+ * sentientpartners.ai). Success only when FormSubmit says success "true".
+ * /api/leads is pinged for the optional webhook but never decides success.
+ */
 export const submitLead = async (
   payload: LeadSubmission,
+  honey = "",
 ): Promise<LeadSubmissionResult> => {
+  const leadId = newLeadId();
+
+  fetch("/api/leads", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, leadId }),
+    keepalive: true,
+  }).catch(() => {});
+
   try {
-    const response = await fetch("/api/leads", {
+    const response = await fetch(FORMSUBMIT_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(buildFormSubmitLead(payload, leadId, honey)),
     });
-
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().includes("application/json")) {
-      return {
-        success: false,
-        message: "Lead capture endpoint is unavailable on this host.",
-      };
-    }
-
     const data = (await response.json().catch(() => ({}))) as {
-      ok?: boolean;
-      error?: string;
-      message?: string;
-      leadId?: string;
+      success?: unknown;
+      message?: unknown;
     };
-
-    if (!response.ok || !data.ok) {
+    if (response.ok && String(data.success) === "true") {
       return {
-        success: false,
-        message: data.error || data.message || "Lead capture failed.",
+        success: true,
+        message: "Thanks. We received your note and will follow up soon.",
+        leadId,
       };
     }
-
-    return {
-      success: true,
-      message: data.message || "Lead captured successfully.",
-      leadId: data.leadId,
-    };
+    return { success: false, message: "We couldn't send your message." };
   } catch {
-    return { success: false, message: "Network connection failed." };
+    return { success: false, message: "We couldn't send your message." };
   }
 };
 
-export const sendEmailData = async (data: Record<string, unknown>, subject: string): Promise<EmailResult> => {
+export const sendEmailData = async (
+  data: Record<string, unknown>,
+  subject: string,
+): Promise<EmailResult> => {
   const targetEmail = "hello@sentientpartners.ai";
   const endpoint = `https://formsubmit.co/ajax/${targetEmail}`;
   const timestamp = new Date();
@@ -124,7 +166,10 @@ export const sendEmailData = async (data: Record<string, unknown>, subject: stri
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({
         _subject: uniqueSubject,
         _template: "table",
@@ -144,17 +189,24 @@ export const sendEmailData = async (data: Record<string, unknown>, subject: stri
       return { success: false, message: "Invalid response from email server." };
     }
 
-    const isSuccess = responseData.success === "true" || responseData.success === true;
+    const isSuccess =
+      responseData.success === "true" || responseData.success === true;
     const message = responseData.message || "";
 
     if (response.ok && isSuccess) {
       if (String(message).toLowerCase().includes("activate")) {
-        return { success: true, message: "Email sent. Activate FormSubmit once via email." };
+        return {
+          success: true,
+          message: "Email sent. Activate FormSubmit once via email.",
+        };
       }
       return { success: true, message: "Email transmitted successfully." };
     }
 
-    return { success: false, message: message || "Email server rejected the request." };
+    return {
+      success: false,
+      message: message || "Email server rejected the request.",
+    };
   } catch {
     return { success: false, message: "Network connection failed." };
   }
@@ -163,7 +215,11 @@ export const sendEmailData = async (data: Record<string, unknown>, subject: stri
 export const sendTestEmail = async (): Promise<EmailResult> => {
   const timestamp = new Date().toLocaleString();
   return await sendEmailData(
-    { Status: "Connection Verified", Timestamp: timestamp, Test_ID: Date.now() },
+    {
+      Status: "Connection Verified",
+      Timestamp: timestamp,
+      Test_ID: Date.now(),
+    },
     "Connection Test Verification",
   );
 };
@@ -172,14 +228,16 @@ export const sendTranscript = async (chatLog: string, voiceLog: string) => {
   if (!chatLog && !voiceLog) return { success: false, message: "No content" };
 
   const result = await sendEmailData(
-    { chat_history: chatLog || "No chat.", voice_transcript: voiceLog || "No voice." },
+    {
+      chat_history: chatLog || "No chat.",
+      voice_transcript: voiceLog || "No voice.",
+    },
     "New Client Transcript",
   );
 
   if (result.success) return { success: true, message: "Sent" };
 
-  const fullLog =
-    `SENTIENT PARTNERS TRANSCRIPT\nDate: ${new Date().toLocaleString()}\n\n--- CHAT ---\n${chatLog}\n\n--- VOICE ---\n${voiceLog}`;
+  const fullLog = `SENTIENT PARTNERS TRANSCRIPT\nDate: ${new Date().toLocaleString()}\n\n--- CHAT ---\n${chatLog}\n\n--- VOICE ---\n${voiceLog}`;
   downloadAsFile(`transcript-${Date.now()}.txt`, fullLog);
   return { success: true, message: "Saved locally" };
 };
@@ -193,23 +251,33 @@ export function createPcmBlob(data: Float32Array, sampleRate: number = 16000) {
     const s = Math.max(-1, Math.min(1, data[i]));
     int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
-  return { data: encode(new Uint8Array(int16.buffer)), mimeType: `audio/pcm;rate=${sampleRate}` };
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: `audio/pcm;rate=${sampleRate}`,
+  };
 }
 
 export function encode(bytes: Uint8Array) {
   let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.byteLength; i++)
+    binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
 export function decode(base64: string) {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+  for (let i = 0; i < binaryString.length; i++)
+    bytes[i] = binaryString.charCodeAt(i);
   return bytes;
 }
 
-export async function decodeAudioData(data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number) {
+export async function decodeAudioData(
+  data: Uint8Array,
+  ctx: AudioContext,
+  sampleRate: number,
+  numChannels: number,
+) {
   const dataInt16 = new Int16Array(data.buffer);
   const frameCount = dataInt16.length / numChannels;
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
@@ -234,7 +302,11 @@ export const sendMessageToGemini = async function* (message: string) {
     const resp = await fetch("/api/gemini", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, history: historyToSend, model: "gemini-2.5-flash" }),
+      body: JSON.stringify({
+        message,
+        history: historyToSend,
+        model: "gemini-2.5-flash",
+      }),
     });
 
     const contentType = resp.headers.get("content-type") || "";
@@ -243,10 +315,15 @@ export const sendMessageToGemini = async function* (message: string) {
       return;
     }
 
-    const data = await resp.json().catch(() => ({} as { text?: string; error?: string; message?: string }));
+    const data = await resp
+      .json()
+      .catch(() => ({}) as { text?: string; error?: string; message?: string });
     if (!resp.ok) {
       if (resp.status === 429) {
-        let cleanMsg = data.message || data.error || "You exceeded your current daily/minute quota.";
+        let cleanMsg =
+          data.message ||
+          data.error ||
+          "You exceeded your current daily/minute quota.";
         // Clean up internal JSON if present
         try {
           const parsed = JSON.parse(cleanMsg);
@@ -274,7 +351,10 @@ export const sendMessageToGemini = async function* (message: string) {
   }
 };
 
-export const requestVoiceAudio = async (text: string, voiceId: string): Promise<Blob> => {
+export const requestVoiceAudio = async (
+  text: string,
+  voiceId: string,
+): Promise<Blob> => {
   const response = await fetch("/api/voice", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

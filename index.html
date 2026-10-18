@@ -15,24 +15,59 @@
       })();
     </script>
 
+    <!-- First-paint guess at the hero's time of day (Pacific); the hero clock refines it. -->
+    <script>
+      (function () {
+        try {
+          var scene = new URLSearchParams(location.search).get("scene");
+          if (!/^(sunrise|day|sunset|night)$/.test(scene || "")) {
+            var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", month: "numeric", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
+            var get = function (type) { for (var i = 0; i < parts.length; i++) if (parts[i].type === type) return Number(parts[i].value); };
+            var hour = (get("hour") % 24) + get("minute") / 60, month = get("month") - 1;
+            var rise = [7.4, 7.0, 7.1, 6.6, 6.0, 5.8, 6.0, 6.4, 6.9, 7.3, 6.9, 7.3][month];
+            var set = [17.3, 17.8, 19.2, 19.6, 20.1, 20.5, 20.5, 20.0, 19.3, 18.6, 17.1, 16.9][month];
+            scene = hour >= rise - 0.83 && hour < rise + 1.17 ? "sunrise"
+              : hour >= rise + 1.17 && hour < set - 1.17 ? "day"
+              : hour >= set - 1.17 && hour < set + 0.83 ? "sunset" : "night";
+          }
+          document.documentElement.dataset.scene = scene;
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Motion preference before first paint, so pinned sections never shift. -->
+    <script>
+      (function () {
+        try {
+          var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+          document.documentElement.classList.add(reduce ? "motion-reduce" : "motion-ok");
+        } catch (e) {}
+      })();
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Sentient Partners | Your local business and technology partner</title>
+    <title>Sentient Partners | Global Experience. Local Impact. Your Local Business and Technology Partner</title>
     <meta
       name="description"
-      content="Sentient Partners is your local business and technology partner that deploys AI voice agents, chatbots, and automation systems for SMBs to capture more leads and book more appointments 24/7."
+      content="Your local business and technology partner in Northern California: websites, local search, scheduling, and connected business systems, with founder-led strategy and hands-on implementation. Book a 20-minute introductory call."
     />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Sentient Partners","slogan":"Your local business and technology partner","url":"https://sentientpartners.ai/","logo":"https://sentientpartners.ai/email-sig/sp-monogram.png","image":"https://sentientpartners.ai/og-image.jpg","email":"hello@sentientpartners.ai","telephone":"+1-415-504-2757","address":{"@type":"PostalAddress","addressLocality":"Auburn","addressRegion":"CA","addressCountry":"US"},"areaServed":["Auburn","Placer County","Greater Sacramento","Northern California"],"founder":{"@type":"Person","name":"Troy Hill","jobTitle":"Founder & Principal Consultant"},"description":"Your local business and technology partner: websites, local search, scheduling, and connected business systems for growing businesses in Northern California."}</script>
     <meta name="robots" content="index, follow" />
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#0D1F4E" />
 
+    <link rel="preload" as="font" href="/fonts/cormorant-garamond-normal-400.woff2" type="font/woff2" crossorigin />
+    <link rel="preload" as="font" href="/fonts/inter-normal-400.woff2" type="font/woff2" crossorigin />
+    <link rel="preload" as="font" href="/fonts/cormorant-garamond-italic-400.woff2" type="font/woff2" crossorigin />
+    <link rel="preload" as="image" href="/atmosphere/golden-gate-poster.webp" fetchpriority="high" />
     <link rel="canonical" href="https://sentientpartners.ai/" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Sentient Partners | Your local business and technology partner" />
+    <meta property="og:title" content="Sentient Partners | Your Local Business and Technology Partner" />
     <meta
       property="og:description"
-      content="AI voice agents, chatbots, and automation systems for SMBs — built and implemented by Sentient Partners to drive always-on revenue."
+      content="Global experience. Local impact. Websites, local search, scheduling, and connected systems for growing businesses in Northern California."
     />
     <meta property="og:url" content="https://sentientpartners.ai/" />
     <meta property="og:image" content="https://sentientpartners.ai/og-image.jpg" />
@@ -40,26 +75,14 @@
     <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sentient Partners | Your local business and technology partner" />
+    <meta name="twitter:title" content="Sentient Partners | Your Local Business and Technology Partner" />
     <meta
       name="twitter:description"
-      content="Deploy AI voice, chat, and automation systems that book more appointments and capture more leads — without adding headcount."
+      content="Global experience. Local impact. Websites, local search, scheduling, and connected systems for growing businesses in Northern California."
     />
     <meta name="twitter:image" content="https://sentientpartners.ai/og-image.jpg" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <style>
+<style>
       :root {
         --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
         --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
@@ -74,13 +97,11 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- ✅ Use the working Pages Function manifest -->
-    <link rel="manifest" href="/api/manifest" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
 
   <body class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300">
-    <noscript>
-      This experience works best with JavaScript enabled. Please enable JavaScript to explore the Sentient Partners AI demos and interface.
-    </noscript>
+    <noscript><style>.atmosphere-page button,.cx-atelier,.journey-line,.journey-detail,.motion-toggle{display:none!important}</style></noscript>
 
     <div id="root"></div>
 

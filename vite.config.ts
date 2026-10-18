@@ -5,6 +5,14 @@ export default defineConfig(() => {
   return {
     plugins: [react()],
     base: "/",
+    server: {
+      proxy: {
+        "^/api/(booking|settings)$": {
+          target: "https://sentientpartners.ai",
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       outDir: "dist",
       assetsDir: "assets",

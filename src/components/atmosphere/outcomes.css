@@ -1,0 +1,265 @@
+/* Outcomes — pinned showpiece (see Outcomes.tsx). */
+.outcomes-v2 {
+  position: relative;
+  color: var(--f-ivory);
+  background: linear-gradient(180deg, var(--f-deep) 0%, var(--f-navy) 100%);
+}
+.ov-stage {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--space-3xl);
+}
+.ov-layers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ov-layers > div {
+  position: absolute;
+}
+.ov-glow {
+  inset: 10% -10% -10% 30%;
+  background: radial-gradient(
+    45% 50% at 50% 50%,
+    rgba(58, 77, 128, 0.55),
+    transparent 70%
+  );
+  will-change: transform;
+}
+.ov-fog-a,
+.ov-fog-b {
+  left: -20%;
+  width: 140%;
+  height: 45%;
+  background: var(--fog-bank);
+  filter: blur(24px);
+  will-change: transform;
+}
+.ov-fog-a {
+  top: -8%;
+  opacity: 0.8;
+}
+.ov-fog-b {
+  bottom: -12%;
+  opacity: 0.6;
+  transform: scaleX(-1);
+}
+.ov-dusk {
+  inset: 0;
+  background:
+    var(--fog-bank), linear-gradient(180deg, transparent 30%, var(--f-navy) 92%);
+  opacity: 0;
+}
+.ov-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Head */
+.ov-head .eyebrow {
+  margin-bottom: var(--space-m);
+}
+.atmosphere-page main .outcomes-v2 .ov-heading {
+  font-size: var(--step-5);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+.ov-heading em {
+  color: var(--f-gold);
+}
+.ov-intro {
+  margin-top: var(--space-m);
+  color: var(--f-fog);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  max-width: 34ch;
+}
+.ov-rail,
+.ov-numeral {
+  display: none;
+}
+
+/* Static / mobile list */
+.ov-list {
+  list-style: none;
+  margin: var(--space-2xl) 0 0;
+  padding: 0;
+}
+.ov-item {
+  --ov-rule: 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: clamp(52px, 9vw, 120px) minmax(0, 1fr);
+  gap: var(--space-s);
+  padding-block: var(--space-xl);
+}
+.ov-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--f-rule);
+  transform: scaleX(var(--ov-rule));
+  transform-origin: left;
+}
+.ov-item:last-child {
+  border-bottom: 1px solid var(--f-rule);
+}
+.ov-number-inline {
+  font-family: var(--a-serif);
+  font-size: var(--step-4);
+  line-height: 0.85;
+  color: var(--f-gold);
+  opacity: 0.7;
+}
+.ov-label {
+  display: block;
+  font-size: var(--step--2);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--f-gold);
+  margin-bottom: var(--space-xs);
+}
+.ov-item h3 {
+  font-size: var(--step-3);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  max-width: 18ch;
+}
+.ov-body {
+  margin-top: var(--space-s) !important;
+  color: var(--f-body);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  max-width: 44ch;
+}
+.atmosphere-page .ov-link {
+  margin-top: var(--space-s);
+  color: var(--f-ivory);
+  border-bottom-color: var(--f-gold);
+  font-size: var(--step--1);
+}
+
+/* Staged (pinned) composition — CSS-only so the size is fixed at first paint. */
+@media (min-width: 900px) and (min-height: 640px) {
+  .motion-ok .outcomes-v2 {
+    height: 420svh;
+  }
+  .motion-ok .ov-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding-block: 110px var(--space-xl);
+    display: flex;
+    align-items: center;
+  }
+  .motion-ok .ov-content {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 0.75fr) minmax(0, 1fr);
+    gap: var(--space-xl);
+    align-items: center;
+    width: min(1280px, calc(100% - 144px));
+  }
+  .motion-ok .ov-rail {
+    position: relative;
+    display: grid;
+    gap: var(--space-s);
+    list-style: none;
+    margin: var(--space-xl) 0 0;
+    padding: 0 0 0 var(--space-m);
+  }
+  .ov-rail li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    font-size: var(--step--2);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--f-tint-3);
+    transition: color 0.5s var(--ease-out);
+  }
+  .ov-rail li span {
+    font-family: var(--a-serif);
+    font-size: var(--step-0);
+    letter-spacing: 0;
+    font-style: italic;
+  }
+  .ov-rail li.is-active {
+    color: var(--f-ivory);
+  }
+  .ov-rail li.is-active span {
+    color: var(--f-gold);
+  }
+  .ov-rail-track {
+    position: absolute;
+    left: 0;
+    top: 0.3em;
+    bottom: 0.3em;
+    width: 1px;
+    background: rgba(166, 177, 189, 0.2);
+  }
+  .ov-rail-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--f-gold);
+    transform-origin: top;
+    transform: scaleY(0);
+    box-shadow: 0 0 10px rgba(200, 183, 149, 0.6);
+  }
+  .motion-ok .ov-numeral {
+    display: block;
+    height: 1.2em;
+    overflow: hidden;
+    font-family: var(--a-serif);
+    font-size: clamp(11rem, 19vw, 21rem);
+    line-height: 1.2;
+    letter-spacing: -0.06em;
+    text-align: center;
+    color: var(--f-gold);
+    filter: drop-shadow(0 20px 60px rgba(200, 183, 149, 0.18));
+  }
+  .ov-numerals {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+  }
+  .ov-numerals span {
+    display: block;
+    height: 1.2em;
+    color: transparent;
+    background: linear-gradient(180deg, #ece3cf 0%, #c8b795 48%, #8e7a52 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .motion-ok .ov-list {
+    position: relative;
+    margin: 0;
+    min-height: 22rem;
+  }
+  .motion-ok .ov-item {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    border: 0;
+  }
+  .motion-ok .ov-item::before,
+  .motion-ok .ov-number-inline {
+    display: none;
+  }
+  .motion-ok .ov-item:not(:first-child) {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .motion-ok .ov-item h3 {
+    font-size: var(--step-4);
+    max-width: 14ch;
+  }
+}
+
+/* SplitText masks: leave room for Cormorant's descenders. */
+.outcomes-v2 .word-mask {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}

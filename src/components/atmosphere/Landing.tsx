@@ -1,0 +1,545 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import type { BannerDisplayState } from "../../types";
+import { BOOKING_URL } from "../../content/siteContent";
+import {
+  openBookingModal,
+  openContactModal,
+  openSentientChat,
+} from "../../lib/siteActions";
+import { GoldenGate } from "./GoldenGate";
+import { Capabilities } from "./Capabilities";
+import "./atmosphere.css";
+import "./cohesion.css";
+import { useScrollReveal } from "./useScrollReveal";
+import Perspective from "./Perspective";
+import Outcomes from "./Outcomes";
+import Contact from "./Contact";
+import { Connected } from "./Connected";
+import {
+  useFounderMotion,
+  useAuburnMotion,
+  useProcessMotion,
+  useWorkMotion,
+} from "./sectionMotion";
+import FooterFinale from "./FooterFinale";
+import PageAtmosphere from "../../fabric/PageAtmosphere";
+import { loadFabric } from "../../fabric/motion";
+import "./launch.css";
+
+const book = (source: string) =>
+  openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
+function Brand() {
+  return (
+    <a className="brand-lockup" href="#top">
+      <img
+        className="monogram-light"
+        src="/atmosphere/sp-monogram-white.png"
+        alt=""
+        width="513"
+        height="835"
+      />
+      <img
+        className="monogram-ink"
+        src="/atmosphere/sp-monogram-navy.png"
+        alt=""
+        width="513"
+        height="835"
+      />
+      <span>Sentient Partners</span>
+    </a>
+  );
+}
+const links = [
+  ["Perspective", "#perspective"],
+  ["Capabilities", "#capabilities"],
+  ["Our work", "#work"],
+  ["Our founder", "#founder"],
+];
+function Navigation() {
+  const [menu, setMenu] = useState(false),
+    [onLight, setOnLight] = useState(false),
+    [scrolled, setScrolled] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const header = useRef<HTMLElement>(null);
+  useEffect(() => {
+    // The header has no bar of its own, so its lettering follows whatever
+    // section is behind it: ink over light backgrounds, ivory over dark.
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      // The bar arrives as the descent reaches its second line of copy
+      // (the descent note fades in from 47% of the hero's scroll).
+      const hero = document
+        .querySelector(".golden-gate")
+        ?.getBoundingClientRect();
+      setScrolled(
+        hero
+          ? -hero.top / Math.max(1, hero.height - innerHeight) > 0.47
+          : scrollY > 8,
+      );
+      const under = document
+        .elementsFromPoint(innerWidth / 2, 50)
+        .find((element) => !header.current?.contains(element));
+      // Illustrations (paper mock-ups, demo screens) never flip the header;
+      // only the section's own background counts.
+      let element: Element | null = under?.closest("section") ?? under ?? null;
+      while (element) {
+        const [r, g, b, a = 1] = (
+          getComputedStyle(element).backgroundColor.match(/[\d.]+/g) ?? []
+        ).map(Number);
+        if (a > 0.5) {
+          setOnLight(0.2126 * r + 0.7152 * g + 0.0722 * b > 150);
+          return;
+        }
+        element = element.parentElement;
+      }
+      setOnLight(false);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      removeEventListener("scroll", schedule);
+      removeEventListener("resize", schedule);
+    };
+  }, []);
+  useEffect(() => {
+    if (!menu) return;
+    // Full-height menu: lock the page, trap focus, close on Escape.
+    const root = document.documentElement;
+    root.classList.add("menu-open");
+    let lenis: { stop: () => void; start: () => void } | undefined;
+    loadFabric().then((f) => {
+      lenis = f?.lenis ?? undefined;
+      lenis?.stop();
+    });
+    const focusables = () => [
+      ...document.querySelectorAll<HTMLElement>(
+        ".site-header .menu-toggle, #mobile-navigation a",
+      ),
+    ];
+    focusables()[1]?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenu(false);
+        menuButton.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    };
+    addEventListener("keydown", onKey);
+    return () => {
+      removeEventListener("keydown", onKey);
+      root.classList.remove("menu-open");
+      lenis?.start();
+    };
+  }, [menu]);
+  return (
+    <header
+      ref={header}
+      className={`site-header ${onLight && !menu ? "header-on-light" : ""} ${scrolled ? "header-scrolled" : ""}`}
+    >
+      <div className="header-inner">
+        <nav className="desktop-nav" aria-label="Main navigation">
+          {links.map(([label, href]) => (
+            <a key={href} href={href}>
+              {label}
+            </a>
+          ))}
+        </nav>
+        <Brand />
+        <a
+          className="header-book"
+          href={BOOKING_URL}
+          onClick={(e) => {
+            e.preventDefault();
+            book("Navigation");
+          }}
+        >
+          Book an intro call <ArrowUpRight size={15} />
+        </a>
+        <button
+          ref={menuButton}
+          className="menu-toggle"
+          aria-label={menu ? "Close navigation" : "Open navigation"}
+          aria-expanded={menu}
+          aria-controls="mobile-navigation"
+          onClick={() => setMenu(!menu)}
+        >
+          {menu ? <X /> : <Menu />}
+        </button>
+      </div>
+      {/* Portaled to <body>: the scrolled header's backdrop-filter makes it the
+          containing block for fixed children, which clipped the panel. */}
+      {menu &&
+        createPortal(
+          <nav
+            id="mobile-navigation"
+            className="mobile-nav"
+            aria-label="Mobile navigation"
+          >
+            {links.map(([label, href]) => (
+              <a key={href} href={href} onClick={() => setMenu(false)}>
+                {label}
+                <ArrowUpRight size={18} />
+              </a>
+            ))}
+            <a
+              className="mobile-nav-book"
+              href={BOOKING_URL}
+              onClick={(e) => {
+                e.preventDefault();
+                setMenu(false);
+                book("Mobile menu");
+              }}
+            >
+              Book a 20-minute introductory call <ArrowUpRight size={18} />
+            </a>
+          </nav>,
+          document.body,
+        )}
+    </header>
+  );
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function Landing(_props: { banner: BannerDisplayState }) {
+  useScrollReveal();
+  useWorkMotion();
+  useFounderMotion();
+  useProcessMotion();
+  useAuburnMotion();
+  return (
+    <div className="atmosphere-page" id="top">
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <PageAtmosphere />
+      <Navigation />
+      <main id="main-content" tabIndex={-1}>
+        <GoldenGate />
+        <Perspective />
+        <Outcomes />
+        <Capabilities />
+        <Connected />
+        <section id="work" className="work-section section-space">
+          <div className="page-width">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Real work. Practical results.</p>
+                <h2>
+                  Built for the way
+                  <br />
+                  <em>business actually happens.</em>
+                </h2>
+              </div>
+              <p>
+                Practical implementation across service businesses. Here are the
+                kinds of problems we work on.
+              </p>
+            </div>
+            <div className="work-grid">
+              <article>
+                <div className="work-visual field-visual" aria-hidden="true">
+                  <div className="field-preview">
+                    <span>SERVICE DAY</span>
+                    <div>
+                      <i /> Dispatch & scheduling
+                    </div>
+                    <div>
+                      <i /> Field notes & job status
+                    </div>
+                    <div>
+                      <i /> Invoice preparation
+                    </div>
+                    <div className="field-summary">
+                      From the office to the field <ArrowUpRight size={15} />
+                    </div>
+                  </div>
+                </div>
+                <p className="eyebrow">Field operations</p>
+                <h3>
+                  More time on the job.
+                  <br />
+                  Less time chasing details.
+                </h3>
+                <p>
+                  HVAC service workflows and field applications that connect
+                  scheduling, job information, and invoicing.
+                </p>
+                <button
+                  className="text-link"
+                  onClick={() =>
+                    openContactModal({
+                      source: "Field operations work",
+                      inquiry:
+                        "I would like to discuss field operations for my business.",
+                    })
+                  }
+                >
+                  Explore the possibilities <ArrowUpRight size={15} />
+                </button>
+              </article>
+              <article>
+                <div className="work-visual customer-visual" aria-hidden="true">
+                  <div className="estimate-preview">
+                    <span>A CLEARER CUSTOMER JOURNEY</span>
+                    <strong>
+                      A fresh start,
+                      <br />
+                      <em>made simple.</em>
+                    </strong>
+                    <div>
+                      Discover <ArrowRight size={12} /> Estimate{" "}
+                      <ArrowRight size={12} /> Schedule
+                    </div>
+                  </div>
+                </div>
+                <p className="eyebrow">Customer experience</p>
+                <h3>
+                  A better experience.
+                  <br />
+                  From the first inquiry.
+                </h3>
+                <p>
+                  Cleaning business websites, estimating tools, and
+                  customer-facing systems that make the next step clear.
+                </p>
+                <button
+                  className="text-link"
+                  onClick={() =>
+                    openContactModal({
+                      source: "Customer experience work",
+                      inquiry:
+                        "I would like to discuss my website and customer experience.",
+                    })
+                  }
+                >
+                  Start a conversation <ArrowUpRight size={15} />
+                </button>
+              </article>
+              <article>
+                <div className="work-visual relay-visual" aria-hidden="true">
+                  <div className="relay-symbol">
+                    r<span>elay</span>
+                  </div>
+                  <div className="relay-lines">
+                    <span>Customers</span>
+                    <i />
+                    <span>Operations</span>
+                    <i />
+                    <span>Insights</span>
+                  </div>
+                </div>
+                <p className="eyebrow">Sentient Relay · In development</p>
+                <h3>
+                  Connected operations.
+                  <br />A stronger foundation.
+                </h3>
+                <p>
+                  Our reusable service-business platform brings together lessons
+                  from custom applications, automation, and QuickBooks-connected
+                  workflows.
+                </p>
+                <button
+                  className="text-link"
+                  onClick={() =>
+                    openContactModal({
+                      source: "Sentient Relay interest",
+                      inquiry:
+                        "I would like to learn about Sentient Relay, currently in development.",
+                    })
+                  }
+                >
+                  Discuss your operations <ArrowUpRight size={15} />
+                </button>
+              </article>
+            </div>
+            <p className="work-disclosure">
+              Visuals illustrate implementation areas. They are not client
+              dashboards or claims of measured results.
+            </p>
+          </div>
+        </section>
+        <section id="founder" className="founder-section section-space">
+          <div className="page-width founder-layout">
+            <div className="founder-portrait">
+              <span className="founder-portrait-frame">
+                <img
+                  src="/atmosphere/troy-hill-founder-480.webp"
+                  srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
+                  sizes="(max-width: 600px) 100vw, 410px"
+                  alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
+                  loading="lazy"
+                  width="480"
+                  height="476"
+                />
+              </span>
+              <div>
+                <strong>Troy Hill</strong>
+                <span>Founder & Principal Consultant</span>
+              </div>
+            </div>
+            <div className="founder-copy">
+              <span className="fd-line" aria-hidden="true" />
+              <p className="eyebrow">Meet your partner</p>
+              <h2>
+                Global experience.
+                <br />
+                <em>Personal accountability.</em>
+              </h2>
+              <p className="lead-copy">
+                Global experience is where the story begins.
+                <br />
+                Local partnership is why it matters.
+              </p>
+              <p>
+                After senior executive leadership roles at Hewlett-Packard and
+                E*TRADE Financial, Troy Hill founded Sentient Partners to be a
+                hands-on technology partner for growing local businesses.
+              </p>
+              <a
+                className="text-link"
+                href={BOOKING_URL}
+                onClick={(e) => {
+                  e.preventDefault();
+                  book("Founder");
+                }}
+              >
+                Book a 20-minute introductory call <ArrowUpRight size={16} />
+              </a>
+            </div>
+          </div>
+        </section>
+        <section id="process" className="process-section section-space">
+          <div className="page-width">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">How we partner</p>
+                <h2>
+                  Clear thinking.
+                  <br />
+                  <em>Careful execution.</em>
+                </h2>
+              </div>
+              <p>
+                Direct access to your partner.
+                <br />A practical path from possibility to progress.
+              </p>
+            </div>
+            <div className="process-grid">
+              <svg
+                className="ps-thread"
+                viewBox="0 0 1000 40"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  className="ps-thread-lit"
+                  d="M0 20 C160 20 200 6 333 20 S520 34 667 20 S860 6 1000 20"
+                  pathLength={1}
+                />
+              </svg>
+              <span className="ps-vline" aria-hidden="true" />
+              {[
+                [
+                  "01",
+                  "Discover",
+                  "We listen first. Together, we understand your business, the friction, and the opportunities worth pursuing.",
+                ],
+                [
+                  "02",
+                  "Design",
+                  "We shape a practical strategy, establish priorities, and agree on a clear implementation roadmap.",
+                ],
+                [
+                  "03",
+                  "Deliver",
+                  "We build, test, and implement with your team. Then refine the system as your business evolves.",
+                ],
+              ].map(([n, title, copy]) => (
+                <article key={title}>
+                  <span>{n}</span>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="local-interlude">
+          <div className="li-stage">
+            <div className="fog-seam" aria-hidden="true" />
+            <img
+              src="/atmosphere/downtown-auburn-1200.webp"
+              alt="Historic downtown Auburn in Northern California"
+              width="1200"
+              height="800"
+              loading="lazy"
+            />
+            <div className="page-width">
+              <p className="eyebrow">Rooted in Northern California</p>
+              <p>
+                We don't build client lists.
+                <br />
+                <em>We build partnerships.</em>
+              </p>
+              <span>Auburn · Placer County · Greater Sacramento</span>
+            </div>
+          </div>
+        </section>
+        <Contact onBook={() => book("Final invitation")} />
+      </main>
+      <footer className="atmosphere-footer">
+        <FooterFinale />
+        <div className="page-width">
+          <div className="footer-top">
+            <div>
+              <Brand />
+              <p>Your local business and technology partner.</p>
+            </div>
+            <div>
+              <span>Explore</span>
+              <a href="#capabilities">Capabilities</a>
+              <a href="#work">Our work</a>
+              <a href="#founder">Our founder</a>
+              <a href="#process">Our approach</a>
+            </div>
+            <div>
+              <span>Let's connect</span>
+              <a href="mailto:hello@sentientpartners.ai">
+                hello@sentientpartners.ai
+              </a>
+              <a href={BOOKING_URL}>
+                Book a 20-minute introductory call <ArrowUpRight size={12} />
+              </a>
+              <button onClick={() => openSentientChat({ source: "Footer" })}>
+                Ask our AI concierge
+              </button>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} Sentient Partners.</span>
+            <span>Auburn, California · Serving businesses everywhere.</span>
+            <a href="/privacy.html">Privacy</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

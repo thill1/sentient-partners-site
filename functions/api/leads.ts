@@ -1,5 +1,4 @@
 interface Env {
-  FORMSUBMIT_EMAIL?: string;
   LEADS_WEBHOOK_URL?: string;
 }
 
@@ -37,10 +36,16 @@ function isValidEmail(email: string) {
 
 function normalizePayload(body: Record<string, unknown>): LeadPayload | null {
   const name = String(body.name || "").trim();
-  const email = String(body.email || "").trim().toLowerCase();
+  const email = String(body.email || "")
+    .trim()
+    .toLowerCase();
   const inquiry = String(body.inquiry || "").trim();
   const intent =
-    body.intent === "blueprint" ? "blueprint" : body.intent === "contact" ? "contact" : "";
+    body.intent === "blueprint"
+      ? "blueprint"
+      : body.intent === "contact"
+        ? "contact"
+        : "";
   const source = String(body.source || "").trim();
   const ctaLabel = String(body.ctaLabel || "").trim();
 
@@ -69,36 +74,6 @@ async function sendToWebhook(url: string, lead: StoredLead) {
     body: JSON.stringify({
       event: "lead_submission",
       lead,
-    }),
-  });
-
-  return response.ok;
-}
-
-async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
-  const response = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      _subject:
-        lead.intent === "blueprint"
-          ? `New AI Blueprint Request - ${lead.name}`
-          : `New Website Inquiry - ${lead.name}`,
-      _template: "table",
-      _captcha: "false",
-      lead_id: lead.leadId,
-      source: lead.source,
-      intent: lead.intent,
-      cta_label: lead.ctaLabel || "",
-      sent_at: lead.submittedAt,
-      referrer: lead.referrer,
-      name: lead.name,
-      email: lead.email,
-      inquiry: lead.inquiry,
-      user_agent: lead.userAgent,
     }),
   });
 
@@ -147,17 +122,14 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     deliveryAttempts.push(sendToWebhook(env.LEADS_WEBHOOK_URL, lead));
   }
 
-  const notificationEmail = env.FORMSUBMIT_EMAIL || "hello@sentientpartners.ai";
-  if (notificationEmail) {
-    deliveryAttempts.push(sendToFormSubmit(notificationEmail, lead));
-  }
-
   if (!deliveryAttempts.length) {
     return json(
       {
-        error: "No lead delivery destination is configured.",
+        ok: true,
+        skipped: true,
+        note: "Email delivery happens in the browser via FormSubmit; no webhook configured.",
       },
-      { status: 500 },
+      { status: 200 },
     );
   }
 
@@ -180,7 +152,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     leadId: lead.leadId,
     message:
       lead.intent === "blueprint"
-        ? "Blueprint request received. We will follow up with tailored recommendations."
+        ? "Thanks. We received your note and will follow up soon."
         : "Thanks. We will be in touch shortly.",
   });
 };

@@ -1,46 +1,38 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AdminLogin } from './components/AdminLogin';
-import { AdminPanel } from './components/AdminPanel';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { Services } from './components/Services';
-import { DemoSection } from './components/DemoSection';
-import { BlueprintEngine } from './components/BlueprintEngine';
-import { VoiceCommand } from './components/VoiceCommand';
-import { Testimonials } from './components/Testimonials';
-import { Pricing } from './components/Pricing';
-import { FAQ } from './components/FAQ';
-import { Footer } from './components/Footer';
-import { CTASection } from './components/CTASection';
-import { Process } from './components/Process';
-import { ChatInterface } from './components/ChatInterface';
-import { BookingModal } from './components/BookingModal';
-import { ContactModal } from './components/ContactModal';
-import { Toast } from './components/Toast';
-import { IntroSplash } from './components/IntroSplash';
-import { rememberVisit } from './lib/visitorMemory';
-import { WhySentient } from './components/WhySentient';
-import { HOME_SECTION_ORDER } from './content/siteContent';
-import { getAdminSettings, loginAdmin, logoutAdmin, updateAdminSettings } from './lib/adminApi';
-import type { SiteSettings } from './lib/siteSettingsSchema';
-import { useSiteSettings } from './hooks/useSiteSettings';
-import type { AppRoute } from './types';
+import React, { useCallback, useEffect, useState } from "react";
+import { AdminLogin } from "./components/AdminLogin";
+import { AdminPanel } from "./components/AdminPanel";
+import { ChatInterface } from "./components/ChatInterface";
+import { BookingModal } from "./components/BookingModal";
+import { ContactModal } from "./components/ContactModal";
+import { Toast } from "./components/Toast";
+import { rememberVisit } from "./lib/visitorMemory";
+import Landing from "./components/atmosphere/Landing";
+import {
+  getAdminSettings,
+  loginAdmin,
+  logoutAdmin,
+  updateAdminSettings,
+} from "./lib/adminApi";
+import type { SiteSettings } from "./lib/siteSettingsSchema";
+import { useSiteSettings } from "./hooks/useSiteSettings";
+import type { AppRoute } from "./types";
 
 function getCurrentRoute(hash: string): AppRoute {
-  return hash === '#/admin' ? 'admin' : 'home';
+  return hash === "#/admin" ? "admin" : "home";
 }
-
 
 function App() {
   const siteSettings = useSiteSettings();
 
   useEffect(() => {
-    if (!window.sessionStorage.getItem('sp-visit-counted')) {
-      window.sessionStorage.setItem('sp-visit-counted', '1');
+    if (!window.sessionStorage.getItem("sp-visit-counted")) {
+      window.sessionStorage.setItem("sp-visit-counted", "1");
       rememberVisit();
     }
   }, []);
-  const [route, setRoute] = useState<AppRoute>(() => getCurrentRoute(window.location.hash));
+  const [route, setRoute] = useState<AppRoute>(() =>
+    getCurrentRoute(typeof window === "undefined" ? "" : window.location.hash),
+  );
   const [adminSettings, setAdminSettings] = useState<SiteSettings | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminStatus, setAdminStatus] = useState<string | null>(null);
@@ -53,25 +45,29 @@ function App() {
 
     // Respect any saved theme; otherwise default to DARK (matches index.html)
     const saved =
-      localStorage.getItem('theme') ||
-      localStorage.getItem('color-theme') ||
-      localStorage.getItem('sentient-theme');
+      localStorage.getItem("theme") ||
+      localStorage.getItem("color-theme") ||
+      localStorage.getItem("sentient-theme");
 
-    if (saved === 'dark' || !saved) {
-      root.classList.add('dark');
-      if (!saved) localStorage.setItem('theme', 'dark');
+    if (saved === "dark" || !saved) {
+      root.classList.add("dark");
+      if (!saved) localStorage.setItem("theme", "dark");
     } else {
-      root.classList.remove('dark');
+      root.classList.remove("dark");
     }
   }, []);
 
   useEffect(() => {
     const onHashChange = () => {
-      setRoute(getCurrentRoute(window.location.hash));
+      setRoute(
+        getCurrentRoute(
+          typeof window === "undefined" ? "" : window.location.hash,
+        ),
+      );
     };
 
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
   const loadAdminSettings = useCallback(async () => {
@@ -83,9 +79,11 @@ function App() {
       setAdminError(null);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Failed to load admin settings.';
+        error instanceof Error
+          ? error.message
+          : "Failed to load admin settings.";
 
-      if (message.includes('401')) {
+      if (message.includes("401")) {
         setAdminSettings(null);
         setAdminError(null);
       } else {
@@ -97,69 +95,59 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (route === 'admin') {
+    if (route === "admin") {
       void loadAdminSettings();
     }
   }, [loadAdminSettings, route]);
 
-  const sectionComponents: Record<(typeof HOME_SECTION_ORDER)[number], React.ReactNode> = {
-    hero: <Hero key="hero" />,
-    why: <WhySentient key="why" />,
-    services: <Services key="services" />,
-    demo: <DemoSection key="demo" />,
-    diagnosis: <BlueprintEngine key="diagnosis" />,
-    testimonials: <Testimonials key="testimonials" />,
-    process: <Process key="process" />,
-    pricing: <Pricing key="pricing" />,
-    faq: <FAQ key="faq" />,
-    cta: <CTASection key="cta" />,
-  };
+  const handleAdminLogin = useCallback(
+    async (username: string, password: string) => {
+      setIsLoggingIn(true);
+      setAdminError(null);
+      setAdminStatus(null);
 
-  const homeMainPaddingClasses = useMemo(
-    () => (siteSettings.bannerState.visible ? 'pt-32 md:pt-36' : 'pt-20 md:pt-24'),
-    [siteSettings.bannerState.visible],
+      try {
+        await loginAdmin({ username, password });
+        await loadAdminSettings();
+        setAdminStatus("Signed in successfully.");
+      } catch (error) {
+        setAdminError(error instanceof Error ? error.message : "Login failed.");
+      } finally {
+        setIsLoggingIn(false);
+      }
+    },
+    [loadAdminSettings],
   );
 
-  const handleAdminLogin = useCallback(async (username: string, password: string) => {
-    setIsLoggingIn(true);
-    setAdminError(null);
-    setAdminStatus(null);
+  const handleAdminSave = useCallback(
+    async (settings: SiteSettings) => {
+      setIsSavingAdmin(true);
+      setAdminError(null);
+      setAdminStatus(null);
 
-    try {
-      await loginAdmin({ username, password });
-      await loadAdminSettings();
-      setAdminStatus('Signed in successfully.');
-    } catch (error) {
-      setAdminError(error instanceof Error ? error.message : 'Login failed.');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  }, [loadAdminSettings]);
-
-  const handleAdminSave = useCallback(async (settings: SiteSettings) => {
-    setIsSavingAdmin(true);
-    setAdminError(null);
-    setAdminStatus(null);
-
-    try {
-      const savedSettings = await updateAdminSettings(settings);
-      setAdminSettings(savedSettings);
-      siteSettings.applySettings(savedSettings);
-      setAdminStatus('Settings saved.');
-    } catch (error) {
-      setAdminError(error instanceof Error ? error.message : 'Failed to save settings.');
-    } finally {
-      setIsSavingAdmin(false);
-    }
-  }, [siteSettings]);
+      try {
+        const savedSettings = await updateAdminSettings(settings);
+        setAdminSettings(savedSettings);
+        siteSettings.applySettings(savedSettings);
+        setAdminStatus("Settings saved.");
+      } catch (error) {
+        setAdminError(
+          error instanceof Error ? error.message : "Failed to save settings.",
+        );
+      } finally {
+        setIsSavingAdmin(false);
+      }
+    },
+    [siteSettings],
+  );
 
   const handleAdminLogout = useCallback(async () => {
     await logoutAdmin();
     setAdminSettings(null);
-    setAdminStatus('Signed out.');
+    setAdminStatus("Signed out.");
   }, []);
 
-  if (route === 'admin') {
+  if (route === "admin") {
     if (isAdminLoading && !adminSettings) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -191,18 +179,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen selection:bg-brand-500 selection:text-white font-sans relative">
-      <IntroSplash />
-      <Header banner={siteSettings.bannerState} />
+    <div>
+      <Landing banner={siteSettings.bannerState} />
 
-      <main id="main-content" className={homeMainPaddingClasses}>
-        {HOME_SECTION_ORDER.map((section) => sectionComponents[section])}
-      </main>
-
-      <Footer />
-
-      <ChatInterface />
-      <VoiceCommand />
+      <ChatInterface showLauncher={false} />
       <BookingModal />
       <ContactModal />
       <Toast />
