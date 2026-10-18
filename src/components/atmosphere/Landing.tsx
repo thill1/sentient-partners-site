@@ -16,7 +16,11 @@ import Perspective from "./Perspective";
 import Outcomes from "./Outcomes";
 import Contact from "./Contact";
 import { Connected } from "./Connected";
-import { useFounderMotion, useWorkMotion } from "./sectionMotion";
+import {
+  useFounderMotion,
+  useProcessMotion,
+  useWorkMotion,
+} from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
@@ -172,6 +176,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
   useScrollReveal();
   useWorkMotion();
   useFounderMotion();
+  useProcessMotion();
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">
@@ -391,6 +396,19 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
               </p>
             </div>
             <div className="process-grid">
+              <svg
+                className="ps-thread"
+                viewBox="0 0 1000 40"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  className="ps-thread-lit"
+                  d="M0 20 C160 20 200 6 333 20 S520 34 667 20 S860 6 1000 20"
+                  pathLength={1}
+                />
+              </svg>
+              <span className="ps-vline" aria-hidden="true" />
               {[
                 [
                   "01",

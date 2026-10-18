@@ -133,3 +133,49 @@ const founder: Setup = (f, el) => {
   }
 };
 export const useFounderMotion = () => useSectionMotion("#founder", founder);
+
+/* Process: one champagne thread runs through Discover, Design and Deliver,
+   lighting each step as it arrives. Scrubbed, not pinned. */
+const processThread: Setup = (f, el) => {
+  const grid = el.querySelector(".process-grid");
+  if (!grid) return;
+  const mm = f.gsap.matchMedia();
+  const steps = [...grid.querySelectorAll("article")];
+  const light = (progress: number, at: number[]) =>
+    steps.forEach((s, i) => s.classList.toggle("is-lit", progress >= at[i]));
+  mm.add("(min-width: 851px)", () => {
+    const path = grid.querySelector(".ps-thread-lit");
+    f.gsap.set(path, { strokeDasharray: 1, strokeDashoffset: 1 });
+    f.gsap.to(path, {
+      strokeDashoffset: 0,
+      ease: "none",
+      scrollTrigger: {
+        trigger: grid,
+        start: "top 78%",
+        end: "bottom 55%",
+        scrub: 0.7,
+        onUpdate: (self) => light(self.progress, [0.02, 0.36, 0.7]),
+      },
+    });
+  });
+  mm.add("(max-width: 850px)", () => {
+    const line = grid.querySelector(".ps-vline");
+    f.gsap.fromTo(
+      line,
+      { scaleY: 0 },
+      {
+        scaleY: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: grid,
+          start: "top 75%",
+          end: "bottom 60%",
+          scrub: 0.6,
+          onUpdate: (self) => light(self.progress, [0.02, 0.4, 0.78]),
+        },
+      },
+    );
+  });
+};
+export const useProcessMotion = () =>
+  useSectionMotion("#process", processThread);
