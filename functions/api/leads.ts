@@ -180,7 +180,7 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     leadId: lead.leadId,
     message:
       lead.intent === "blueprint"
-        ? "Blueprint request received. We will follow up with tailored recommendations."
+        ? "Thanks. We received your note and will follow up soon."
         : "Thanks. We will be in touch shortly.",
   });
 };

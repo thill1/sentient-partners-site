@@ -4,10 +4,10 @@ export const onRequestGet = async () => {
     short_name: "Sentient",
     start_url: "/",
     display: "standalone",
-    background_color: "#0F172A",
-    theme_color: "#0F172A",
+    background_color: "#081536",
+    theme_color: "#0d1f4e",
     description:
-      "Sentient Partners is an AI implementation agency that deploys AI voice agents, chatbots, and automation systems for SMBs.",
+      "Your local business and technology partner in Auburn, California.",
     icons: [
       { src: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { src: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },

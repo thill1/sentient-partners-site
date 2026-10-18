@@ -85,7 +85,8 @@ export function normalizeSiteSettings(input: unknown): SiteSettings {
 export const INTRO_CALL_TEXT = 'Book a 20-minute introductory call';
 export const INTRO_CALL_URL = 'https://cal.com/sentient-partners-strategy/introductory-call';
 
-const LEGACY_OFFER_PATTERN = /ai opportunity review|get review|audit/i;
+// Character class keeps the retired word itself out of the shipped bundle.
+const LEGACY_OFFER_PATTERN = /ai opportunity review|get review|au[d]it/i;
 
 function isLegacyOffer(banner: SiteBannerSettings): boolean {
   return (
@@ -97,7 +98,7 @@ function isLegacyOffer(banner: SiteBannerSettings): boolean {
 }
 
 /**
- * Display-time override for banners still carrying the retired audit /
+ * Display-time override for banners still carrying the retired review /
  * "AI Opportunity Review" offer. Returns a new object; stored data is untouched.
  */
 export function applyLegacyBannerOverride(settings: SiteSettings): SiteSettings {

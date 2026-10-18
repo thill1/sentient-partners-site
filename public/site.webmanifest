@@ -3,9 +3,9 @@
   "short_name": "Sentient",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#102434",
-  "theme_color": "#102434",
-  "description": "Founder-led strategy, AI, and technology implementation for growing businesses.",
+  "background_color": "#081536",
+  "theme_color": "#0d1f4e",
+  "description": "Your local business and technology partner in Auburn, California.",
   "icons": [
     {
       "src": "/favicon-32x32.png",
