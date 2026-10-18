@@ -339,3 +339,9 @@ body .concierge-panel input:focus-visible {
 .atmosphere-footer {
   background: var(--f-deep) !important;
 }
+
+@media (max-width: 899px) {
+  .cf-photo {
+    background-image: url("/atmosphere/bridge-960.webp");
+  }
+}

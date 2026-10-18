@@ -290,3 +290,11 @@
     gap: var(--space-2xs);
   }
 }
+
+/* Phones and tablets: a right-sized photo (the desktop hero already caches
+   the full-size file, so desktop keeps it). */
+@media (max-width: 899px) {
+  .pv-water {
+    background-image: url("/atmosphere/bay-960.webp");
+  }
+}
