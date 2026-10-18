@@ -14,8 +14,12 @@ describe("insights publishing gate", () => {
     expect(includeDrafts({ INSIGHTS_INCLUDE_DRAFTS: "1" })).toBe(true);
     expect(includeDrafts({})).toBe(false);
   });
-  it("loads the four published issues, newest first", () => {
-    expect(loadIssues("content/insights", false).map((i) => i.issue)).toEqual([4, 3, 2, 1]);
+  it("loads the four published issues and seven LinkedIn posts, newest first", () => {
+    const pub = loadIssues("content/insights", false);
+    expect(pub.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([4, 3, 2, 1]);
+    expect(pub.filter((i) => i.type === "linkedin")).toHaveLength(7);
+    expect(pub).toHaveLength(11);
+    expect(pub.some((i) => i.sample || i.slug.startsWith("sample-"))).toBe(false);
     const all = loadIssues("content/insights", true);
     expect(all.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([4, 3, 2, 1]);
     expect(all.every((i) => i.date.length === 10 && i.summary)).toBe(true);
