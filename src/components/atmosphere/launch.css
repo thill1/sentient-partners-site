@@ -1,0 +1,103 @@
+/* Launch quick wins: navigation, focus, contrast. */
+
+/* Champagne focus ring everywhere on the page. */
+.atmosphere-page :focus-visible,
+body .concierge-panel :focus-visible {
+  outline: 2px solid var(--f-gold, #c8b795);
+  outline-offset: 3px;
+}
+
+/* The header CTA stays legible over the bright daytime sky. */
+.site-header:not(.header-scrolled) .header-book {
+  background: rgba(8, 21, 54, 0.38);
+  border-color: rgba(243, 240, 232, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  text-shadow: 0 1px 6px rgba(8, 21, 54, 0.45);
+}
+.site-header:not(.header-scrolled) .header-book:hover {
+  background: rgba(8, 21, 54, 0.55);
+}
+
+/* Navigation collapses to the menu below 1180px. */
+@media (max-width: 1180px) {
+  .site-header .desktop-nav {
+    display: none;
+  }
+  .site-header .header-inner {
+    display: flex;
+    gap: 20px;
+  }
+  .site-header .header-book {
+    margin-left: auto;
+  }
+  .site-header .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Full-height navy menu. */
+.site-header .header-inner {
+  position: relative;
+  z-index: 1;
+}
+.site-header .mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 110px var(--gutter, 24px) 40px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(
+      60% 40% at 70% 20%,
+      rgba(58, 77, 128, 0.45),
+      transparent 70%
+    ),
+    var(--f-deep, #081536);
+  color: var(--f-ivory, #f3f0e8);
+}
+.site-header .mobile-nav a {
+  border-top-color: rgba(200, 183, 149, 0.2);
+  font-size: clamp(28px, 7vw, 40px);
+}
+.site-header .mobile-nav a > svg {
+  color: var(--f-gold, #c8b795);
+}
+.site-header .mobile-nav .mobile-nav-book {
+  margin-top: 18px;
+  border-top: 0;
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  color: var(--f-gold, #c8b795);
+  border-bottom: 1px solid rgba(200, 183, 149, 0.5);
+  align-self: flex-start;
+  gap: 14px;
+}
+html.menu-open,
+html.menu-open body {
+  overflow: hidden;
+}
+
+/* Illustration disclosures readable on navy. */
+.atmosphere-page .illustration-note,
+.atmosphere-page .work-disclosure {
+  color: #aab4c2 !important;
+  opacity: 1 !important;
+}
+
+/* Concierge launcher in navy. */
+.concierge-mark {
+  background: rgba(13, 31, 78, 0.6);
+}
+.concierge-launch:hover .concierge-mark,
+.concierge-launch:focus-visible .concierge-mark {
+  background: rgba(13, 31, 78, 0.9);
+}

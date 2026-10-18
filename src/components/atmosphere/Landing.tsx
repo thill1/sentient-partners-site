@@ -24,6 +24,8 @@ import {
 } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
+import { loadFabric } from "../../fabric/motion";
+import "./launch.css";
 
 const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
@@ -108,14 +110,44 @@ function Navigation() {
   }, []);
   useEffect(() => {
     if (!menu) return;
-    const close = (e: KeyboardEvent) => {
+    // Full-height menu: lock the page, trap focus, close on Escape.
+    const root = document.documentElement;
+    root.classList.add("menu-open");
+    let lenis: { stop: () => void; start: () => void } | undefined;
+    loadFabric().then((f) => {
+      lenis = f?.lenis ?? undefined;
+      lenis?.stop();
+    });
+    const focusables = () => [
+      ...(header.current?.querySelectorAll<HTMLElement>(
+        ".menu-toggle, .mobile-nav a",
+      ) ?? []),
+    ];
+    focusables()[1]?.focus();
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenu(false);
         menuButton.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
       }
     };
-    addEventListener("keydown", close);
-    return () => removeEventListener("keydown", close);
+    addEventListener("keydown", onKey);
+    return () => {
+      removeEventListener("keydown", onKey);
+      root.classList.remove("menu-open");
+      lenis?.start();
+    };
   }, [menu]);
   return (
     <header
@@ -164,7 +196,15 @@ function Navigation() {
               <ArrowUpRight size={18} />
             </a>
           ))}
-          <a href="#contact" onClick={() => setMenu(false)}>
+          <a
+            className="mobile-nav-book"
+            href={BOOKING_URL}
+            onClick={(e) => {
+              e.preventDefault();
+              setMenu(false);
+              book("Mobile menu");
+            }}
+          >
             Book a 20-minute introductory call <ArrowUpRight size={18} />
           </a>
         </nav>
