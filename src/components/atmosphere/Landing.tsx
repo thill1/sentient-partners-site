@@ -364,9 +364,9 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                 Local partnership is why it matters.
               </p>
               <p>
-                After senior leadership roles at Hewlett-Packard and E*TRADE
-                Financial, Troy Hill founded Sentient Partners to be a hands-on
-                technology partner for growing local businesses.
+                After senior executive leadership roles at Hewlett-Packard and
+                E*TRADE Financial, Troy Hill founded Sentient Partners to be a
+                hands-on technology partner for growing local businesses.
               </p>
               <a
                 className="text-link"
