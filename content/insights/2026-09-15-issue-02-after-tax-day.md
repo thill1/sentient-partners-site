@@ -5,7 +5,7 @@ issue: 2
 date: 2026-09-15
 summary: "Tax day is behind you and the Fed raised rates. Protect cash, review AI Max search terms, hire only for measured gaps, and push Windows Update before Sep 22."
 reading_minutes: 4
-status: draft
+status: approved
 ---
 
 > Originally written for owners on September 15, 2026. Figures and deadlines reflect that date; some have since changed. The Fed's Sep 16 decision (a 25 bp hike to 3.75% to 4.00%) was added after the statement was posted.

@@ -5,7 +5,7 @@ issue: 4
 date: 2026-10-15
 summary: "Gasoline jumped 9.1% in September while payrolls grew just 29,000. Reprice trip costs, get ready for Google's Local Services Ads move, and confirm October's Windows fix is installed."
 reading_minutes: 6
-status: draft
+status: approved
 ---
 
 ## Owner signal

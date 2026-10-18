@@ -5,7 +5,7 @@ issue: 3
 date: 2026-10-01
 summary: "The Fed raised the funds range to 3.75% to 4%. Plan Q4 cash and coverage, clean up Search campaigns after Google's AI Max migration, and update browsers before October Patch Tuesday."
 reading_minutes: 4
-status: draft
+status: approved
 ---
 
 > Originally written for owners on October 1, 2026. Figures and deadlines reflect that date; some have since changed.
