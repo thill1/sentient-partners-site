@@ -179,3 +179,49 @@ const processThread: Setup = (f, el) => {
 };
 export const useProcessMotion = () =>
   useSectionMotion("#process", processThread);
+
+/* Auburn band: the street pans slowly sideways while the line holds still,
+   a pinned breath before the finale. Mobile keeps a gentle parallax. */
+const auburn: Setup = (f, el) => {
+  const img = el.querySelector(".li-stage > img");
+  const copy = el.querySelector(".li-stage > .page-width");
+  if (!img || !copy) return;
+  const mm = f.gsap.matchMedia();
+  mm.add("(min-width: 900px) and (min-height: 640px)", () => {
+    f.gsap
+      .timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: el,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.8,
+        },
+      })
+      .fromTo(
+        img,
+        { xPercent: 0, scale: 1.06 },
+        { xPercent: -20, scale: 1, duration: 1 },
+        0,
+      )
+      .fromTo(copy, { x: 40 }, { x: -20, duration: 1 }, 0);
+  });
+  mm.add("not all and (min-width: 900px) and (min-height: 640px)", () => {
+    f.gsap.fromTo(
+      img,
+      { yPercent: -6 },
+      {
+        yPercent: 6,
+        ease: "none",
+        scrollTrigger: {
+          trigger: el,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      },
+    );
+  });
+};
+export const useAuburnMotion = () =>
+  useSectionMotion(".local-interlude", auburn);

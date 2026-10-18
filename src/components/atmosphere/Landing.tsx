@@ -18,6 +18,7 @@ import Contact from "./Contact";
 import { Connected } from "./Connected";
 import {
   useFounderMotion,
+  useAuburnMotion,
   useProcessMotion,
   useWorkMotion,
 } from "./sectionMotion";
@@ -177,6 +178,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
   useWorkMotion();
   useFounderMotion();
   useProcessMotion();
+  useAuburnMotion();
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">
@@ -436,22 +438,24 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
           </div>
         </section>
         <section className="local-interlude">
-          <div className="fog-seam" aria-hidden="true" />
-          <img
-            src="/atmosphere/downtown-auburn-1200.webp"
-            alt="Historic downtown Auburn in Northern California"
-            width="1200"
-            height="800"
-            loading="lazy"
-          />
-          <div className="page-width">
-            <p className="eyebrow">Rooted in Northern California</p>
-            <p>
-              We don't build client lists.
-              <br />
-              <em>We build partnerships.</em>
-            </p>
-            <span>Auburn · Placer County · Greater Sacramento</span>
+          <div className="li-stage">
+            <div className="fog-seam" aria-hidden="true" />
+            <img
+              src="/atmosphere/downtown-auburn-1200.webp"
+              alt="Historic downtown Auburn in Northern California"
+              width="1200"
+              height="800"
+              loading="lazy"
+            />
+            <div className="page-width">
+              <p className="eyebrow">Rooted in Northern California</p>
+              <p>
+                We don't build client lists.
+                <br />
+                <em>We build partnerships.</em>
+              </p>
+              <span>Auburn · Placer County · Greater Sacramento</span>
+            </div>
           </div>
         </section>
         <Contact onBook={() => book("Final invitation")} />

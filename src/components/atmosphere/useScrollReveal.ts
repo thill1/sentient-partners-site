@@ -42,7 +42,7 @@ export function useScrollReveal() {
           ),
         ]);
         root
-          .querySelectorAll(".local-interlude > img, .contact-backdrop")
+          .querySelectorAll(".contact-backdrop")
           .forEach((el) => parallax(f, el, 8, el.parentElement ?? el));
       }, root);
     });
