@@ -37,7 +37,12 @@ const work: Setup = (f, el) => {
       {
         yPercent: -10 - i * 4,
         ease: "none",
-        scrollTrigger: { trigger: v, start: "top bottom", end: "bottom top", scrub: 0.8 },
+        scrollTrigger: {
+          trigger: v,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.8,
+        },
       },
     );
   });
@@ -49,13 +54,23 @@ const work: Setup = (f, el) => {
       stagger: 0.12,
       duration: 1.3,
       ease: ease.out,
-      scrollTrigger: { trigger: el.querySelector(".work-grid"), start: "top 85%", once: true },
+      scrollTrigger: {
+        trigger: el.querySelector(".work-grid"),
+        start: "top 85%",
+        once: true,
+      },
     });
   });
   mm.add(`${DESKTOP} and ${FINE}`, () => {
     const offs = visuals.map((v) => {
-      const rx = f.gsap.quickTo(v, "rotateX", { duration: 0.6, ease: "power3" });
-      const ry = f.gsap.quickTo(v, "rotateY", { duration: 0.6, ease: "power3" });
+      const rx = f.gsap.quickTo(v, "rotateX", {
+        duration: 0.6,
+        ease: "power3",
+      });
+      const ry = f.gsap.quickTo(v, "rotateY", {
+        duration: 0.6,
+        ease: "power3",
+      });
       const move = (e: PointerEvent) => {
         const r = v.getBoundingClientRect();
         ry(((e.clientX - r.left) / r.width - 0.5) * 10);
@@ -77,3 +92,44 @@ const work: Setup = (f, el) => {
   });
 };
 export const useWorkMotion = () => useSectionMotion("#work", work);
+
+/* Founder: the portrait drifts within its frame while a champagne line draws
+   down beside the story. A lighter, unpinned moment after Our Work. */
+const founder: Setup = (f, el) => {
+  const img = el.querySelector(".founder-portrait img");
+  const line = el.querySelector(".fd-line");
+  if (img) {
+    f.gsap.fromTo(
+      img,
+      { yPercent: -6, scale: 1.14 },
+      {
+        yPercent: 6,
+        scale: 1.04,
+        ease: "none",
+        scrollTrigger: {
+          trigger: el,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 0.8,
+        },
+      },
+    );
+  }
+  if (line) {
+    f.gsap.fromTo(
+      line,
+      { scaleY: 0 },
+      {
+        scaleY: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: el.querySelector(".founder-copy"),
+          start: "top 80%",
+          end: "bottom 60%",
+          scrub: 0.6,
+        },
+      },
+    );
+  }
+};
+export const useFounderMotion = () => useSectionMotion("#founder", founder);

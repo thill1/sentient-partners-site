@@ -16,7 +16,7 @@ import Perspective from "./Perspective";
 import Outcomes from "./Outcomes";
 import Contact from "./Contact";
 import { Connected } from "./Connected";
-import { useWorkMotion } from "./sectionMotion";
+import { useFounderMotion, useWorkMotion } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 
@@ -171,6 +171,7 @@ function Navigation() {
 export default function Landing(_props: { banner: BannerDisplayState }) {
   useScrollReveal();
   useWorkMotion();
+  useFounderMotion();
   return (
     <div className="atmosphere-page" id="top">
       <a href="#main-content" className="skip-link">
@@ -326,21 +327,24 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
         <section id="founder" className="founder-section section-space">
           <div className="page-width founder-layout">
             <div className="founder-portrait">
-              <img
-                src="/atmosphere/troy-hill-founder-480.webp"
-                srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
-                sizes="(max-width: 600px) 100vw, 410px"
-                alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
-                loading="lazy"
-                width="480"
-                height="476"
-              />
+              <span className="founder-portrait-frame">
+                <img
+                  src="/atmosphere/troy-hill-founder-480.webp"
+                  srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
+                  sizes="(max-width: 600px) 100vw, 410px"
+                  alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
+                  loading="lazy"
+                  width="480"
+                  height="476"
+                />
+              </span>
               <div>
                 <strong>Troy Hill</strong>
                 <span>Founder & Principal Consultant</span>
               </div>
             </div>
             <div className="founder-copy">
+              <span className="fd-line" aria-hidden="true" />
               <p className="eyebrow">Meet your partner</p>
               <h2>
                 Global experience.

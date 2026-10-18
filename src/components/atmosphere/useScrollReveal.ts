@@ -35,7 +35,7 @@ export function useScrollReveal() {
               ".connection-story",
               ".work-grid > article",
               ".founder-portrait",
-              ".founder-copy > :not(h2):not(.eyebrow)",
+              ".founder-copy > :not(h2):not(.eyebrow):not(.fd-line)",
               ".process-grid > article",
               ".contact-section .page-width > :not(h2):not(.eyebrow)",
             ].join(","),

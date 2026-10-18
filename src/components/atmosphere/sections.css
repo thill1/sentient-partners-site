@@ -109,3 +109,37 @@
     0 0 0 1px rgba(200, 183, 149, 0.35),
     0 50px 90px -40px rgba(2, 8, 28, 0.9);
 }
+
+/* ——— Founder: portrait parallax, champagne line ——— */
+.founder-section .founder-portrait {
+  position: relative;
+}
+.founder-section .founder-portrait img {
+  will-change: transform;
+}
+.founder-section .founder-portrait > img {
+  display: block;
+}
+.founder-portrait-frame {
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.founder-section .founder-copy {
+  position: relative;
+}
+.fd-line {
+  position: absolute;
+  left: calc(-1 * var(--space-l));
+  top: 0.4em;
+  bottom: 0.4em;
+  width: 1px;
+  background: linear-gradient(180deg, var(--f-gold), rgba(200, 183, 149, 0.15));
+  box-shadow: 0 0 10px rgba(200, 183, 149, 0.4);
+  transform-origin: top;
+}
+@media (max-width: 899px) {
+  .fd-line {
+    display: none;
+  }
+}
