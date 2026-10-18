@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL } from "../../content/siteContent";
@@ -119,9 +120,9 @@ function Navigation() {
       lenis?.stop();
     });
     const focusables = () => [
-      ...(header.current?.querySelectorAll<HTMLElement>(
-        ".menu-toggle, .mobile-nav a",
-      ) ?? []),
+      ...document.querySelectorAll<HTMLElement>(
+        ".site-header .menu-toggle, #mobile-navigation a",
+      ),
     ];
     focusables()[1]?.focus();
     const onKey = (e: KeyboardEvent) => {
@@ -184,31 +185,35 @@ function Navigation() {
           {menu ? <X /> : <Menu />}
         </button>
       </div>
-      {menu && (
-        <nav
-          id="mobile-navigation"
-          className="mobile-nav"
-          aria-label="Mobile navigation"
-        >
-          {links.map(([label, href]) => (
-            <a key={href} href={href} onClick={() => setMenu(false)}>
-              {label}
-              <ArrowUpRight size={18} />
-            </a>
-          ))}
-          <a
-            className="mobile-nav-book"
-            href={BOOKING_URL}
-            onClick={(e) => {
-              e.preventDefault();
-              setMenu(false);
-              book("Mobile menu");
-            }}
+      {/* Portaled to <body>: the scrolled header's backdrop-filter makes it the
+          containing block for fixed children, which clipped the panel. */}
+      {menu &&
+        createPortal(
+          <nav
+            id="mobile-navigation"
+            className="mobile-nav"
+            aria-label="Mobile navigation"
           >
-            Book a 20-minute introductory call <ArrowUpRight size={18} />
-          </a>
-        </nav>
-      )}
+            {links.map(([label, href]) => (
+              <a key={href} href={href} onClick={() => setMenu(false)}>
+                {label}
+                <ArrowUpRight size={18} />
+              </a>
+            ))}
+            <a
+              className="mobile-nav-book"
+              href={BOOKING_URL}
+              onClick={(e) => {
+                e.preventDefault();
+                setMenu(false);
+                book("Mobile menu");
+              }}
+            >
+              Book a 20-minute introductory call <ArrowUpRight size={18} />
+            </a>
+          </nav>,
+          document.body,
+        )}
     </header>
   );
 }

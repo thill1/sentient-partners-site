@@ -51,13 +51,15 @@ body .concierge-panel :focus-visible {
   position: relative;
   z-index: 1;
 }
-.site-header .mobile-nav {
+.mobile-nav {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 2147483000;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 110px var(--gutter, 24px) 40px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -70,14 +72,14 @@ body .concierge-panel :focus-visible {
     var(--f-deep, #081536);
   color: var(--f-ivory, #f3f0e8);
 }
-.site-header .mobile-nav a {
+.mobile-nav a {
   border-top-color: rgba(200, 183, 149, 0.2);
   font-size: clamp(28px, 7vw, 40px);
 }
-.site-header .mobile-nav a > svg {
+.mobile-nav a > svg {
   color: var(--f-gold, #c8b795);
 }
-.site-header .mobile-nav .mobile-nav-book {
+.mobile-nav .mobile-nav-book {
   margin-top: 18px;
   border-top: 0;
   font-family: Inter, sans-serif;
@@ -86,6 +88,18 @@ body .concierge-panel :focus-visible {
   border-bottom: 1px solid rgba(200, 183, 149, 0.5);
   align-self: flex-start;
   gap: 14px;
+}
+/* While open, the header (logo + close) sits above the panel, unfrosted. */
+html.menu-open .site-header {
+  z-index: 2147483001;
+  color: var(--f-ivory, #f3f0e8);
+  background: transparent !important;
+  border-bottom-color: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.menu-open .site-header .header-book {
+  visibility: hidden;
 }
 html.menu-open,
 html.menu-open body {
