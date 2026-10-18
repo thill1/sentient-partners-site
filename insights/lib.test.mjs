@@ -14,8 +14,8 @@ describe("insights publishing gate", () => {
     expect(includeDrafts({ INSIGHTS_INCLUDE_DRAFTS: "1" })).toBe(true);
     expect(includeDrafts({})).toBe(false);
   });
-  it("loads the four site-ready issues, all drafts today", () => {
-    expect(loadIssues("content/insights", false)).toHaveLength(0);
+  it("loads the four published issues, newest first", () => {
+    expect(loadIssues("content/insights", false).map((i) => i.issue)).toEqual([4, 3, 2, 1]);
     const all = loadIssues("content/insights", true);
     expect(all.map((i) => i.issue)).toEqual([4, 3, 2, 1]);
     expect(all.every((i) => i.date.length === 10 && i.summary)).toBe(true);
