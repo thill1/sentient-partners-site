@@ -1,5 +1,4 @@
 interface Env {
-  FORMSUBMIT_EMAIL?: string;
   LEADS_WEBHOOK_URL?: string;
 }
 
@@ -81,57 +80,6 @@ async function sendToWebhook(url: string, lead: StoredLead) {
   return response.ok;
 }
 
-// FormSubmit rejects requests without a Referer, and ties activation to the
-// sending domain, so always present the production site.
-export const FORMSUBMIT_SITE = "https://sentientpartners.ai";
-
-export async function sendToFormSubmit(targetEmail: string, lead: StoredLead) {
-  const response = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json",
-      referer: `${FORMSUBMIT_SITE}/`,
-      origin: FORMSUBMIT_SITE,
-    },
-    body: JSON.stringify({
-      _subject:
-        lead.intent === "blueprint"
-          ? `New Business Inquiry - ${lead.name}`
-          : `New Website Inquiry - ${lead.name}`,
-      _template: "table",
-      _captcha: "false",
-      lead_id: lead.leadId,
-      source: lead.source,
-      intent: lead.intent,
-      cta_label: lead.ctaLabel || "",
-      sent_at: lead.submittedAt,
-      referrer: lead.referrer,
-      name: lead.name,
-      email: lead.email,
-      inquiry: lead.inquiry,
-      user_agent: lead.userAgent,
-    }),
-  });
-
-  // FormSubmit answers 200 with { success: "false" } on errors, so check both.
-  let data: { success?: unknown; message?: unknown } = {};
-  try {
-    data = (await response.json()) as typeof data;
-  } catch {
-    // Non-JSON reply: treated as a failure below.
-  }
-  const delivered = response.ok && String(data.success) === "true";
-  if (!delivered) {
-    console.error("FormSubmit delivery failed", {
-      status: response.status,
-      message: typeof data.message === "string" ? data.message : "(no message)",
-      leadId: lead.leadId,
-    });
-  }
-  return delivered;
-}
-
 export const onRequestGet = async () => {
   return json({
     ok: true,
@@ -174,17 +122,14 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     deliveryAttempts.push(sendToWebhook(env.LEADS_WEBHOOK_URL, lead));
   }
 
-  const notificationEmail = env.FORMSUBMIT_EMAIL || "hello@sentientpartners.ai";
-  if (notificationEmail) {
-    deliveryAttempts.push(sendToFormSubmit(notificationEmail, lead));
-  }
-
   if (!deliveryAttempts.length) {
     return json(
       {
-        error: "No lead delivery destination is configured.",
+        ok: true,
+        skipped: true,
+        note: "Email delivery happens in the browser via FormSubmit; no webhook configured.",
       },
-      { status: 500 },
+      { status: 200 },
     );
   }
 

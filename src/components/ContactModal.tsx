@@ -13,6 +13,8 @@ export const ContactModal: React.FC = () => {
   const dialog = useDialogAccessibility(isOpen, () => setIsOpen(false));
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
+  const [honey, setHoney] = useState("");
   const [meta, setMeta] = useState<ContactModalPrefill>({
     intent: "contact",
     source: "Contact Modal",
@@ -49,15 +51,19 @@ export const ContactModal: React.FC = () => {
     if (!formData.name || !formData.email || !formData.inquiry) return;
 
     setIsLoading(true);
+    setSendFailed(false);
 
-    const result = await submitLead({
-      name: formData.name,
-      email: formData.email,
-      inquiry: formData.inquiry,
-      intent: meta.intent || "contact",
-      source: meta.source || "Contact Modal",
-      ctaLabel: meta.ctaLabel,
-    });
+    const result = await submitLead(
+      {
+        name: formData.name,
+        email: formData.email,
+        inquiry: formData.inquiry,
+        intent: meta.intent || "contact",
+        source: meta.source || "Contact Modal",
+        ctaLabel: meta.ctaLabel,
+      },
+      honey,
+    );
 
     setIsLoading(false);
 
@@ -68,6 +74,7 @@ export const ContactModal: React.FC = () => {
         setIsOpen(false);
       }, 2500);
     } else {
+      setSendFailed(true);
       dispatchToast(result.message || "Failed to send message", "error");
     }
   };
@@ -126,6 +133,16 @@ export const ContactModal: React.FC = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              <input
+                type="text"
+                name="_honey"
+                value={honey}
+                onChange={(e) => setHoney(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ display: "none" }}
+              />
               <div className="rounded-xl bg-brand-50 text-brand-700 border border-brand-100 px-4 py-3 text-sm dark:bg-brand-950/30 dark:text-brand-200 dark:border-brand-900/50">
                 {meta.intent === "blueprint"
                   ? "We will review your goals and follow up with a tailored AI blueprint."
@@ -211,6 +228,18 @@ export const ContactModal: React.FC = () => {
                   )}
                 </Button>
               </div>
+              {sendFailed && (
+                <p role="alert" className="text-sm text-center">
+                  Something went wrong. Please email{" "}
+                  <a
+                    className="underline"
+                    href="mailto:hello@sentientpartners.ai"
+                  >
+                    hello@sentientpartners.ai
+                  </a>
+                  .
+                </p>
+              )}
             </form>
           )}
         </div>
