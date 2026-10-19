@@ -3,9 +3,11 @@
 // Powers the live "AI Chat Assistants" window: a fictional HVAC company
 // (Hearth & Home) answers the visitor and writes up the lead as it goes.
 import { json } from "../lib/http";
+import { groqChat } from "../lib/groq";
 
 interface Env {
   GROQ_API_KEY?: string;
+  GROQ_MODEL?: string;
   API_KEY?: string;
   GEMINI_API_KEY?: string;
 }
@@ -93,25 +95,24 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   try {
     let raw = "";
     if (key.startsWith("gsk_")) {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
+      const result = await groqChat({
+        apiKey: key,
+        pinnedModel: env.GROQ_MODEL,
         signal,
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          temperature: 0.5,
-          max_tokens: 300,
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: SYSTEM },
-            ...history.map((t) => ({ role: t.role === "model" ? "assistant" : "user", content: t.text })),
-            { role: "user", content: message },
-          ],
-        }),
+        json: true,
+        temperature: 0.5,
+        maxTokens: 300,
+        messages: [
+          { role: "system", content: SYSTEM },
+          ...history.map((t) => ({
+            role: (t.role === "model" ? "assistant" : "user") as "assistant" | "user",
+            content: t.text,
+          })),
+          { role: "user", content: message },
+        ],
       });
-      if (!r.ok) return json({ ok: false, error: "model_error" }, { status: 502 });
-      const data = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-      raw = data.choices?.[0]?.message?.content ?? "";
+      if (!result.ok) return json({ ok: false, error: "model_error" }, { status: 502 });
+      raw = result.text;
     } else {
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,

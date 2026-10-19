@@ -2,6 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
 import { formatTimeIntentResponse, resolveTimeIntent } from "../lib/timeIntent";
+import { groqChat } from "../lib/groq";
 
 // Cloudflare Pages Function: /api/gemini
 // - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
@@ -36,6 +37,7 @@ interface Env {
   API_KEY?: string;
   GEMINI_API_KEY?: string;
   GROQ_API_KEY?: string;
+  GROQ_MODEL?: string;
   SENTIENT_SITE_MEMORY?: string;
 }
 
@@ -85,91 +87,32 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
 
   if (isGroq) {
     try {
-      // Map history to standard OpenAI format: [{ role: "user"|"assistant", content: "..." }]
+      // OpenAI-style history: [{ role: "user"|"assistant", content }]
       const messages = [
-        { role: "system", content: systemInstruction },
+        { role: "system" as const, content: systemInstruction },
         ...history
           .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
           .slice(-6)
           .map((h: any) => ({
-            role: h.role === "model" ? "assistant" : "user",
-            content: h.text,
+            role: (h.role === "model" ? "assistant" : "user") as "assistant" | "user",
+            content: String(h.text),
           })),
-        { role: "user", content: message }
+        { role: "user" as const, content: message },
       ];
-
-      let groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.6,
-          max_tokens: 900,
-        }),
+      const result = await groqChat({
+        apiKey,
+        messages,
+        pinnedModel: env?.GROQ_MODEL,
+        maxTokens: 900,
+        temperature: 0.6,
       });
-
-      if (!groqResponse.ok && groqResponse.status === 429) {
-        console.warn("Groq Llama 70B rate limited. Trying Llama 3.1 8B fallback...");
-        groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
-            messages,
-            temperature: 0.6,
-            max_tokens: 900,
-          }),
-        });
-      }
-
-      if (!groqResponse.ok && groqResponse.status === 429) {
-        console.warn("Groq Llama 8B rate limited. Trying Mixtral 8x7B fallback...");
-        groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "mixtral-8x7b-32768",
-            messages,
-            temperature: 0.6,
-            max_tokens: 900,
-          }),
-        });
-      }
-
-      if (!groqResponse.ok) {
-        const errorText = await groqResponse.text();
+      if (!result.ok) {
         return json(
-          {
-            error: "Groq API error",
-            message: errorText,
-            status: groqResponse.status,
-          },
-          { status: groqResponse.status }
+          { error: "Groq API error", message: result.error ?? "", status: result.status, model: result.model },
+          { status: result.status === 429 ? 429 : 502 },
         );
       }
-
-      const data = (await groqResponse.json()) as {
-        choices?: { message?: { content?: string } }[];
-        model?: string;
-      };
-      const replyText = String(data?.choices?.[0]?.message?.content || "").trim();
-      const actualModel = String(data?.model || "llama-3.3-70b-versatile");
-
-      return json({
-        ok: true,
-        text: replyText,
-        model: actualModel,
-      });
+      return json({ ok: true, text: result.text, model: result.model });
     } catch (err: any) {
       return json(
         {
