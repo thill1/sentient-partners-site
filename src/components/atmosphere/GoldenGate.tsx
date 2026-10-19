@@ -3,6 +3,7 @@ import { ArrowDown, ArrowRight } from "lucide-react";
 import { BOOKING_URL } from "../../content/siteContent";
 import { openBookingModal, openSentientChat } from "../../lib/siteActions";
 import { HeroClock } from "./HeroClock";
+import { hasHardwareGpu } from "../../lib/gpu";
 import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
@@ -37,9 +38,12 @@ export function GoldenGate() {
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
-      const capable = !media.matches && navigator.hardwareConcurrency > 2;
+      // The cinematic layers composite many full-screen images and filters:
+      // cheap on a GPU, heavy on software rendering, which gets the poster.
+      const capable =
+        !media.matches && navigator.hardwareConcurrency > 2 && hasHardwareGpu();
       setEnhanced(capable);
-      setGpu(capable && !!document.createElement("canvas").getContext("webgl"));
+      setGpu(capable);
     };
     update();
     setMounted(true);

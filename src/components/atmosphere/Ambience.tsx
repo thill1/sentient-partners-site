@@ -1,3 +1,4 @@
+import { hasHardwareGpu } from "../../lib/gpu";
 import { useEffect, useRef } from "react";
 import {
   activeScene,
@@ -589,26 +590,60 @@ export default function Ambience() {
       canvas.dataset.scene = activeScene();
     };
 
+    // Adaptive budget: the sky is ambient, so on a device that struggles it
+    // trades frame rate and resolution for a responsive page. `cost` is a
+    // running average of render time in ms.
+    // Software rendering or a phone-sized screen starts at the lighter budget.
+    const light = !hasHardwareGpu() || innerWidth <= 850;
+    let interval = light ? 80 : 40,
+      cost = 0,
+      maxRatio = light ? 1 : 1.5,
+      // The first animated frame waits for an idle moment after load, so the
+      // page becomes interactive before the sky starts moving.
+      warm = false;
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
-      if (now - previous < 40) return;
+      if (now - previous < interval) return;
       const dt = Math.min(0.2, (now - previous) / 1000);
       previous = now;
       blend(dt);
+      const start = performance.now();
       render(now / 1000);
+      cost = cost * 0.9 + (performance.now() - start) * 0.1;
+      if (cost > 6 && interval < 120) {
+        interval = interval < 66 ? 66 : 120;
+        cost = 0;
+      } else if (cost > 6 && maxRatio > 1) {
+        maxRatio = 1;
+        cost = 0;
+        resize();
+      }
     };
     const schedule = () => {
       cancelAnimationFrame(frame);
-      if (still) return;
+      if (still || !warm) return;
       if (visible && !document.hidden && width > 0) {
         previous = performance.now();
         frame = requestAnimationFrame(draw);
       }
     };
+    const idle =
+      window.requestIdleCallback ??
+      ((cb: () => void) => window.setTimeout(cb, 1200));
+    const warmUp = () =>
+      idle(
+        () => {
+          warm = true;
+          schedule();
+        },
+        { timeout: 2500 },
+      );
+    if (document.readyState === "complete") warmUp();
+    else addEventListener("load", warmUp, { once: true });
     const resize = () => {
       width = canvas.clientWidth;
       height = canvas.clientHeight;
-      ratio = Math.min(devicePixelRatio, 1.5);
+      ratio = Math.min(devicePixelRatio, maxRatio);
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       readFocus();
@@ -651,6 +686,7 @@ export default function Ambience() {
       observer.disconnect();
       intersection.disconnect();
       document.removeEventListener("visibilitychange", schedule);
+      removeEventListener("load", warmUp);
     };
   }, []);
   return (
