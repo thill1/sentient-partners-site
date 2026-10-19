@@ -11,9 +11,11 @@ import {
   scoreChecks,
   type CheckResult,
 } from "../lib/siteCheck";
+import { groqChat } from "../lib/groq";
 
 interface Env {
   GROQ_API_KEY?: string;
+  GROQ_MODEL?: string;
   API_KEY?: string;
   GEMINI_API_KEY?: string;
 }
@@ -141,23 +143,18 @@ async function summarize(env: Env, host: string, score: number, checks: CheckRes
   const signal = AbortSignal.timeout(9000);
 
   if (key.startsWith("gsk_")) {
-    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    const result = await groqChat({
+      apiKey: key,
+      pinnedModel: env.GROQ_MODEL,
       signal,
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.4,
-        max_tokens: 220,
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: prompt },
-        ],
-      }),
+      temperature: 0.4,
+      maxTokens: 220,
+      messages: [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: prompt },
+      ],
     });
-    if (!r.ok) return null;
-    const data = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-    return clean(data.choices?.[0]?.message?.content);
+    return result.ok ? clean(result.text) : null;
   }
 
   const r = await fetch(
