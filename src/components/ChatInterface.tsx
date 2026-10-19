@@ -205,6 +205,14 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
           const done = () => {
             if (settled) return;
             settled = true;
+            // Stop here too: an interrupt resolves through this function and
+            // must silence the reply before the mic reopens.
+            source.onended = null;
+            try {
+              source.stop();
+            } catch {
+              void 0;
+            }
             if (activeSourceNodeRef.current === source) activeSourceNodeRef.current = null;
             activeAudioResolveRef.current = null;
             resolve();
