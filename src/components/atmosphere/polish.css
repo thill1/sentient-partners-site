@@ -86,10 +86,20 @@
   pointer-events: none;
   z-index: -1;
   border-radius: 24px;
-  background: rgba(8, 21, 54, 0.34);
-  -webkit-backdrop-filter: blur(10px) saturate(1.1);
-  backdrop-filter: blur(10px) saturate(1.1);
-  border: 1px solid rgba(243, 240, 232, 0.14);
+  /* Light glass by day (the clock's ink is navy), dark glass at night. */
+  background: rgba(243, 240, 232, 0.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+[data-scene="night"] .golden-gate .hero-clock::after {
+  background: rgba(8, 21, 54, 0.4);
+  border-color: rgba(243, 240, 232, 0.14);
+}
+@media (max-width: 850px) {
+  .golden-gate .hero-clock::after {
+    display: none;
+  }
 }
 
 /* The concierge launcher leaves with the hero instead of ghosting over the bay. */
@@ -223,4 +233,385 @@
   .atmosphere-page .golden-gate .hero-description {
     font-size: 16px;
   }
+}
+@media (min-width: 851px) {
+  .golden-gate .hero-clock-time,
+  .golden-gate .hero-clock-tagline,
+  .golden-gate .hero-clock-scene,
+  .golden-gate .scene-switch button {
+    color: #0d1f4e;
+    text-shadow: none;
+  }
+  [data-scene="night"] .golden-gate .hero-clock-time,
+  [data-scene="night"] .golden-gate .hero-clock-tagline,
+  [data-scene="night"] .golden-gate .hero-clock-scene,
+  [data-scene="night"] .golden-gate .scene-switch button {
+    color: #f3f0e8;
+  }
+}
+
+/* ——— Contact finale: the champagne pill, larger, plus phone and email ——— */
+.atmosphere-page .cf-cta.cta-lg {
+  min-height: 60px;
+  padding: 0 34px;
+  font: 600 17px/1 Inter, system-ui, sans-serif;
+  color: #081536;
+}
+.atmosphere-page .cf-cta.cta-lg > svg {
+  color: #081536;
+}
+.atmosphere-page .cf-cta.cta-lg:hover > svg,
+.atmosphere-page .cf-cta.cta-lg:focus-visible > svg {
+  transform: translateX(3px);
+}
+.atmosphere-page .cf-cta.cta-lg .cf-cta-label {
+  padding-bottom: 0;
+}
+.atmosphere-page .cf-cta.cta-lg .cf-underline {
+  display: none;
+}
+.cf-alts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 28px;
+  margin-top: var(--space-m);
+}
+.cf-alts .cf-alt {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* ——— Mobile menu ——— */
+.mobile-nav .mobile-nav-book.cta-primary {
+  margin-top: 26px;
+  color: #081536;
+  border: 0;
+  align-self: stretch;
+}
+.mobile-nav .mobile-nav-phone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  min-height: 48px;
+  border: 0;
+  font: 500 16px/1 Inter, system-ui, sans-serif;
+  color: var(--f-ivory, #f3f0e8);
+}
+
+/* ——— Founder & process ——— */
+.founder-copy .cta-primary {
+  margin-top: var(--space-m);
+}
+.process-promise {
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 34ch;
+}
+.process-promise strong {
+  display: block;
+  margin-bottom: 6px;
+  font: 400 clamp(1.4rem, 1.1rem + 0.9vw, 1.9rem)/1.2 "Cormorant Garamond", Georgia,
+    serif;
+  color: var(--f-ivory);
+}
+
+/* ——— Footer: readable sizes, one wordmark ——— */
+.atmosphere-page .footer-top > div > p,
+.atmosphere-page .footer-top > div:not(:first-child),
+.atmosphere-page .footer-top a,
+.atmosphere-page .footer-top button {
+  font-size: 15px;
+}
+.atmosphere-page .footer-top > div > span {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+.atmosphere-page .footer-top > div:not(:first-child) {
+  gap: 12px;
+}
+.atmosphere-page .footer-top .footer-tagline {
+  margin-top: 0;
+  font: 400 clamp(1.5rem, 1.2rem + 1vw, 2rem)/1.2 "Cormorant Garamond", Georgia,
+    serif;
+  color: var(--f-ivory);
+  max-width: 16ch;
+}
+.atmosphere-page .footer-top .footer-place {
+  margin-top: 18px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.atmosphere-page .footer-bottom {
+  font-size: 13px;
+}
+
+/* ——— Text-size floors (nothing a visitor reads is under 12px) ——— */
+.atmosphere-page .eyebrow,
+.atmosphere-page .signup-eyebrow {
+  font-size: 12px !important;
+  letter-spacing: 0.2em !important;
+}
+.atmosphere-page .pv-places span,
+.atmosphere-page .ov-label,
+.atmosphere-page .ov-rail li,
+.atmosphere-page .local-interlude span,
+.atmosphere-page .founder-portrait span {
+  font-size: 12px !important;
+}
+.atmosphere-page .cx-nav-name small,
+.atmosphere-page .cx-chrome small,
+.atmosphere-page .cx-path {
+  font-size: 12px !important;
+}
+.atmosphere-page .cx-caption li {
+  font-size: 13px !important;
+}
+.atmosphere-page .illustration-note,
+.atmosphere-page .work-disclosure {
+  font-size: 13px !important;
+}
+.atmosphere-page .hero-clock-scene {
+  font-size: 11px !important;
+}
+.atmosphere-page .concierge-label small {
+  font-size: 12px !important;
+}
+.atmosphere-page .section-heading > p,
+.atmosphere-page .connected-inner > div > p:not(.eyebrow),
+.atmosphere-page .process-promise {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+.atmosphere-page .pv-copy .text-link,
+.atmosphere-page .ov-link,
+.atmosphere-page .work-grid .text-link {
+  font-size: 14px !important;
+}
+.atmosphere-page .journey-line button > span {
+  font-size: 13px !important;
+}
+.atmosphere-page .journey-line strong {
+  font-size: 13px !important;
+}
+.atmosphere-page .journey-detail > span {
+  font-size: 14px !important;
+}
+.atmosphere-page .journey-detail p {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+.atmosphere-page .connection-story small {
+  font-size: 13px !important;
+}
+/* The paper mock-ups in Our work: legible at a glance. */
+.atmosphere-page .field-preview > span,
+.atmosphere-page .estimate-preview > span {
+  font-size: 10px !important;
+}
+.atmosphere-page .field-preview > div,
+.atmosphere-page .estimate-preview > div,
+.atmosphere-page .relay-lines span {
+  font-size: 12px !important;
+}
+.atmosphere-page .field-preview .field-summary {
+  font-size: 11px !important;
+}
+
+/* ——— Newsletter band: a secondary action, sized like one ——— */
+.atmosphere-page .signup-title {
+  font-size: clamp(28px, 1.6rem + 1vw, 38px) !important;
+  line-height: 1.18 !important;
+  letter-spacing: 0 !important;
+  max-width: 24ch;
+}
+.signup-latest {
+  display: inline-block;
+  margin-top: 18px;
+  font: 500 15px/1.4 Inter, system-ui, sans-serif;
+  color: var(--f-gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(200, 183, 149, 0.5);
+}
+.signup-latest:hover {
+  color: var(--f-ivory);
+}
+.signup-row input[type="email"] {
+  padding: 0 20px;
+  background: rgba(243, 240, 232, 0.06);
+  border: 1px solid rgba(243, 240, 232, 0.35);
+  border-radius: 999px;
+}
+.signup-row input[type="email"]:focus {
+  border-color: var(--f-gold, #c8b795);
+}
+.signup-row input[type="email"]::placeholder {
+  color: rgba(196, 203, 214, 0.6);
+}
+.atmosphere-page .signup-row button[type="submit"] {
+  background: var(--f-gold);
+  color: #081536;
+  border-color: var(--f-gold);
+  font-weight: 600;
+}
+.atmosphere-page .signup-row button[type="submit"]:hover {
+  background: #d8c9a8;
+}
+
+/* ——— Founder: a real bio, proof points, two ways to connect ——— */
+.atmosphere-page .founder-copy > p:not(.eyebrow):not(.lead-copy) {
+  font-size: 16px !important;
+  line-height: 1.75 !important;
+  color: var(--f-body, #c4cbd6) !important;
+  max-width: 58ch;
+  margin-bottom: 16px;
+}
+.atmosphere-page .founder-copy .lead-copy {
+  font-size: clamp(18px, 1rem + 0.5vw, 22px) !important;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+.founder-facts {
+  list-style: none;
+  margin: 28px 0 8px;
+  padding: 22px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  border-top: 1px solid var(--f-rule);
+}
+.founder-facts li {
+  font: 400 14px/1.5 Inter, system-ui, sans-serif;
+  color: var(--f-fog, #a6b1bd);
+}
+.founder-facts strong {
+  display: block;
+  margin-bottom: 4px;
+  font: 400 clamp(2rem, 1.5rem + 1.5vw, 2.8rem)/1 "Cormorant Garamond", Georgia,
+    serif;
+  color: var(--f-gold);
+}
+.founder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 32px;
+  margin-top: var(--space-m);
+}
+.founder-actions .cta-primary {
+  margin-top: 0;
+}
+.atmosphere-page .founder-copy .founder-actions .text-link {
+  font-size: 14px !important;
+}
+@media (max-width: 600px) {
+  .founder-facts {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ——— Action dock ——— */
+.action-dock {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition:
+    opacity 0.35s var(--ease-out),
+    transform 0.35s var(--ease-out);
+}
+.action-dock.is-shown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+:root.menu-open .action-dock,
+:root:has([aria-modal="true"]) .action-dock {
+  opacity: 0;
+  pointer-events: none;
+}
+.action-dock a,
+.action-dock button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  border-radius: 999px;
+  font: 600 15px/1 Inter, system-ui, sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+.action-dock .dock-book {
+  padding: 0 22px;
+  background: var(--f-gold);
+  color: #081536;
+}
+.action-dock .dock-ask {
+  padding: 0 20px;
+  background: rgba(8, 21, 54, 0.82);
+  color: var(--f-ivory);
+  border: 1px solid rgba(200, 183, 149, 0.45);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.action-dock .dock-ask img {
+  width: 12px;
+  height: auto;
+}
+.action-dock .dock-call {
+  width: 48px;
+  background: rgba(8, 21, 54, 0.82);
+  color: var(--f-ivory);
+  border: 1px solid rgba(243, 240, 232, 0.25);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+/* Desktop: the header carries Book, so only the concierge floats. */
+@media (min-width: 851px) {
+  .action-dock {
+    right: max(28px, env(safe-area-inset-right));
+    bottom: 28px;
+  }
+  .action-dock .dock-book,
+  .action-dock .dock-call {
+    display: none;
+  }
+  .action-dock .dock-ask {
+    box-shadow: 0 18px 40px -16px rgba(2, 8, 28, 0.8);
+  }
+}
+/* Phones and tablets: a full-width bar within thumb reach. */
+@media (max-width: 850px) {
+  .action-dock {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, rgba(8, 21, 54, 0.92) 30%);
+  }
+  .action-dock .dock-book {
+    flex: 1;
+  }
+  .action-dock .dock-ask {
+    padding: 0 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .action-dock {
+    transition: none;
+  }
+}
+/* The scrolled header adds a halo to its links; the solid pill doesn't need it. */
+.site-header:not(.header-on-light) .header-book,
+.site-header.header-on-light .header-book,
+.site-header .header-book {
+  text-shadow: none !important;
 }

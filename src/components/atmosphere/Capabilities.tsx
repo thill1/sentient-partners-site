@@ -131,7 +131,7 @@ const capabilities = [
     Demo: ReviewsDemo,
   },
   {
-    name: "AI Chatbots",
+    name: "AI Chat Assistants",
     slug: "ai-chatbots",
     icon: MessageSquare,
     summary: "Answers, qualifies, and hands off.",
@@ -205,6 +205,40 @@ export function Capabilities() {
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
+
+  // Deep links such as "#capabilities:websites" open that capability's window.
+  useEffect(() => {
+    const open = (slug: string) => {
+      const index = capabilities.findIndex((c) => c.slug === slug);
+      if (index < 0) return;
+      const el = section.current;
+      const st = triggerRef.current;
+      const lenis = fabricRef.current?.lenis;
+      if (st && lenis && matchMedia(STAGED).matches) {
+        choose(index);
+      } else {
+        setActive(index);
+        if (lenis && el) lenis.scrollTo(el, { offset: -96, duration: 1.1 });
+        else el?.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    const onClick = (event: MouseEvent) => {
+      const link = (event.target as Element | null)?.closest?.(
+        'a[href^="#capabilities:"]',
+      );
+      if (!link) return;
+      event.preventDefault();
+      event.stopPropagation();
+      open(link.getAttribute("href")!.slice("#capabilities:".length));
+    };
+    document.addEventListener("click", onClick, true);
+    if (location.hash.startsWith("#capabilities:")) {
+      const slug = location.hash.slice("#capabilities:".length);
+      setTimeout(() => open(slug), 600);
+    }
+    return () => document.removeEventListener("click", onClick, true);
+    // choose() reads refs only, so registering once is intended.
+  }, []);
 
   useEffect(() => {
     const el = section.current;
@@ -369,15 +403,14 @@ export function Capabilities() {
             <div>
               <p className="eyebrow">Capabilities in motion</p>
               <h2 className="cv-heading">
-                Powerful possibilities.
+                Try it before
                 <br />
-                <em>Practical by design.</em>
+                <em>we build it.</em>
               </h2>
             </div>
             <p>
-              Explore what better can look like. Each window shows what your
-              customers experience, and what your team receives behind the
-              scenes.
+              Each window is interactive. The left side is what your customers
+              see; the right side is what lands with your team.
             </p>
           </div>
           <div className="cx-atelier">
@@ -466,7 +499,7 @@ export function Capabilities() {
           </div>
           <noscript>
             <p>
-              Our capabilities include AI chatbots, AI voice agents, business
+              Our capabilities include AI chat assistants, AI voice agents, business
               applications, premium websites, search visibility, calendar and
               scheduling, workflow automation, and reputation and review
               management.

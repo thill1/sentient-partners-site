@@ -13,7 +13,7 @@ The temporary phone preview uses Vite on port 5197 through a Cloudflare quick tu
 
 ## Generated asset
 
-Saved asset: `public/atmosphere/vessels.png`, RGBA PNG, 1536 × 1024. Created with the built-in image generation tool, with transparent background enabled. The original atlas is preserved; `Boats.tsx` draws individual source rectangles directly from it. This is generated imagery, not documentary photography.
+Saved asset: `public/atmosphere/vessels.webp`, RGBA WebP (converted from the original 1.5 MB PNG in Oct 2026), 1536 × 1024. Created with the built-in image generation tool, with transparent background enabled. The original atlas is preserved; `Boats.tsx` draws individual source rectangles directly from it. This is generated imagery, not documentary photography.
 
 Final generation prompt:
 

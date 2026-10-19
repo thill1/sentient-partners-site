@@ -16,7 +16,7 @@ export default function Boats() {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const image = new Image();
-    image.src = "/atmosphere/vessels.png";
+    image.src = "/atmosphere/vessels.webp";
     let fleet: Vessel[] = [];
     let width = 0, height = 0, ratio = 1, scale = 1;
     let offsetX = 0, offsetY = 0;

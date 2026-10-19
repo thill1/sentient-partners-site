@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { ArrowUpRight, Mail } from "lucide-react";
-import { BOOKING_URL } from "../../content/siteContent";
+import { ArrowRight, Mail, Phone } from "lucide-react";
+import { BOOKING_URL, BRAND } from "../../content/siteContent";
 import { duration, ease, loadFabric, revealText } from "../../fabric/motion";
 import "./contact-finale.css";
 
@@ -40,7 +40,7 @@ export default function Contact({ onBook }: { onBook: () => void }) {
               0.5,
             )
             .from(
-              q(".cf-cta, .cf-alt"),
+              q(".cf-cta, .cf-alts"),
               { autoAlpha: 0, y: 12, stagger: 0.15, duration: duration.slow },
               0.35,
             );
@@ -137,7 +137,7 @@ export default function Contact({ onBook }: { onBook: () => void }) {
             <br className="desktop-break" /> simpler, not more complicated.
           </p>
           <a
-            className="cf-cta"
+            className="cf-cta cta-primary cta-lg"
             href={BOOKING_URL}
             onClick={(e) => {
               e.preventDefault();
@@ -148,12 +148,18 @@ export default function Contact({ onBook }: { onBook: () => void }) {
               Book a 20-minute introductory call
               <i className="cf-underline" aria-hidden="true" />
             </span>
-            <ArrowUpRight size={18} aria-hidden="true" />
+            <ArrowRight size={18} aria-hidden="true" />
           </a>
-          <a className="cf-alt" href="mailto:hello@sentientpartners.ai">
-            <Mail size={14} aria-hidden="true" /> Prefer to write?{" "}
-            <span>hello@sentientpartners.ai</span>
-          </a>
+          <div className="cf-alts">
+            <a className="cf-alt" href={BRAND.phoneHref}>
+              <Phone size={14} aria-hidden="true" /> Prefer to talk?{" "}
+              <span>{BRAND.phone}</span>
+            </a>
+            <a className="cf-alt" href={`mailto:${BRAND.email}`}>
+              <Mail size={14} aria-hidden="true" /> Prefer to write?{" "}
+              <span>{BRAND.email}</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>

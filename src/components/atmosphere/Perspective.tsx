@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import {
   duration,
   ease,
@@ -145,7 +145,7 @@ export default function Perspective() {
           <div className="pv-dusk" />
         </div>
         <div className="pv-content page-width">
-          <p className="eyebrow pv-eyebrow">Perspective</p>
+          <p className="eyebrow pv-eyebrow">Why we exist</p>
           <h2 id="perspective-title" className="pv-headline">
             {lines.map((line) => (
               <span key={line.text} className="f-line-mask">
@@ -158,13 +158,13 @@ export default function Perspective() {
           <div className="pv-copy">
             <span className="pv-rule" aria-hidden="true" />
             <p className="lead-copy pv-reveal">
-              Seasoned experience.
-              <br />
-              Built for your business.
+              Missed calls. Double entry.
+              <br />A website that doesn't bring in work.
             </p>
             <p className="pv-reveal">
               Growing businesses deserve the same thoughtful strategy, reliable
-              systems, and disciplined execution as anyone.
+              systems, and disciplined execution as any enterprise, without the
+              enterprise overhead.
             </p>
             <p className="pv-reveal">
               We make that expertise practical. From Auburn and Placer County to
@@ -172,7 +172,8 @@ export default function Perspective() {
               technology to the work you do every day.
             </p>
             <a className="text-link" href="#founder">
-              The experience behind the partnership <ArrowUpRight size={16} />
+              The experience behind the partnership{" "}
+              <ArrowDown size={16} aria-hidden="true" />
             </a>
           </div>
         </div>

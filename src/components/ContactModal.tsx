@@ -103,7 +103,7 @@ export const ContactModal: React.FC = () => {
               className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2"
             >
               <Mail className="w-5 h-5 text-brand-500" />
-              Contact Us
+              Start a conversation
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Tell us a little about your business.
@@ -146,14 +146,14 @@ export const ContactModal: React.FC = () => {
               <div className="rounded-xl bg-brand-50 text-brand-700 border border-brand-100 px-4 py-3 text-sm dark:bg-brand-950/30 dark:text-brand-200 dark:border-brand-900/50">
                 {meta.intent === "blueprint"
                   ? "We will review your goals and follow up with a tailored AI blueprint."
-                  : "Tell us what you need help with and we will respond with next steps."}
+                  : "Tell us what you need help with. Troy reads and replies to every message personally."}
               </div>
               <div>
                 <label
                   htmlFor="contact-name"
                   className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
                 >
-                  Full Name
+                  Your name
                 </label>
                 <input
                   id="contact-name"
@@ -165,7 +165,7 @@ export const ContactModal: React.FC = () => {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all dark:text-white"
-                  placeholder="John Doe"
+                  placeholder="First and last name"
                 />
               </div>
 
@@ -174,7 +174,7 @@ export const ContactModal: React.FC = () => {
                   htmlFor="contact-email"
                   className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
                 >
-                  Email Address
+                  Email
                 </label>
                 <input
                   id="contact-email"
@@ -186,7 +186,7 @@ export const ContactModal: React.FC = () => {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all dark:text-white"
-                  placeholder="john@company.com"
+                  placeholder="you@yourbusiness.com"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export const ContactModal: React.FC = () => {
                     </span>
                   ) : (
                     <span className="flex items-center">
-                      Send Message <Send className="ml-2" size={16} />
+                      Send message <Send className="ml-2" size={16} />
                     </span>
                   )}
                 </Button>
