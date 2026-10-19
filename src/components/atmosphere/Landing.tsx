@@ -612,7 +612,11 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                 <br />
                 <em>We build partnerships.</em>
               </p>
-              <span>Auburn · Placer County · Greater Sacramento</span>
+              <span>
+                <span className="nowrap">Auburn</span> ·{" "}
+                <span className="nowrap">Placer County</span> ·{" "}
+                <span className="nowrap">Greater Sacramento</span>
+              </span>
             </div>
           </div>
         </section>
@@ -660,7 +664,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                 Book a 20-minute intro call
               </a>
               <button onClick={() => openSentientChat({ source: "Footer" })}>
-                Ask our AI concierge
+                Ask Sentient (chat or voice)
               </button>
             </div>
           </div>

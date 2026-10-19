@@ -639,10 +639,11 @@
 /* ——— Pacing (Phase 2): shorter pinned tracks, same choreography ———
    The timelines are progress-based, so a shorter track plays the same
    sequence with less scrolling. Roughly four fewer screens on desktop. */
-.motion-ok .perspective-v2 {
-  height: 190svh;
-}
 @media (min-width: 900px) and (min-height: 640px) {
+  /* Desktop only: phones size this section to its content. */
+  .motion-ok .perspective-v2 {
+    height: 190svh;
+  }
   .motion-ok .outcomes-v2 {
     height: 300svh;
   }
@@ -808,4 +809,31 @@
 .cx-restart {
   margin-top: 8px;
   align-self: flex-start;
+}
+
+/* ——— Connected: no dead navy on the way in or out (pass 3) ———
+   The pinned stage was a full screen tall with the content centered, which
+   left about half a screen of empty navy as it entered and left. The stage
+   now hugs its content and pins mid-screen. */
+@media (min-width: 900px) and (min-height: 640px) {
+  .motion-ok .cn-stage {
+    height: auto;
+    display: block;
+    top: max(96px, calc(50svh - 230px));
+    padding-block: 64px;
+  }
+}
+
+/* ——— Still hero: keep the Perspective fog seam off the hero's content (pass 3) ———
+   When the hero is not the tall cinematic track (no hardware GPU, reduced
+   motion), it is one screen tall and the seam (z 20, 75svh tall) lands on
+   the hero copy and the "Ask Sentient" launcher, washing them out. The
+   sticky stage is its own stacking context, so the content can't be lifted
+   above the seam on its own; lift the whole stage instead. */
+.golden-gate:not(.is-enhanced) .scene-sticky {
+  z-index: 21;
+}
+
+.nowrap {
+  white-space: nowrap;
 }

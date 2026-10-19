@@ -186,7 +186,48 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
       throw new Error(`Failed to fetch voice: ${response.status}`);
     }
 
-    const blob = await response.blob();
+    const bytes = await response.arrayBuffer();
+
+    // Play through the AudioContext the mic tap already unlocked. iOS Safari
+    // refuses audio.play() on an element created after an await (no user
+    // gesture), which surfaced as "Voice playback failed." on iPhone.
+    const ctx = inputContextRef.current;
+    if (ctx) {
+      try {
+        if (ctx.state !== 'running') await ctx.resume();
+        const buffer = await ctx.decodeAudioData(bytes.slice(0));
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        activeSourceNodeRef.current = source;
+        await new Promise<void>((resolve) => {
+          let settled = false;
+          const done = () => {
+            if (settled) return;
+            settled = true;
+            // Stop here too: an interrupt resolves through this function and
+            // must silence the reply before the mic reopens.
+            source.onended = null;
+            try {
+              source.stop();
+            } catch {
+              void 0;
+            }
+            if (activeSourceNodeRef.current === source) activeSourceNodeRef.current = null;
+            activeAudioResolveRef.current = null;
+            resolve();
+          };
+          activeAudioResolveRef.current = done;
+          source.onended = done;
+          source.start(0);
+        });
+        return;
+      } catch (err) {
+        console.warn('AudioContext playback failed, trying an audio element:', err);
+      }
+    }
+
+    const blob = new Blob([bytes], { type: response.headers.get('content-type') || 'audio/mpeg' });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
 
@@ -956,7 +997,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                   messages={messages}
                   onBook={() => { setIsOpen(false); openBookingModal({ source: 'Concierge chat', ctaLabel: 'Book a 20-minute intro call' }); }}
                 />}
-                <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>
+                {/* Starters only until the visitor asks something; then the room goes to the conversation. */}
+                {!messages.some(m => m.role === 'user') && <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>}
                 <form className="concierge-composer" onSubmit={event => { event.preventDefault(); void handleSend(); }}>
                   <input aria-label="Your message" value={inputValue} onChange={event => setInputValue(event.target.value)} placeholder="Ask a question…" disabled={isLoading} />
                   <button type="submit" aria-label={isLoading ? 'Sending message' : 'Send message'} disabled={isLoading || !inputValue.trim()}>{isLoading ? <Loader2 className="concierge-loading" size={20} /> : <Send size={19} />}</button>
