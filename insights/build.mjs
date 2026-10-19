@@ -51,6 +51,7 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <link rel="preload" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-normal-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>${FONTS}</style>
+<script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/insights/*"},{"not":{"href_matches":"/insights/*.xml"}}]},"eagerness":"moderate"}],"prefetch":[{"where":{"href_matches":"/"},"eagerness":"moderate"}]}</script>
 <link rel="stylesheet" href="/insights/insights.css">
 <link rel="stylesheet" href="/insights/signup-band.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n` : ""}</head>

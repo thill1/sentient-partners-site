@@ -99,3 +99,13 @@ a:hover { text-decoration-color: var(--gold); }
 .ins-footer a { color: var(--body); text-decoration: none; }
 .ins-footer a:hover { color: var(--ivory); }
 .card-meta .draft-tag { display: inline-block; margin-left: 10px; padding: 3px 8px; color: var(--gold); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; }
+
+/* Smooth cross-page transitions (home <-> Insights) where supported. */
+@view-transition {
+  navigation: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

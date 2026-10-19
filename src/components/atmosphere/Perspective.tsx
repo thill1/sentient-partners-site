@@ -35,7 +35,16 @@ export default function Perspective() {
         const q = f.gsap.utils.selector(el);
         const mm = f.gsap.matchMedia();
         mm.add("(min-width: 900px) and (min-height: 640px)", () => {
-          f.gsap.set(q(".pv-line"), { yPercent: 115, rotate: 2 });
+          // The headline plays in on arrival (not scrubbed), so the first
+          // pinned screen is never empty.
+          f.gsap.from(q(".pv-line"), {
+            yPercent: 115,
+            rotate: 2,
+            stagger: 0.08,
+            duration: 1.1,
+            ease: ease.out,
+            scrollTrigger: { trigger: el, start: "top 70%", once: true },
+          });
           f.gsap.set(q(".pv-copy > *"), { autoAlpha: 0, y: 28 });
           stickySequence(f, el, (tl) => {
             tl.fromTo(
@@ -57,17 +66,6 @@ export default function Perspective() {
                 0,
               )
               .to(
-                q(".pv-line"),
-                {
-                  yPercent: 0,
-                  rotate: 0,
-                  stagger: 0.07,
-                  duration: 0.22,
-                  ease: ease.soft,
-                },
-                0.06,
-              )
-              .to(
                 q(".pv-copy > *"),
                 {
                   autoAlpha: 1,
@@ -76,13 +74,13 @@ export default function Perspective() {
                   duration: 0.16,
                   ease: ease.soft,
                 },
-                0.42,
+                0.12,
               )
               .fromTo(
                 q(".pv-rule"),
                 { scaleX: 0 },
                 { scaleX: 1, duration: 0.3 },
-                0.5,
+                0.32,
               )
               .to(q(".pv-headline"), { yPercent: -6, duration: 0.25 }, 0.75)
               .to(q(".pv-dusk"), { autoAlpha: 1, duration: 0.25 }, 0.75);

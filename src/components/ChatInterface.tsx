@@ -19,11 +19,68 @@ import {
 } from '../services/geminiService';
 import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { CHAT_EVENT, type CtaEventDetail } from '../lib/siteActions';
+import { CHAT_EVENT, openBookingModal, type CtaEventDetail } from '../lib/siteActions';
+import { submitLead } from '../services/geminiService';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
 import { ConciergeLauncher } from './ConciergeLauncher';
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
+
+const BOOKING_INTENT = /\b(book|booking|schedule|appointment|call|meet|meeting|talk|chat with|consult|quote|estimate)\b/i;
+
+/** After the first question: one tap to book, or hand the conversation to Troy. */
+function ConciergeNextSteps({ messages, onBook }: { messages: Message[]; onBook: () => void }) {
+  const [handoff, setHandoff] = useState<'closed' | 'open' | 'sending' | 'sent' | 'failed'>('closed');
+  const [email, setEmail] = useState('');
+  const lastUser = [...messages].reverse().find(m => m.role === 'user')?.text ?? '';
+  const wantsCall = BOOKING_INTENT.test(lastUser);
+  const send = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return;
+    setHandoff('sending');
+    const transcript = messages
+      .filter(m => !m.isTyping && m.text.trim())
+      .map(m => `${m.role === 'user' ? 'Visitor' : 'Sentient AI'}: ${m.text}`)
+      .join('\n\n');
+    const result = await submitLead({
+      name: email.trim(),
+      email: email.trim(),
+      inquiry: `Concierge conversation handed off by the visitor.\n\n${transcript}`.slice(0, 6000),
+      intent: 'contact',
+      source: 'Concierge handoff',
+      ctaLabel: 'Send this conversation to Troy',
+    });
+    setHandoff(result.success ? 'sent' : 'failed');
+  };
+  return (
+    <div className={`concierge-next${wantsCall ? ' is-highlighted' : ''}`} aria-label="Next steps">
+      <button type="button" className="concierge-next-book" onClick={onBook}>
+        Book a 20-minute intro call <ArrowRight size={14} aria-hidden="true" />
+      </button>
+      {handoff === 'sent' ? (
+        <p className="concierge-next-note" role="status">Sent. Troy will reply personally.</p>
+      ) : handoff === 'closed' ? (
+        <button type="button" className="concierge-next-handoff" onClick={() => setHandoff('open')}>
+          Send this conversation to Troy
+        </button>
+      ) : (
+        <form className="concierge-next-form" onSubmit={send}>
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            placeholder="Your email, so Troy can reply"
+            aria-label="Your email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <button type="submit" disabled={handoff === 'sending'}>{handoff === 'sending' ? 'Sending…' : 'Send'}</button>
+          {handoff === 'failed' && <p className="concierge-next-note" role="alert">That didn't send. Email hello@sentientpartners.ai.</p>}
+        </form>
+      )}
+    </div>
+  );
+}
 
 export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLauncher = true }) => {
   const { settings: siteSettings } = useSiteSettings();
@@ -895,6 +952,10 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                   {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
                   <div ref={messagesEndRef} />
                 </div>
+                {messages.some(m => m.role === 'user') && <ConciergeNextSteps
+                  messages={messages}
+                  onBook={() => { setIsOpen(false); openBookingModal({ source: 'Concierge chat', ctaLabel: 'Book a 20-minute intro call' }); }}
+                />}
                 <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>
                 <form className="concierge-composer" onSubmit={event => { event.preventDefault(); void handleSend(); }}>
                   <input aria-label="Your message" value={inputValue} onChange={event => setInputValue(event.target.value)} placeholder="Ask a question…" disabled={isLoading} />

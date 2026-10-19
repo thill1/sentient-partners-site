@@ -290,7 +290,48 @@ export function ChatDemo() {
     setTyping(false);
     setLead({});
     setNodeId("start");
+    setLive(false);
     setMessages([{ from: "bot", text: chatScript.start.bot }]);
+  };
+
+  // Live mode: the visitor types their own question and a real model answers
+  // as Hearth & Home (see functions/api/demo-chat.ts).
+  const [draft, setDraft] = useState("");
+  const [live, setLive] = useState(false);
+  const ask = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text || typing) return;
+    setDraft("");
+    setLive(true);
+    const history = messages.map((m) => ({
+      role: m.from === "bot" ? "model" : "user",
+      text: m.text,
+    }));
+    setMessages((m) => [...m, { from: "customer", text }]);
+    setTyping(true);
+    let reply =
+      "Thanks. I'll have someone from our team follow up to help with that.";
+    try {
+      const response = await fetch("/api/demo-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history }),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        reply?: string;
+        lead?: Lead;
+      };
+      if (data.ok && data.reply) {
+        reply = data.reply;
+        setLead((l) => ({ ...l, ...data.lead }));
+      }
+    } catch {
+      // Keep the friendly fallback reply.
+    }
+    setTyping(false);
+    setMessages((m) => [...m, { from: "bot", text: reply }]);
   };
 
   return (
@@ -323,7 +364,7 @@ export function ChatDemo() {
           ) : null}
         </div>
         <div className="cx-replies">
-          {typing ? null : node.options ? (
+          {typing || live ? null : node.options ? (
             node.options.map((o) => (
               <button key={o.label} onClick={() => choose(o)}>
                 {o.label}
@@ -335,6 +376,24 @@ export function ChatDemo() {
             </button>
           )}
         </div>
+        <form className="cx-ask" onSubmit={ask}>
+          <input
+            type="text"
+            value={draft}
+            maxLength={300}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Or type your own question…"
+            aria-label="Ask Hearth & Home's assistant your own question"
+          />
+          <button type="submit" disabled={!draft.trim() || typing} aria-label="Send">
+            <ArrowRight size={16} aria-hidden="true" />
+          </button>
+        </form>
+        {live ? (
+          <button className="cx-quiet cx-restart" onClick={reset}>
+            <RotateCcw size={13} /> Start over
+          </button>
+        ) : null}
       </div>
       <Backstage
         title="A qualified lead, written up for you."
@@ -679,11 +738,51 @@ const vitals = [
   { label: "SEO", score: 100 },
 ];
 
+/** Real Core Web Vitals from this visit (LCP and CLS), read from the browser. */
+function useLiveVitals() {
+  const [vitals, setVitals] = useState<{ lcp?: number; cls?: number }>({});
+  useEffect(() => {
+    if (typeof PerformanceObserver === "undefined") return;
+    let cls = 0;
+    const observers: PerformanceObserver[] = [];
+    const watch = (type: string, cb: (entries: PerformanceEntry[]) => void) => {
+      try {
+        const o = new PerformanceObserver((list) => cb(list.getEntries()));
+        o.observe({ type, buffered: true } as PerformanceObserverInit);
+        observers.push(o);
+      } catch {
+        // Unsupported entry type in this browser (e.g. Safari and LCP).
+      }
+    };
+    watch("largest-contentful-paint", (entries) => {
+      const last = entries[entries.length - 1];
+      if (last) setVitals((v) => ({ ...v, lcp: last.startTime }));
+    });
+    watch("layout-shift", (entries) => {
+      for (const e of entries as (PerformanceEntry & { value: number; hadRecentInput: boolean })[]) {
+        if (!e.hadRecentInput) cls += e.value;
+      }
+      setVitals((v) => ({ ...v, cls }));
+    });
+    // Safari doesn't report LCP: fall back to first contentful paint.
+    const fallback = window.setTimeout(() => {
+      const fcp = performance.getEntriesByName("first-contentful-paint")[0];
+      if (fcp) setVitals((v) => (v.lcp === undefined ? { ...v, lcp: fcp.startTime } : v));
+    }, 2500);
+    return () => {
+      window.clearTimeout(fallback);
+      observers.forEach((o) => o.disconnect());
+    };
+  }, []);
+  return vitals;
+}
+
 export function WebsiteDemo() {
   const [device, setDevice] =
     useState<(typeof devices)[number]["id"]>("desktop");
   const site = useRef<HTMLDivElement>(null);
   const [drawn, setDrawn] = useState(false);
+  const live = useLiveVitals();
   useEffect(() => {
     const id = requestAnimationFrame(() => setDrawn(true));
     return () => cancelAnimationFrame(id);
@@ -762,7 +861,7 @@ export function WebsiteDemo() {
       </div>
       <Backstage
         title="Fast, accessible, and measured."
-        note="Sample build targets. Every inquiry is tracked back to the page that earned it."
+        note="Rings are sample build targets. The rows below are measured live, from your visit to this page."
       >
         <div className="cx-rings">
           {vitals.map((v) => (
@@ -786,7 +885,14 @@ export function WebsiteDemo() {
             </div>
           ))}
         </div>
-        <Field label="Largest paint" value="1.1s on mobile" />
+        <Field
+          label="This page, largest paint"
+          value={live.lcp !== undefined ? `${(live.lcp / 1000).toFixed(1)}s on your device` : "Measuring…"}
+        />
+        <Field
+          label="This page, layout shift"
+          value={live.cls !== undefined ? `${live.cls.toFixed(2)} (under 0.1 is good)` : "0.00 so far"}
+        />
         <Field label="Layout" value={`Adapts to ${device}`} />
       </Backstage>
     </div>

@@ -25,6 +25,7 @@ import {
 } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import SignupBand from "./SignupBand";
+import SiteCheck from "./SiteCheck";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
@@ -54,10 +55,10 @@ function Brand() {
   );
 }
 const links = [
-  ["Perspective", "#perspective"],
   ["Capabilities", "#capabilities"],
   ["Our founder", "#founder"],
   ["Our work", "#work"],
+  ["Website check", "#website-check"],
   // Hidden when the build has no published Insights (see insights/lib.mjs).
   ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
@@ -233,6 +234,11 @@ function ActionDock() {
     const hero = document.querySelector(".golden-gate");
     const finale = document.querySelector("#contact");
     const footer = document.querySelector(".atmosphere-footer");
+    // On desktop the pinned Capabilities panel puts its own action where the
+    // floating pill sits, so the dock steps aside there too.
+    const showcase = matchMedia("(min-width: 851px)").matches
+      ? document.querySelector("#capabilities")
+      : null;
     let pastHero = false;
     let nearEnd = false;
     const sync = () => setShown(pastHero && !nearEnd);
@@ -249,7 +255,7 @@ function ActionDock() {
       sync();
     });
     if (hero) heroObserver.observe(hero);
-    [finale, footer].forEach((el) => el && endObserver.observe(el));
+    [finale, footer, showcase].forEach((el) => el && endObserver.observe(el));
     return () => {
       heroObserver.disconnect();
       endObserver.disconnect();
@@ -530,6 +536,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </p>
           </div>
         </section>
+        <SiteCheck />
         <section id="process" className="process-section section-space">
           <div className="page-width">
             <div className="section-heading">
@@ -632,6 +639,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
               <a href="#capabilities">Capabilities</a>
               <a href="#founder">Our founder</a>
               <a href="#work">Our work</a>
+              <a href="#website-check">Free website check</a>
               <a href="#process">Our approach</a>
               {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
             </div>

@@ -767,3 +767,45 @@
     display: none;
   }
 }
+.site-header .desktop-nav a {
+  white-space: nowrap;
+}
+
+/* Live question box in the AI chat demo. */
+.cx-ask {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.cx-ask input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #c9d0cb;
+  background: #fff;
+  color: var(--cx-ink);
+  font: 400 13px Inter, system-ui, sans-serif;
+}
+.cx-ask input:focus-visible {
+  outline: 2px solid #8f743d;
+  outline-offset: 2px;
+}
+.cx-ask button {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cx-navy);
+  color: #f3f0e8;
+}
+.cx-ask button:disabled {
+  opacity: 0.4;
+}
+.cx-restart {
+  margin-top: 8px;
+  align-self: flex-start;
+}
