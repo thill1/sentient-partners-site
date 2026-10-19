@@ -159,8 +159,8 @@ export function GoldenGate() {
           <p className="hero-description">
             <span className="sub-line">Enterprise-grade strategy and hands-on</span>{" "}
             <span className="sub-line">builds for growing Northern California</span>{" "}
-            <span className="sub-line">businesses, led by a former HP and</span>{" "}
-            <span className="sub-line">E*TRADE executive.</span>
+            <span className="sub-line">businesses, led by a former Fortune 500</span>{" "}
+            <span className="sub-line">technology executive.</span>
           </p>
           <div className="hero-actions">
             <a
