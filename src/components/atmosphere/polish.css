@@ -1,0 +1,226 @@
+/*
+ * Launch polish (October 2026 review). Loaded last from Landing.tsx so these
+ * rules settle the cascade left by atmosphere/cohesion/launch. The code pass
+ * folds them back into the section sheets.
+ */
+
+/* ——— One grid: header, hero rail and every section share the same edges ——— */
+.atmosphere-page {
+  --pw: min(1280px, calc(100% - 144px));
+}
+@media (min-width: 1700px) {
+  .atmosphere-page {
+    --pw: min(1430px, calc(100% - 190px));
+  }
+}
+@media (max-width: 1100px) {
+  .atmosphere-page {
+    --pw: calc(100% - 80px);
+  }
+}
+@media (max-width: 600px) {
+  .atmosphere-page {
+    --pw: calc(100% - 44px);
+  }
+}
+.atmosphere-page .header-inner,
+.atmosphere-page .header-rail,
+.atmosphere-page .page-width,
+.motion-ok .atmosphere-page .cv-content,
+.atmosphere-page .motion-ok .cv-content,
+.atmosphere-page .cv-content {
+  width: var(--pw);
+}
+.atmosphere-page .signup-band {
+  padding-inline: 0;
+}
+.atmosphere-page .signup-inner {
+  width: var(--pw);
+  max-width: none;
+}
+
+/* ——— Hero ——— */
+.hero-kicker {
+  margin: 0 0 22px;
+  font: 500 13px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--f-ivory);
+  text-shadow: 0 1px 2px #071724cc, 0 0 12px #07172499;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hero-kicker::before {
+  content: "";
+  width: 36px;
+  height: 1px;
+  background: var(--f-gold);
+}
+.atmosphere-page .golden-gate .hero-description {
+  color: #dfe4ea;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 30em;
+  text-shadow: 0 1px 2px #071724e6, 0 0 14px #071724b3;
+}
+/* A soft scrim keeps the left column legible over fog and bright skies. */
+.golden-gate .scene-shade::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    70% 80% at 12% 48%,
+    rgba(7, 23, 36, 0.42),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* The clock reads on any sky: a frosted chip behind it. */
+.golden-gate .hero-clock::after {
+  /* scenes.css hides ::before with !important; the chip lives on ::after. */
+  content: "";
+  position: absolute;
+  inset: -16px -22px -14px;
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 24px;
+  background: rgba(8, 21, 54, 0.34);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  border: 1px solid rgba(243, 240, 232, 0.14);
+}
+
+/* The concierge launcher leaves with the hero instead of ghosting over the bay. */
+.golden-gate .hero-bottom {
+  opacity: clamp(0, calc(1 - var(--descent) * 2.6), 1);
+}
+.golden-gate[data-phase="bay"] .hero-bottom {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ——— Primary CTA: one filled champagne pill everywhere ——— */
+.atmosphere-page .cta-primary,
+.mobile-nav .cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--f-gold);
+  color: #081536;
+  font: 600 15px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow: 0 10px 30px -12px rgba(200, 183, 149, 0.55);
+  transition:
+    background-color 0.25s,
+    gap 0.25s,
+    transform 0.25s;
+}
+.atmosphere-page .cta-primary:hover,
+.mobile-nav .cta-primary:hover {
+  background: #d8c9a8;
+  gap: 16px;
+}
+.atmosphere-page .cta-primary:active {
+  transform: translateY(1px);
+}
+.atmosphere-page .cta-primary::after,
+.atmosphere-page .cta-primary::before {
+  display: none;
+}
+
+/* Header CTA: the same pill in every state (top of page, scrolled, on light). */
+.site-header .header-book,
+.site-header:not(.header-scrolled):not(.header-on-light) .header-book,
+[data-scene="day"]
+  .site-header:not(.header-scrolled):not(.header-on-light)
+  .header-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--f-gold);
+  color: #081536;
+  font: 600 14px/1 Inter, system-ui, sans-serif;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  justify-self: end;
+  text-shadow: none;
+}
+.site-header .header-book:hover,
+[data-scene="day"]
+  .site-header:not(.header-scrolled):not(.header-on-light)
+  .header-book:hover {
+  background: #d8c9a8;
+  gap: 14px;
+}
+.site-header .header-book::after {
+  display: none;
+}
+
+/* ——— Perspective: room between the headline's descenders and the rule ——— */
+.pv-places {
+  margin-top: calc(var(--space-xl) + 1.75rem);
+}
+
+/* ——— Capabilities: fit laptop screens (≈900px tall) without clipping ——— */
+@media (min-width: 1024px) and (min-height: 700px) and (max-height: 980px) {
+  .motion-ok .capabilities-v2 .cv-stage {
+    padding-block: 96px 20px;
+  }
+  .motion-ok .capabilities-v2 .cx-stage {
+    height: calc(100svh - 360px);
+  }
+  .motion-ok .atmosphere-page .capabilities-v2 .cx-caption,
+  .motion-ok .capabilities-v2 .cx-caption {
+    min-height: 0;
+    padding: 18px 26px 20px;
+  }
+  .motion-ok .capabilities-v2 .cx-caption ul {
+    display: none;
+  }
+  .atmosphere-page main .motion-ok .capabilities-v2 .cx-caption h3,
+  .motion-ok .atmosphere-page .capabilities-v2 .cx-caption h3 {
+    font-size: clamp(1.7rem, 2.2vw, 2.2rem);
+  }
+}
+.capabilities-v2 .illustration-note {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header CTA never wraps; on phones it hands off to the sticky action bar. */
+.site-header .header-book {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .site-header .header-book,
+  .site-header:not(.header-scrolled):not(.header-on-light) .header-book,
+  [data-scene="day"]
+    .site-header:not(.header-scrolled):not(.header-on-light)
+    .header-book {
+    display: none;
+  }
+  .hero-kicker {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .hero-kicker::before {
+    width: 22px;
+  }
+  .atmosphere-page .golden-gate .hero-description {
+    font-size: 16px;
+  }
+}

@@ -12,6 +12,7 @@ body {
   margin: 0; background: linear-gradient(180deg, var(--deep), var(--navy) 900px);
   background-color: var(--navy); color: var(--body); font: 400 18px/1.7 var(--sans);
   -webkit-font-smoothing: antialiased;
+  font-variant-numeric: lining-nums;
 }
 a { color: var(--ivory); text-decoration-color: rgba(200, 183, 149, 0.6); text-underline-offset: 3px; }
 a:hover { text-decoration-color: var(--gold); }

@@ -28,6 +28,7 @@ import SignupBand from "./SignupBand";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
+import "./polish.css";
 
 const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });

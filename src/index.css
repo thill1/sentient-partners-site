@@ -9,6 +9,8 @@ body {
   padding: 0;
   height: 100%;
   overscroll-behavior-x: none;
+  /* Cormorant's default old-style figures make "01" read as "OI". */
+  font-variant-numeric: lining-nums;
 }
 
 #root {
