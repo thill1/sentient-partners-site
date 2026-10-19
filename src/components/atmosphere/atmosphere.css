@@ -1172,14 +1172,14 @@ html {
     max-width: 250px;
   }
   .connected-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 45px;
   }
   .connected-inner > div > p:not(.eyebrow) {
     max-width: 450px;
   }
   .work-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 55px;
   }
   .work-grid article {
@@ -1383,7 +1383,7 @@ html {
     padding-bottom: 65px;
   }
   .perspective-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 35px;
   }
   .perspective-layout h2 {
@@ -1503,7 +1503,7 @@ html {
     margin-top: 12px;
   }
   .founder-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 40px;
   }
   .founder-portrait {
@@ -1532,7 +1532,7 @@ html {
     font-size: 10px;
   }
   .process-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
   .process-grid article {
@@ -1584,7 +1584,7 @@ html {
     font-size: 11px;
   }
   .footer-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 30px;
     padding: 38px 0;
   }

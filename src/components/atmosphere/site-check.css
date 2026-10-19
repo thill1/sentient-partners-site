@@ -148,7 +148,7 @@
 /* Report */
 .sc-head {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 22px;
   align-items: center;
   padding-bottom: 20px;
@@ -180,6 +180,16 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--f-gold);
+  /* Long hostnames have no break points; let them wrap instead of widening the card. */
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.sc-panel,
+.sc-intro,
+.sc-checks li > div,
+.sc-summary {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .sc-summary {
   margin: 0;
@@ -194,7 +204,7 @@
 }
 .sc-checks li {
   display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: 28px minmax(0, 1fr);
   gap: 10px;
   padding: 14px 0;
   border-bottom: 1px solid rgba(166, 177, 189, 0.14);
@@ -270,7 +280,7 @@
 
 @media (max-width: 900px) {
   .sc-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-xl);
   }
   .sc-panel {
@@ -291,7 +301,7 @@
   }
   /* Ring and host share a row; the summary gets the full width below. */
   .sc-head {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas: "score host" "summary summary";
     row-gap: 16px;
   }

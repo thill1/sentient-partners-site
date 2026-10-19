@@ -259,7 +259,7 @@
 }
 @media (max-width: 899px) {
   .pv-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "eyebrow" "headline" "copy";
     row-gap: var(--space-xl);
   }

@@ -973,7 +973,7 @@
     font-size: 26px;
   }
   .cx-site-services {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 .cx-rings {
@@ -1647,7 +1647,7 @@
     gap: 32px;
   }
   .cx-split {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .cx-back {
     padding: 24px 28px;
@@ -1655,7 +1655,7 @@
 }
 @media (max-width: 850px) {
   .cx-atelier {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 22px;
   }
   .cx-nav {
@@ -1750,7 +1750,7 @@
     width: 86%;
   }
   .cx-rail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
   .cx-rail li {
