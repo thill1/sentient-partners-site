@@ -595,7 +595,10 @@
     right: 0;
     bottom: 0;
     padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-    background: linear-gradient(180deg, transparent, rgba(8, 21, 54, 0.92) 30%);
+  }
+  .action-dock a,
+  .action-dock button {
+    box-shadow: 0 10px 28px -10px rgba(2, 8, 28, 0.55);
   }
   .action-dock .dock-book {
     flex: 1;
@@ -631,4 +634,103 @@
 .atmosphere-page .ov-intro {
   margin-top: 22px;
   max-width: 36ch;
+}
+
+/* ——— Pacing (Phase 2): shorter pinned tracks, same choreography ———
+   The timelines are progress-based, so a shorter track plays the same
+   sequence with less scrolling. Roughly four fewer screens on desktop. */
+.motion-ok .perspective-v2 {
+  height: 190svh;
+}
+@media (min-width: 900px) and (min-height: 640px) {
+  .motion-ok .outcomes-v2 {
+    height: 300svh;
+  }
+  .motion-ok .connected-v2 {
+    height: 160svh;
+  }
+  .motion-ok .local-interlude {
+    height: 150svh !important;
+  }
+}
+@media (min-width: 1024px) and (min-height: 700px) {
+  .motion-ok .capabilities-v2 {
+    height: 440svh;
+  }
+}
+
+/* ——— Rhythm (Phase 2): Our work and Process on ivory paper ———
+   Breaks the long navy run with an editorial beat. The header flips to ink
+   on its own (it reads the section background). Gold on ivory needs the
+   deeper champagne for contrast. */
+.atmosphere-page main .work-section,
+.atmosphere-page main .process-section {
+  --paper-ink: #102434;
+  --paper-body: #3d4f5a;
+  --paper-muted: #5b6b74;
+  --paper-gold: #7d6531;
+  background: var(--f-ivory) !important;
+  color: var(--paper-ink) !important;
+}
+.atmosphere-page main .work-section h2,
+.atmosphere-page main .work-section h3,
+.atmosphere-page main .process-section h2,
+.atmosphere-page main .process-section h3 {
+  color: var(--paper-ink) !important;
+}
+.atmosphere-page main .work-section h2 em,
+.atmosphere-page main .process-section h2 em {
+  color: var(--paper-gold) !important;
+}
+.atmosphere-page main .work-section .eyebrow,
+.atmosphere-page main .process-section .eyebrow {
+  color: var(--paper-gold) !important;
+}
+.atmosphere-page main .work-section .eyebrow::before,
+.atmosphere-page main .process-section .eyebrow::before {
+  background: var(--paper-gold) !important;
+}
+.atmosphere-page main .work-section .section-heading > p,
+.atmosphere-page main .process-section .section-heading > p,
+.atmosphere-page main .work-grid article > p:not(.eyebrow),
+.atmosphere-page main .process-grid p,
+.atmosphere-page main .work-disclosure {
+  color: var(--paper-body) !important;
+}
+.atmosphere-page main .work-section .text-link,
+.atmosphere-page main .process-section .text-link {
+  color: var(--paper-ink) !important;
+  border-bottom-color: var(--paper-gold) !important;
+}
+.atmosphere-page main .process-section .process-promise strong {
+  color: var(--paper-ink) !important;
+}
+.atmosphere-page main .process-grid article {
+  border-top-color: rgba(16, 36, 52, 0.16);
+}
+.atmosphere-page main .process-grid article > span {
+  color: var(--paper-gold) !important;
+  opacity: 0.85;
+}
+/* The work illustrations sit on solid navy plates: paper on navy on paper. */
+.atmosphere-page main .work-section .work-visual {
+  border-color: transparent;
+  box-shadow: 0 30px 60px -36px rgba(13, 31, 78, 0.55);
+}
+.atmosphere-page main .work-section .field-visual {
+  background: linear-gradient(160deg, #23366a, #0d1f4e);
+}
+.atmosphere-page main .work-section .customer-visual {
+  background: linear-gradient(160deg, #3a4d80, #1b2d5e);
+}
+.atmosphere-page main .work-section .relay-visual {
+  background: linear-gradient(160deg, #0d1f4e, #081536);
+}
+.atmosphere-page main .work-section article:hover .work-visual {
+  box-shadow:
+    0 0 0 1px rgba(125, 101, 49, 0.5),
+    0 40px 70px -36px rgba(13, 31, 78, 0.65);
+}
+.atmosphere-page main .process-section .ps-thread-lit {
+  stroke: var(--paper-gold) !important;
 }

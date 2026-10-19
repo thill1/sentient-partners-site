@@ -56,8 +56,8 @@ function Brand() {
 const links = [
   ["Perspective", "#perspective"],
   ["Capabilities", "#capabilities"],
-  ["Our work", "#work"],
   ["Our founder", "#founder"],
+  ["Our work", "#work"],
   // Hidden when the build has no published Insights (see insights/lib.mjs).
   ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
@@ -307,6 +307,89 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
         <Perspective />
         <Outcomes />
         <Capabilities />
+        <section id="founder" className="founder-section section-space">
+          <div className="page-width founder-layout">
+            <div className="founder-portrait">
+              <span className="founder-portrait-frame">
+                <img
+                  src="/atmosphere/troy-hill-founder-480.webp"
+                  srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
+                  sizes="(max-width: 600px) 100vw, 410px"
+                  alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
+                  loading="lazy"
+                  width="480"
+                  height="476"
+                />
+              </span>
+              <div>
+                <strong>Troy Hill</strong>
+                <span>Founder & Principal Consultant</span>
+              </div>
+            </div>
+            <div className="founder-copy">
+              <span className="fd-line" aria-hidden="true" />
+              <p className="eyebrow">Meet your partner</p>
+              <h2>
+                Enterprise experience.
+                <br />
+                <em>Personal accountability.</em>
+              </h2>
+              <p className="lead-copy">
+                Three decades of software that can't fail.
+                <br />
+                Now built for the businesses down the street.
+              </p>
+              <p>
+                Troy spent more than a decade at E*TRADE, rising from the global
+                trading desk to Director of Enterprise Quality Assurance. His
+                team stood behind every E*TRADE product release from 2006 to
+                2011, and he led the technology integration of the $2.3B Harris
+                Direct and BrownCo acquisitions.
+              </p>
+              <p>
+                At Hewlett-Packard he became Global Quality Director, running
+                quality operations across 178 countries and leading the
+                migration of more than 12,000 applications. He founded the
+                software-quality consultancy Qualitonomy in 2016, then Sentient
+                Partners, to bring the same discipline to the businesses in his
+                own community.
+              </p>
+              <ul className="founder-facts" aria-label="Career highlights">
+                <li>
+                  <strong>178</strong> countries in HP's global quality
+                  operation
+                </li>
+                <li>
+                  <strong>12,000+</strong> applications migrated across 30+ data
+                  centers
+                </li>
+                <li>
+                  <strong>Every</strong> E*TRADE product release, 2006 to 2011
+                </li>
+              </ul>
+              <div className="founder-actions">
+              <a
+                className="cta-primary"
+                href={BOOKING_URL}
+                onClick={(e) => {
+                  e.preventDefault();
+                  book("Founder");
+                }}
+              >
+                Book a 20-minute intro call <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <a
+                className="text-link"
+                href={BRAND.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Troy on LinkedIn <ArrowUpRight size={15} aria-hidden="true" />
+              </a>
+              </div>
+            </div>
+          </div>
+        </section>
         <Connected />
         <section id="work" className="work-section section-space">
           <div className="page-width">
@@ -447,89 +530,6 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </p>
           </div>
         </section>
-        <section id="founder" className="founder-section section-space">
-          <div className="page-width founder-layout">
-            <div className="founder-portrait">
-              <span className="founder-portrait-frame">
-                <img
-                  src="/atmosphere/troy-hill-founder-480.webp"
-                  srcSet="/atmosphere/troy-hill-founder-480.webp 480w, /atmosphere/troy-hill-founder-960.webp 960w"
-                  sizes="(max-width: 600px) 100vw, 410px"
-                  alt="Troy Hill, Founder and Principal Consultant at Sentient Partners"
-                  loading="lazy"
-                  width="480"
-                  height="476"
-                />
-              </span>
-              <div>
-                <strong>Troy Hill</strong>
-                <span>Founder & Principal Consultant</span>
-              </div>
-            </div>
-            <div className="founder-copy">
-              <span className="fd-line" aria-hidden="true" />
-              <p className="eyebrow">Meet your partner</p>
-              <h2>
-                Enterprise experience.
-                <br />
-                <em>Personal accountability.</em>
-              </h2>
-              <p className="lead-copy">
-                Three decades of software that can't fail.
-                <br />
-                Now built for the businesses down the street.
-              </p>
-              <p>
-                Troy spent more than a decade at E*TRADE, rising from the global
-                trading desk to Director of Enterprise Quality Assurance. His
-                team stood behind every E*TRADE product release from 2006 to
-                2011, and he led the technology integration of the $2.3B Harris
-                Direct and BrownCo acquisitions.
-              </p>
-              <p>
-                At Hewlett-Packard he became Global Quality Director, running
-                quality operations across 178 countries and leading the
-                migration of more than 12,000 applications. He founded the
-                software-quality consultancy Qualitonomy in 2016, then Sentient
-                Partners, to bring the same discipline to the businesses in his
-                own community.
-              </p>
-              <ul className="founder-facts" aria-label="Career highlights">
-                <li>
-                  <strong>178</strong> countries in HP's global quality
-                  operation
-                </li>
-                <li>
-                  <strong>12,000+</strong> applications migrated across 30+ data
-                  centers
-                </li>
-                <li>
-                  <strong>Every</strong> E*TRADE product release, 2006 to 2011
-                </li>
-              </ul>
-              <div className="founder-actions">
-              <a
-                className="cta-primary"
-                href={BOOKING_URL}
-                onClick={(e) => {
-                  e.preventDefault();
-                  book("Founder");
-                }}
-              >
-                Book a 20-minute intro call <ArrowRight size={16} aria-hidden="true" />
-              </a>
-              <a
-                className="text-link"
-                href={BRAND.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Troy on LinkedIn <ArrowUpRight size={15} aria-hidden="true" />
-              </a>
-              </div>
-            </div>
-          </div>
-        </section>
         <section id="process" className="process-section section-space">
           <div className="page-width">
             <div className="section-heading">
@@ -630,8 +630,8 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             <div>
               <span>Explore</span>
               <a href="#capabilities">Capabilities</a>
-              <a href="#work">Our work</a>
               <a href="#founder">Our founder</a>
+              <a href="#work">Our work</a>
               <a href="#process">Our approach</a>
               {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
             </div>
