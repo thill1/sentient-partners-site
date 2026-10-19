@@ -58,7 +58,7 @@ type AudioContextCtor = typeof AudioContext;
 const getAudioContextCtor = (): AudioContextCtor | null =>
   window.AudioContext ?? (window as Window & { webkitAudioContext?: AudioContextCtor }).webkitAudioContext ?? null;
 
-async function fetchToken(): Promise<TokenResponse> {
+async function fetchToken(): Promise<TokenResponse & { issuedAt: number }> {
   let response: Response;
   try {
     response = await fetch('/api/live-token', { method: 'POST' });
@@ -73,7 +73,7 @@ async function fetchToken(): Promise<TokenResponse> {
   if (!response.ok) throw new LiveStartError('failed', 'Could not start live voice.');
   const body = (await response.json().catch(() => null)) as TokenResponse | null;
   if (!body?.token || !body.model || !body.config) throw new LiveStartError('failed', 'Could not start live voice.');
-  return body;
+  return { ...body, issuedAt: Date.now() };
 }
 
 /**
@@ -342,11 +342,13 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   }
 
   // ---- Time cap -----------------------------------------------------------------------
-  const startedAt = Date.now();
+  // The clock runs from when the pass was issued, the same moment the server
+  // starts its own expiry, so a slow microphone prompt cannot push the two apart.
   const limitMs = Math.max(30, tokenInfo.maxSeconds || 300) * 1000;
-  events.onSecondsLeft?.(Math.round(limitMs / 1000));
+  const secondsLeft = () => Math.max(0, Math.ceil((limitMs - (Date.now() - tokenInfo.issuedAt)) / 1000));
+  events.onSecondsLeft?.(secondsLeft());
   timer = setInterval(() => {
-    const left = Math.max(0, Math.ceil((limitMs - (Date.now() - startedAt)) / 1000));
+    const left = secondsLeft();
     events.onSecondsLeft?.(left);
     if (left <= 0) stop('time');
   }, 1000);

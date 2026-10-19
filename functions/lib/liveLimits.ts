@@ -34,10 +34,23 @@ async function shortHash(value: string): Promise<string> {
     .join("");
 }
 
+/** How long to ask a visitor to wait when the counters cannot be trusted. */
+const COUNTER_TROUBLE_RETRY_SECONDS = 5;
+
+const memoryCount = (key: string, now: number): number => {
+  const entry = memory.get(key);
+  return entry && entry.resetAt > now ? entry.count : 0;
+};
+
 /**
  * Counts one session start against every limit. Returns the seconds until the
  * visitor may try again when a limit is already used up, otherwise null.
- * A refused start is not counted.
+ *
+ * Two layers. The in-isolate counters are checked and raised with no await in
+ * between, so a burst of simultaneous requests cannot all slip through. KV adds
+ * limits that hold across isolates and restarts; it is eventually consistent,
+ * so it is the softer layer. If KV cannot be read or written the request is
+ * refused rather than waved through.
  */
 export async function takeLiveSlot(
   kv: KVNamespaceLike | undefined,
@@ -52,38 +65,45 @@ export async function takeLiveSlot(
     const id = limit.scope === "global" ? "all" : who;
     return { limit, key: `ratelimit:live:${limit.name}:${id}:${bucket}`, resetAt };
   });
+  const retryIn = (resetAt: number) => Math.max(1, Math.ceil((resetAt - now) / 1000));
 
-  const counts = await Promise.all(
-    slots.map(async ({ key }) => {
-      if (kv) {
-        const stored = await kv.get(key).catch(() => null);
-        return Number.parseInt(stored ?? "0", 10) || 0;
-      }
-      const entry = memory.get(key);
-      return entry && entry.resetAt > now ? entry.count : 0;
-    }),
-  );
-
-  const blocked = slots.findIndex(({ limit }, i) => counts[i] >= limit.max);
-  if (blocked !== -1) {
-    return Math.max(1, Math.ceil((slots[blocked].resetAt - now) / 1000));
+  // Layer 1: this isolate. Check and raise together, synchronously.
+  const full = slots.find(({ limit, key }) => memoryCount(key, now) >= limit.max);
+  if (full) return retryIn(full.resetAt);
+  for (const { key, resetAt } of slots) memory.set(key, { count: memoryCount(key, now) + 1, resetAt });
+  if (memory.size > 2000) {
+    for (const [k, v] of memory) if (v.resetAt <= now) memory.delete(k);
   }
+  const giveBack = () => {
+    for (const { key, resetAt } of slots) {
+      const count = memoryCount(key, now);
+      if (count > 0) memory.set(key, { count: count - 1, resetAt });
+    }
+  };
 
-  await Promise.all(
-    slots.map(async ({ key, resetAt }, i) => {
-      const count = counts[i] + 1;
-      if (kv) {
+  if (!kv) return null;
+
+  // Layer 2: KV, shared across isolates.
+  try {
+    const counts = await Promise.all(
+      slots.map(async ({ key }) => Number.parseInt((await kv.get(key)) ?? "0", 10) || 0),
+    );
+    const blocked = slots.findIndex(({ limit }, i) => counts[i] >= limit.max);
+    if (blocked !== -1) {
+      giveBack();
+      return retryIn(slots[blocked].resetAt);
+    }
+    await Promise.all(
+      slots.map(({ key, resetAt }, i) => {
         // KV needs a TTL of at least 60 seconds.
         const ttl = Math.max(60, Math.ceil((resetAt - now) / 1000) + 60);
-        await kv.put(key, String(count), { expirationTtl: ttl }).catch(() => undefined);
-      } else {
-        memory.set(key, { count, resetAt });
-        if (memory.size > 2000) {
-          for (const [k, v] of memory) if (v.resetAt <= now) memory.delete(k);
-        }
-      }
-    }),
-  );
+        return kv.put(key, String(counts[i] + 1), { expirationTtl: ttl });
+      }),
+    );
+  } catch {
+    giveBack();
+    return COUNTER_TROUBLE_RETRY_SECONDS;
+  }
   return null;
 }
 

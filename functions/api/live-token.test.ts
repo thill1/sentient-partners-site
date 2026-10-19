@@ -79,11 +79,22 @@ describe("/api/live-token", () => {
     expect(params.config.liveConnectConstraints.model).toBe("gemini-3.1-flash-live-preview");
   });
 
-  it("locks the prompt and the note tool on the server", async () => {
-    const res = await post(undefined, "203.0.113.10");
-    const body = (await res.json()) as { config: { systemInstruction: { parts: { text: string }[] }; tools: { functionDeclarations: { name: string }[] }[] } };
-    expect(body.config.systemInstruction.parts[0].text).toContain("Live voice conversation");
+  it("locks the prompt and the note tool in the token, not the browser response", async () => {
+    const res = await post({ GEMINI_API_KEY: "g-test", SENTIENT_SITE_MEMORY: "PRIVATE-MEMORY-XYZ" }, "203.0.113.10");
+    const text = await res.text();
+    const body = JSON.parse(text) as { config: Record<string, unknown> & { tools: { functionDeclarations: { name: string }[] }[] } };
+    // The browser gets the note tool and audio settings, but never the prompt or private memory.
     expect(body.config.tools[0].functionDeclarations[0].name).toBe("show_note_form");
+    expect(body.config.systemInstruction).toBeUndefined();
+    expect(text).not.toContain("PRIVATE-MEMORY-XYZ");
+    expect(text).not.toContain("Live voice conversation");
+    // Google still holds the prompt, locked into the token.
+    const { params } = created[0] as {
+      params: { config: { liveConnectConstraints: { config: { systemInstruction: { parts: { text: string }[] } } } } };
+    };
+    const locked = params.config.liveConnectConstraints.config.systemInstruction.parts[0].text;
+    expect(locked).toContain("Live voice conversation");
+    expect(locked).toContain("PRIVATE-MEMORY-XYZ");
   });
 
   it("limits each visitor to four sessions an hour", async () => {

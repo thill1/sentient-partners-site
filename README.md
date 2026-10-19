@@ -84,7 +84,7 @@ Optional, for the live two-way voice (Gemini Live):
 - `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`).
 - `GEMINI_LIVE_API_VERSION` (default `v1alpha`; change to `v1beta` if Google's ephemeral-token endpoint requires it).
 
-Each live conversation is capped at five minutes (token expiry plus a client timer). Per visitor: 4 sessions an hour and 8 a day; sitewide: 150 a day. Counters use the `SITE_SETTINGS` KV namespace when it is bound, otherwise a per-isolate fallback. If no key is set, or the live connection fails, the site falls back to the turn-based voice. Turning `voiceEnabled` off in the admin also turns live voice off.
+Each live conversation is capped at five minutes (token expiry plus a client timer). Per visitor: 4 sessions an hour and 8 a day; sitewide: 150 a day. Counts are kept in memory (exact within one Cloudflare isolate, so a burst of simultaneous requests cannot all pass) and in the `SITE_SETTINGS` KV namespace when it is bound (shared across isolates, but eventually consistent, so treat it as a soft limit). If KV cannot be read or written, the start is refused rather than allowed. For a strict sitewide guarantee, use a Durable Object counter. The system prompt (including `SENTIENT_SITE_MEMORY`) is locked into the token on Google's side and is never sent to the browser. Set a budget alert in Google Cloud as the last line of defence. If no key is set, or the live connection fails, the site falls back to the turn-based voice. Turning `voiceEnabled` off in the admin also turns live voice off.
 
 Recommended first settings seed:
 

@@ -4,6 +4,7 @@ import { getSiteSettings } from "../lib/siteSettings";
 import { takeLiveSlot } from "../lib/liveLimits";
 import {
   buildLiveSessionConfig,
+  toBrowserConfig,
   DEFAULT_LIVE_API_VERSION,
   DEFAULT_LIVE_MODEL,
   LIVE_MAX_SECONDS,
@@ -68,7 +69,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       },
     });
     if (!token?.name) return json({ error: "Could not start voice." }, 502);
-    return json({ token: token.name, model, apiVersion, config, maxSeconds: LIVE_MAX_SECONDS });
+    return json({ token: token.name, model, apiVersion, config: toBrowserConfig(config), maxSeconds: LIVE_MAX_SECONDS });
   } catch (error) {
     console.error("live-token failed", error instanceof Error ? error.message : error);
     return json({ error: "Could not start voice." }, 502);

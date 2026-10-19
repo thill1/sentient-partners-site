@@ -53,3 +53,17 @@ export function buildLiveSessionConfig(siteMemory = "") {
     ],
   };
 }
+
+/**
+ * What the browser may see. The system prompt stays out: it can carry private
+ * site memory, and the token already locks it in on Google's side.
+ */
+export function toBrowserConfig(config: ReturnType<typeof buildLiveSessionConfig>) {
+  return {
+    responseModalities: config.responseModalities,
+    inputAudioTranscription: config.inputAudioTranscription,
+    outputAudioTranscription: config.outputAudioTranscription,
+    speechConfig: config.speechConfig,
+    tools: config.tools,
+  };
+}
