@@ -767,3 +767,6 @@
     display: none;
   }
 }
+.site-header .desktop-nav a {
+  white-space: nowrap;
+}
