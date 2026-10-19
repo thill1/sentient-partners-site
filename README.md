@@ -78,6 +78,14 @@ Required environment variables:
 - `TTS_BASE_URL`
 - `TTS_API_KEY` if your TTS provider requires authentication
 
+Optional, for the live two-way voice (Gemini Live):
+
+- `GEMINI_LIVE_API_KEY` (falls back to `GEMINI_API_KEY`). Keep it as an encrypted Pages secret; the browser only ever receives a single-use token from `/api/live-token`.
+- `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`).
+- `GEMINI_LIVE_API_VERSION` (default `v1alpha`; change to `v1beta` if Google's ephemeral-token endpoint requires it).
+
+Each live conversation is capped at five minutes (token expiry plus a client timer). Per visitor: 4 sessions an hour and 8 a day; sitewide: 150 a day. Counters use the `SITE_SETTINGS` KV namespace when it is bound, otherwise a per-isolate fallback. If no key is set, or the live connection fails, the site falls back to the turn-based voice. Turning `voiceEnabled` off in the admin also turns live voice off.
+
 Recommended first settings seed:
 
 - banner message: `Free AI Opportunity Review`
