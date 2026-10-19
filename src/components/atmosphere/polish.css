@@ -615,3 +615,20 @@
 .site-header .header-book {
   text-shadow: none !important;
 }
+
+/* Balanced headlines and no orphaned last words (modern CSS; harmless where unsupported). */
+.atmosphere-page h1,
+.atmosphere-page h2,
+.atmosphere-page h3,
+.atmosphere-page .lead-copy {
+  text-wrap: balance;
+}
+.atmosphere-page p {
+  text-wrap: pretty;
+}
+
+/* Outcomes: breathing room between the headline and its intro. */
+.atmosphere-page .ov-intro {
+  margin-top: 22px;
+  max-width: 36ch;
+}

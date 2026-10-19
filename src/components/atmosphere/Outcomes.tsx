@@ -275,14 +275,14 @@ export default function Outcomes() {
           <header className="ov-head">
             <p className="eyebrow">What we help you accomplish</p>
             <h2 id="outcomes-title" className="ov-heading">
-              Start with what
+              Start where
               <br />
-              <em>needs to work better.</em>
+              <em>it hurts most.</em>
             </h2>
             <p className="ov-intro">
               Four places growing businesses lose time or customers.
               <br />
-              Pick the one that hurts most. We start there.
+              Pick one. We bring the strategy and the systems.
             </p>
             <ol className="ov-rail" aria-hidden="true">
               {outcomes.map(([title], i) => (

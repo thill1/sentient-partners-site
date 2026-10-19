@@ -145,7 +145,7 @@ export default function Contact({ onBook }: { onBook: () => void }) {
             }}
           >
             <span className="cf-cta-label">
-              Book a 20-minute introductory call
+              Book a 20-minute intro call
               <i className="cf-underline" aria-hidden="true" />
             </span>
             <ArrowRight size={18} aria-hidden="true" />

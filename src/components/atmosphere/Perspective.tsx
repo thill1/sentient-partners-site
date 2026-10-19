@@ -158,8 +158,9 @@ export default function Perspective() {
           <div className="pv-copy">
             <span className="pv-rule" aria-hidden="true" />
             <p className="lead-copy pv-reveal">
-              Missed calls. Double entry.
-              <br />A website that doesn't bring in work.
+              Missed calls. Lost leads.
+              <br />
+              Hours of double entry.
             </p>
             <p className="pv-reveal">
               Growing businesses deserve the same thoughtful strategy, reliable
