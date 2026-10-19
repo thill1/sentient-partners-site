@@ -118,8 +118,11 @@ const newLeadId = () =>
 export const submitLead = async (
   payload: LeadSubmission,
   honey = "",
+  options: { autoresponse?: string; timeoutMs?: number } = {},
 ): Promise<LeadSubmissionResult> => {
   const leadId = newLeadId();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 12000);
 
   fetch("/api/leads", {
     method: "POST",
@@ -135,7 +138,12 @@ export const submitLead = async (
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify(buildFormSubmitLead(payload, leadId, honey)),
+      body: JSON.stringify({
+        ...buildFormSubmitLead(payload, leadId, honey),
+        // FormSubmit emails this text to the address in `email` (the visitor).
+        ...(options.autoresponse ? { _autoresponse: options.autoresponse } : {}),
+      }),
+      signal: controller.signal,
     });
     const data = (await response.json().catch(() => ({}))) as {
       success?: unknown;
@@ -151,6 +159,8 @@ export const submitLead = async (
     return { success: false, message: "We couldn't send your message." };
   } catch {
     return { success: false, message: "We couldn't send your message." };
+  } finally {
+    clearTimeout(timer);
   }
 };
 

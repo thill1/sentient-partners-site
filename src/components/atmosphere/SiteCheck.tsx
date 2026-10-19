@@ -97,14 +97,21 @@ export default function SiteCheck() {
     const lines = report.checks
       .map((c) => `${statusText[c.status]}: ${c.label}. ${c.detail}`)
       .join("\n");
-    const result = await submitLead({
-      name: email.trim(),
-      email: email.trim(),
-      inquiry: `Website check for ${report.host} (score ${report.score}/100).\n\n${report.summary}\n\n${lines}`,
-      intent: "blueprint",
-      source: "Website check",
-      ctaLabel: "Send me this report",
-    });
+    const reportText = `Website check for ${report.host} (score ${report.score}/100).\n\n${report.summary}\n\n${lines}`;
+    const result = await submitLead(
+      {
+        name: email.trim(),
+        email: email.trim(),
+        inquiry: reportText,
+        intent: "blueprint",
+        source: "Website check",
+        ctaLabel: "Send me this report",
+      },
+      "",
+      {
+        autoresponse: `${reportText}\n\nWant a walkthrough of what's worth fixing? Book a 20-minute intro call at https://sentientpartners.ai or reply to this email.\n\n— Troy, Sentient Partners`,
+      },
+    );
     setSent(result.success ? "sent" : "failed");
   };
 
@@ -257,7 +264,7 @@ export default function SiteCheck() {
                 </a>
                 {sent === "sent" ? (
                   <p className="sc-sent" role="status">
-                    Sent. Troy will follow up with the report personally.
+                    Sent. Check your inbox for the report (and spam, just in case).
                   </p>
                 ) : (
                   <form className="sc-email" onSubmit={emailReport}>
