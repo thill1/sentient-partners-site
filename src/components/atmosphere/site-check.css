@@ -289,6 +289,26 @@
   .sc-score strong {
     font-size: 32px;
   }
+  /* Ring and host share a row; the summary gets the full width below. */
+  .sc-head {
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "score host" "summary summary";
+    row-gap: 16px;
+  }
+  .sc-head > div:not(.sc-score) {
+    display: contents;
+  }
+  .sc-head .sc-score {
+    grid-area: score;
+  }
+  .sc-head .sc-host {
+    grid-area: host;
+    margin: 0;
+  }
+  .sc-head .sc-summary {
+    grid-area: summary;
+    margin: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sc-spin,

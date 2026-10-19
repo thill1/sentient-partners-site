@@ -125,7 +125,7 @@ export default function Contact({ onBook }: { onBook: () => void }) {
         </div>
         <div className="page-width cf-content">
           <p className="eyebrow cf-eyebrow">
-            The next step starts with a conversation
+            Start with a conversation
           </p>
           <h2 className="cf-headline">
             Let's build what's next

@@ -997,7 +997,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                   messages={messages}
                   onBook={() => { setIsOpen(false); openBookingModal({ source: 'Concierge chat', ctaLabel: 'Book a 20-minute intro call' }); }}
                 />}
-                <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>
+                {/* Starters only until the visitor asks something; then the room goes to the conversation. */}
+                {!messages.some(m => m.role === 'user') && <div className="concierge-suggestions" aria-label="Suggested questions">{SUGGESTED_ACTIONS.map(action => <button type="button" key={action.label} disabled={isLoading} onClick={() => void handleSend(action.prompt)}>{action.label}<ArrowRight size={14} /></button>)}</div>}
                 <form className="concierge-composer" onSubmit={event => { event.preventDefault(); void handleSend(); }}>
                   <input aria-label="Your message" value={inputValue} onChange={event => setInputValue(event.target.value)} placeholder="Ask a question…" disabled={isLoading} />
                   <button type="submit" aria-label={isLoading ? 'Sending message' : 'Send message'} disabled={isLoading || !inputValue.trim()}>{isLoading ? <Loader2 className="concierge-loading" size={20} /> : <Send size={19} />}</button>
