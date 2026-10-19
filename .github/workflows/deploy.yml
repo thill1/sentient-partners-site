@@ -55,8 +55,8 @@ jobs:
               | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const data=JSON.parse(s); if (!data.ok) { console.error(data); process.exit(1); }})"
           done
 
-          curl --fail --silent --show-error --retry 4 --retry-delay 10 --retry-all-errors \
+          curl --silent --show-error --retry 4 --retry-delay 10 --retry-all-errors \
             -X POST "https://sentientpartners.ai/api/gemini" \
             -H "Content-Type: application/json" \
             --data '{"message":"Who are you and what company do you represent?","history":[],"model":"gemini-2.5-flash"}' \
-            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const data=JSON.parse(s); if (!data.ok || typeof data.text !== 'string' || !data.text.includes('Sentient Partners')) { console.error(data); process.exit(1); }})"
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{let data={};try{data=JSON.parse(s)}catch{console.log('::error title=Concierge smoke test::Non-JSON response: '+s.slice(0,300).replace(/\\n/g,' '));process.exit(1)} if (!data.ok || typeof data.text !== 'string' || !data.text.includes('Sentient Partners')) { console.log('::error title=Concierge smoke test::'+JSON.stringify(data).slice(0,600)); process.exit(1); }})"

@@ -25,3 +25,13 @@ body {
 }
 
 .booking-dialog-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Inter,system-ui,sans-serif;color:#102434}.booking-backdrop{position:absolute;inset:0;background:#081c2bd9;backdrop-filter:blur(8px)}.booking-dialog{position:relative;display:flex;flex-direction:column;width:min(1080px,100%);height:min(850px,90dvh);background:#0d1f4e;color:#f3f0e8;border:1px solid rgba(200,183,149,.28);border-radius:14px;overflow:hidden;box-shadow:0 30px 90px #0008}.booking-header{display:flex;gap:20px;justify-content:space-between;padding:22px 26px;border-bottom:1px solid rgba(200,183,149,.22)}.booking-header h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:400;color:#f3f0e8}.booking-header p{font-size:14px;color:#c4cbd6;margin-top:6px}.booking-header button{height:44px;width:44px;display:grid;place-items:center;flex-shrink:0}.booking-links{display:flex;gap:22px;justify-content:space-between;padding:14px 26px;font-size:13px;color:#c4cbd6;border-bottom:1px solid rgba(200,183,149,.22)}.booking-links a{display:flex;align-items:center;gap:8px}.booking-links button{text-decoration:underline}.booking-body{flex:1;position:relative;min-height:0;background:#fff}.booking-body iframe{width:100%;height:100%;border:0}.booking-loading{position:absolute;inset:0;display:grid;place-items:center;background:#0d1f4e;color:#c4cbd6;pointer-events:none;font-size:13px}.booking-unavailable{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;padding:30px}.booking-unavailable h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;color:#0d1f4e}.booking-unavailable p{font-size:13px;max-width:430px;line-height:1.9}.booking-dialog a:focus-visible,.booking-dialog button:focus-visible{outline:2px solid #c8b795;outline-offset:5px}@media(max-width:600px){.booking-dialog-overlay{padding:10px}.booking-dialog{height:94dvh}.booking-header{padding:15px}.booking-header h2{font-size:18px}.booking-header p{font-size:13px}.booking-links{padding:12px 15px;font-size:12px;gap:16px}.booking-header button{width:36px;height:36px}}
+
+/* Smooth cross-page transitions (home <-> Insights) where supported. */
+@view-transition {
+  navigation: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

@@ -51,6 +51,7 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <link rel="preload" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-normal-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>${FONTS}</style>
+<script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/insights/*"},{"not":{"href_matches":"/insights/*.xml"}}]},"eagerness":"moderate"}],"prefetch":[{"where":{"href_matches":"/"},"eagerness":"moderate"}]}</script>
 <link rel="stylesheet" href="/insights/insights.css">
 <link rel="stylesheet" href="/insights/signup-band.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
@@ -211,5 +212,21 @@ if (approved.length) {
   ].join("");
   sm = sm.replace("</urlset>", `${urls}</urlset>`);
   writeFileSync(smPath, sm);
+}
+// llms.txt: list the published Insights so AI assistants can find them.
+const llmsPath = join(OUT, "llms.txt");
+try {
+  if (approved.length) {
+    const lines = approved
+      .slice(0, 20)
+      .map((i) => `- [${i.title}](${SITE}/insights/${i.slug}/): ${i.summary}`)
+      .join("\n");
+    writeFileSync(
+      llmsPath,
+      `${readFileSync(llmsPath, "utf8").trimEnd()}\n\n## Recent insights\n\n${lines}\n`,
+    );
+  }
+} catch {
+  // No llms.txt in this build output; nothing to extend.
 }
 console.log(`insights: ${issues.length} item(s) built (${approved.length} approved, drafts ${drafts ? "on" : "off"}) into ${OUT}`);
