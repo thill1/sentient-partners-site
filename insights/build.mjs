@@ -25,7 +25,7 @@ const FONTS = [
   ["Inter", "normal", 500, "inter-normal-500"],
   ["Inter", "normal", 600, "inter-normal-600"],
 ]
-  .map(([f, s, w, file]) => `@font-face{font-family:"${f}";font-style:${s};font-weight:${w};font-display:swap;src:url("/fonts/${file}.woff2") format("woff2")}`)
+  .map(([f, s, w, file]) => `@font-face{font-family:"${f}";font-style:${s};font-weight:${w};font-display:swap;src:url("/fonts/${file}.woff2${file.startsWith("cormorant") ? "?v=2" : ""}") format("woff2")}`)
   .join("");
 
 function page({ title, description, path, type = "website", jsonLd, body, noindex }) {
@@ -48,9 +48,10 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <meta name="theme-color" content="#081536">
 <link rel="icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preload" href="/fonts/cormorant-garamond-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-normal-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>${FONTS}</style>
+<script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/insights/*"},{"not":{"href_matches":"/insights/*.xml"}}]},"eagerness":"moderate"}],"prefetch":[{"where":{"href_matches":"/"},"eagerness":"moderate"}]}</script>
 <link rel="stylesheet" href="/insights/insights.css">
 <link rel="stylesheet" href="/insights/signup-band.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
@@ -61,7 +62,13 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
     <img src="/atmosphere/sp-monogram-white.png" alt="" width="22" height="36">
     <span>Sentient Partners</span>
   </a>
-  <a class="ins-home" href="/">Home</a>
+  <nav class="ins-nav" aria-label="Main navigation">
+    <a href="/#capabilities">Capabilities</a>
+    <a href="/#work">Our work</a>
+    <a href="/#founder">Our founder</a>
+    <a href="/insights/">Insights</a>
+    <a class="ins-book" href="${BOOKING_URL}">Book an intro call <span aria-hidden="true">→</span></a>
+  </nav>
 </header>
 <main id="main">
 ${body}
@@ -75,7 +82,7 @@ ${body}
     <form class="signup-form" novalidate>
       <label for="signup-email" class="signup-label">Email address</label>
       <div class="signup-row">
-        <input id="signup-email" type="email" name="email" autocomplete="email" required aria-describedby="signup-msg">
+        <input id="signup-email" type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" required aria-describedby="signup-msg">
         <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="signup-honey">
         <button type="submit">Subscribe</button>
       </div>
@@ -205,5 +212,21 @@ if (approved.length) {
   ].join("");
   sm = sm.replace("</urlset>", `${urls}</urlset>`);
   writeFileSync(smPath, sm);
+}
+// llms.txt: list the published Insights so AI assistants can find them.
+const llmsPath = join(OUT, "llms.txt");
+try {
+  if (approved.length) {
+    const lines = approved
+      .slice(0, 20)
+      .map((i) => `- [${i.title}](${SITE}/insights/${i.slug}/): ${i.summary}`)
+      .join("\n");
+    writeFileSync(
+      llmsPath,
+      `${readFileSync(llmsPath, "utf8").trimEnd()}\n\n## Recent insights\n\n${lines}\n`,
+    );
+  }
+} catch {
+  // No llms.txt in this build output; nothing to extend.
 }
 console.log(`insights: ${issues.length} item(s) built (${approved.length} approved, drafts ${drafts ? "on" : "off"}) into ${OUT}`);

@@ -54,8 +54,8 @@ export function ConciergeLauncher({ onClick, floating = false }: { onClick: () =
       trigger.removeEventListener('pointerdown', stop);
     };
   }, []);
-  return <button ref={button} type="button" className={`concierge-launch${floating ? ' concierge-launch-floating' : ''}`} onClick={onClick} aria-label="Ask Sentient, chat or voice" aria-haspopup="dialog">
-    <span className="concierge-label">Ask Sentient<small>Chat or voice</small></span>
+  return <button ref={button} type="button" className={`concierge-launch${floating ? ' concierge-launch-floating' : ''}`} onClick={onClick} aria-haspopup="dialog">
+    <span className="concierge-label">Ask Sentient <small>Chat or voice</small></span>
     <span ref={seal} className="concierge-mark" aria-hidden="true"><img src={spMonogramWhite} alt="" /></span>
   </button>;
 }

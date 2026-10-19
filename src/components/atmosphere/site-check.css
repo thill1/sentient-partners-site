@@ -1,0 +1,298 @@
+/* Free website check: a navy band between the two ivory sections. */
+.atmosphere-page .site-check {
+  position: relative;
+  background:
+    radial-gradient(60% 80% at 85% 30%, rgba(58, 77, 128, 0.55), transparent 70%),
+    linear-gradient(180deg, var(--f-deep), var(--f-navy));
+  color: var(--f-ivory);
+}
+.sc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: var(--space-2xl);
+  align-items: start;
+}
+.atmosphere-page .site-check h2 {
+  font-size: clamp(2.6rem, 1.6rem + 3.4vw, 4.6rem);
+  line-height: 1;
+  margin: 0 0 22px;
+}
+.atmosphere-page .site-check h2 em {
+  color: var(--f-gold);
+}
+.sc-intro > p:not(.eyebrow) {
+  max-width: 34em;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--f-body);
+}
+.sc-form {
+  margin-top: var(--space-l);
+}
+.sc-form label,
+.sc-email label {
+  display: block;
+  margin-bottom: 10px;
+  font: 500 13px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--f-body);
+}
+.sc-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sc-row input {
+  flex: 1 1 220px;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 240, 232, 0.35);
+  background: rgba(243, 240, 232, 0.07);
+  color: var(--f-ivory);
+  font: 400 17px Inter, system-ui, sans-serif;
+}
+.sc-row input::placeholder {
+  color: rgba(196, 203, 214, 0.55);
+}
+.sc-row input:focus {
+  outline: none;
+  border-color: var(--f-gold);
+}
+.sc-row input:focus-visible {
+  outline: 2px solid var(--f-gold);
+  outline-offset: 3px;
+}
+.sc-row button:disabled {
+  opacity: 0.75;
+  cursor: progress;
+}
+.sc-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--f-fog);
+}
+.sc-spin {
+  animation: sc-spin 0.9s linear infinite;
+}
+@keyframes sc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The panel: a glass card that holds the checklist, progress or report. */
+.sc-panel {
+  min-height: 420px;
+  padding: clamp(22px, 3vw, 36px);
+  border-radius: 16px;
+  border: 1px solid rgba(200, 183, 149, 0.28);
+  background: linear-gradient(160deg, rgba(35, 54, 106, 0.55), rgba(8, 21, 54, 0.75));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 50px 110px -40px rgba(2, 8, 28, 0.85);
+  outline: none;
+}
+.sc-empty ul,
+.sc-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.sc-empty li,
+.sc-steps li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(166, 177, 189, 0.16);
+  font-size: 16px;
+  color: var(--f-body);
+}
+.sc-empty li > span,
+.sc-steps li > span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 183, 149, 0.6);
+  flex-shrink: 0;
+}
+.sc-steps li.is-done {
+  color: var(--f-ivory);
+}
+.sc-steps li.is-done svg {
+  color: var(--f-gold);
+}
+.sc-steps li.is-active {
+  color: var(--f-ivory);
+}
+.sc-steps li.is-active > span {
+  border-color: var(--f-gold);
+  border-top-color: transparent;
+  animation: sc-spin 0.9s linear infinite;
+}
+.sc-error {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: #f0c9bd;
+  font-size: 16px;
+}
+.sc-error svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* Report */
+.sc-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(166, 177, 189, 0.18);
+}
+.sc-score {
+  --score: 0;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background:
+    radial-gradient(closest-side, #0d1f4e 84%, transparent 85%),
+    conic-gradient(var(--f-gold) calc(var(--score) * 1%), rgba(166, 177, 189, 0.22) 0);
+}
+.sc-score strong {
+  font: 400 40px/1 "Cormorant Garamond", Georgia, serif;
+  color: var(--f-ivory);
+}
+.sc-score small {
+  font-size: 12px;
+  color: var(--f-fog);
+}
+.sc-host {
+  margin: 0 0 6px;
+  font: 500 13px/1.3 Inter, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--f-gold);
+}
+.sc-summary {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--f-ivory);
+}
+.sc-checks {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.sc-checks li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(166, 177, 189, 0.14);
+}
+.sc-checks strong {
+  display: block;
+  font: 500 15px/1.3 Inter, system-ui, sans-serif;
+  color: var(--f-ivory);
+}
+.sc-checks p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--f-body);
+}
+.sc-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+}
+.is-pass .sc-icon {
+  background: rgba(111, 138, 118, 0.25);
+  color: #a9cdb2;
+}
+.is-warn .sc-icon {
+  background: rgba(200, 183, 149, 0.2);
+  color: var(--f-gold);
+}
+.is-fail .sc-icon {
+  background: rgba(220, 120, 100, 0.2);
+  color: #f0a796;
+}
+.sc-next {
+  margin-top: 22px;
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+.sc-next > p {
+  margin: 0;
+  font: 400 22px/1.3 "Cormorant Garamond", Georgia, serif;
+  color: var(--f-ivory);
+}
+.sc-email {
+  width: 100%;
+  margin-top: 6px;
+}
+.sc-email button {
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid var(--f-gold);
+  background: transparent;
+  color: var(--f-ivory);
+  font: 600 15px Inter, system-ui, sans-serif;
+  cursor: pointer;
+}
+.sc-email button:hover {
+  background: rgba(200, 183, 149, 0.15);
+}
+.sc-sent {
+  color: var(--f-gold);
+  font-size: 15px;
+}
+.sc-fail {
+  margin-top: 10px;
+  color: #f0c9bd;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .sc-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  .sc-panel {
+    min-height: 0;
+  }
+}
+@media (max-width: 600px) {
+  .sc-row .cta-primary,
+  .sc-email button {
+    width: 100%;
+  }
+  .sc-score {
+    width: 84px;
+    height: 84px;
+  }
+  .sc-score strong {
+    font-size: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-spin,
+  .sc-steps li.is-active > span {
+    animation: none;
+  }
+}

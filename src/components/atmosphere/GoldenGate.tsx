@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { BOOKING_URL } from "../../content/siteContent";
 import { openBookingModal, openSentientChat } from "../../lib/siteActions";
 import { HeroClock } from "./HeroClock";
+import { hasHardwareGpu } from "../../lib/gpu";
 import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
@@ -37,9 +38,12 @@ export function GoldenGate() {
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
-      const capable = !media.matches && navigator.hardwareConcurrency > 2;
+      // The cinematic layers composite many full-screen images and filters:
+      // cheap on a GPU, heavy on software rendering, which gets the poster.
+      const capable =
+        !media.matches && navigator.hardwareConcurrency > 2 && hasHardwareGpu();
       setEnhanced(capable);
-      setGpu(capable && !!document.createElement("canvas").getContext("webgl"));
+      setGpu(capable);
     };
     update();
     setMounted(true);
@@ -147,21 +151,20 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
+          <p className="hero-kicker">Websites · Business apps · AI assistants</p>
           <h1 id="hero-title">
-            <span>Global <br className="hero-mobile-break" />Experience. </span>
-            <em>Local <br className="hero-mobile-break" />Impact.</em>
+            <span>Global experience. </span>
+            <em>Local impact.</em>
           </h1>
           <p className="hero-description">
-            <span className="sub-line">Enterprise-caliber</span>{" "}
-            <span className="sub-line">strategy, intelligent</span>{" "}
-            <span className="sub-line">
-              technology, and <span className="whitespace-nowrap">hands-on</span>
-            </span>{" "}
-            <span className="sub-line">partnership for growing businesses.</span>
+            <span className="sub-line">Enterprise-grade strategy and hands-on</span>{" "}
+            <span className="sub-line">builds for growing Northern California</span>{" "}
+            <span className="sub-line">businesses, led by a former HP and</span>{" "}
+            <span className="sub-line">E*TRADE executive.</span>
           </p>
           <div className="hero-actions">
             <a
-              className="text-link"
+              className="cta-primary"
               href={BOOKING_URL}
               onClick={(e) => {
                 e.preventDefault();
@@ -171,10 +174,10 @@ export function GoldenGate() {
                 });
               }}
             >
-              Book a 20-minute introductory call <ArrowUpRight size={18} />
+              Book a 20-minute intro call <ArrowRight size={18} aria-hidden="true" />
             </a>
-            <a className="text-link" href="#work">
-              Explore our work <ArrowUpRight size={18} />
+            <a className="text-link" href="#capabilities">
+              See what we build <ArrowDown size={18} aria-hidden="true" />
             </a>
           </div>
         </div>

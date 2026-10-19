@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import {
   duration,
   ease,
@@ -35,7 +35,16 @@ export default function Perspective() {
         const q = f.gsap.utils.selector(el);
         const mm = f.gsap.matchMedia();
         mm.add("(min-width: 900px) and (min-height: 640px)", () => {
-          f.gsap.set(q(".pv-line"), { yPercent: 115, rotate: 2 });
+          // The headline plays in on arrival (not scrubbed), so the first
+          // pinned screen is never empty.
+          f.gsap.from(q(".pv-line"), {
+            yPercent: 115,
+            rotate: 2,
+            stagger: 0.08,
+            duration: 1.1,
+            ease: ease.out,
+            scrollTrigger: { trigger: el, start: "top 70%", once: true },
+          });
           f.gsap.set(q(".pv-copy > *"), { autoAlpha: 0, y: 28 });
           stickySequence(f, el, (tl) => {
             tl.fromTo(
@@ -57,17 +66,6 @@ export default function Perspective() {
                 0,
               )
               .to(
-                q(".pv-line"),
-                {
-                  yPercent: 0,
-                  rotate: 0,
-                  stagger: 0.07,
-                  duration: 0.22,
-                  ease: ease.soft,
-                },
-                0.06,
-              )
-              .to(
                 q(".pv-copy > *"),
                 {
                   autoAlpha: 1,
@@ -76,13 +74,13 @@ export default function Perspective() {
                   duration: 0.16,
                   ease: ease.soft,
                 },
-                0.42,
+                0.12,
               )
               .fromTo(
                 q(".pv-rule"),
                 { scaleX: 0 },
                 { scaleX: 1, duration: 0.3 },
-                0.5,
+                0.32,
               )
               .to(q(".pv-headline"), { yPercent: -6, duration: 0.25 }, 0.75)
               .to(q(".pv-dusk"), { autoAlpha: 1, duration: 0.25 }, 0.75);
@@ -145,7 +143,7 @@ export default function Perspective() {
           <div className="pv-dusk" />
         </div>
         <div className="pv-content page-width">
-          <p className="eyebrow pv-eyebrow">Perspective</p>
+          <p className="eyebrow pv-eyebrow">Why we exist</p>
           <h2 id="perspective-title" className="pv-headline">
             {lines.map((line) => (
               <span key={line.text} className="f-line-mask">
@@ -158,13 +156,14 @@ export default function Perspective() {
           <div className="pv-copy">
             <span className="pv-rule" aria-hidden="true" />
             <p className="lead-copy pv-reveal">
-              Seasoned experience.
+              Missed calls. Lost leads.
               <br />
-              Built for your business.
+              Hours of double entry.
             </p>
             <p className="pv-reveal">
               Growing businesses deserve the same thoughtful strategy, reliable
-              systems, and disciplined execution as anyone.
+              systems, and disciplined execution as any enterprise, without the
+              enterprise overhead.
             </p>
             <p className="pv-reveal">
               We make that expertise practical. From Auburn and Placer County to
@@ -172,7 +171,8 @@ export default function Perspective() {
               technology to the work you do every day.
             </p>
             <a className="text-link" href="#founder">
-              The experience behind the partnership <ArrowUpRight size={16} />
+              The experience behind the partnership{" "}
+              <ArrowDown size={16} aria-hidden="true" />
             </a>
           </div>
         </div>

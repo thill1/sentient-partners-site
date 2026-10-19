@@ -4,11 +4,26 @@ import { ease, loadFabric, type Fabric } from "../../fabric/motion";
 import "./sections.css";
 
 const stages = [
-  ["Inquiry", "Capture the question and the context."],
-  ["Booking", "Find a time. Confirm the details."],
-  ["Service", "Give your team what they need."],
-  ["Billing", "Prepare an accurate invoice for review."],
-  ["Follow-up", "Keep the relationship moving forward."],
+  [
+    "Inquiry",
+    "A call, text or web form is answered, day or night, and the customer's details and the job they need are captured.",
+  ],
+  [
+    "Booking",
+    "The customer picks a time. Your calendar, crew assignments and reminders update together.",
+  ],
+  [
+    "Service",
+    "Your tech arrives with the job notes, address and customer history on their phone.",
+  ],
+  [
+    "Billing",
+    "Job details become a draft invoice for your review. Nobody types it twice.",
+  ],
+  [
+    "Follow-up",
+    "A thank-you and a review request go out, and the next visit is already on the calendar.",
+  ],
 ];
 const STAGED = "(min-width: 900px) and (min-height: 640px)";
 // The journey hangs like a bridge cable: each stop sits on the curve's sag.
@@ -138,7 +153,7 @@ export function Connected() {
             <h2>
               Less friction.
               <br />
-              <em>More forward.</em>
+              <em>More momentum.</em>
             </h2>
             <p>
               When your systems work together, your people can focus on the work

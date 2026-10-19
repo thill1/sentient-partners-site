@@ -189,6 +189,8 @@
   display: flex;
   flex-direction: column;
   background: radial-gradient(ellipse at 40% 20%, #ffffff, #f2f3ed 80%);
+  /* The page text is ivory; the paper screens need their own ink. */
+  color: var(--cx-ink);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -694,7 +696,7 @@
   font-size: 30px;
   font-weight: 400;
   line-height: 1.1;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .cx-metrics span {
   font-size: 10px;
@@ -716,7 +718,7 @@
 .cx-job-time {
   font-size: 11px;
   color: var(--cx-soft);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .cx-job-main {
   display: flex;

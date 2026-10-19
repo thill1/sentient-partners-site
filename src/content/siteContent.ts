@@ -13,6 +13,9 @@ export const BRAND = {
   line: "Your local business and technology partner.",
   place: "Auburn, California, serving Placer County and Greater Sacramento.",
   email: "hello@sentientpartners.ai",
+  phone: "(415) 504-2757",
+  phoneHref: "tel:+14155042757",
+  linkedin: "https://www.linkedin.com/in/tghill/",
   offer: "a 20-minute introductory call to get to know your business",
 } as const;
 

@@ -292,7 +292,7 @@
   font-size: 11px;
   letter-spacing: 0.16em;
   color: #ffffff;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .hero-clock-time span {
   opacity: 0.9;

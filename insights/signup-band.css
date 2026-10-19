@@ -50,30 +50,31 @@
 .signup-row input[type="email"] {
   flex: 1 1 220px;
   min-height: 48px;
-  padding: 0 4px;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid rgba(243, 240, 232, 0.4);
+  padding: 0 20px;
+  background: rgba(243, 240, 232, 0.06);
+  border: 1px solid rgba(243, 240, 232, 0.35);
+  border-radius: 999px;
   color: #f3f0e8;
   font: 400 17px Inter, system-ui, sans-serif;
   border-radius: 0;
 }
-.signup-row input[type="email"]:focus { outline: none; border-bottom-color: #c8b795; }
+.signup-row input[type="email"]:focus { outline: none; border-color: #c8b795; }
+.signup-row input[type="email"]::placeholder { color: rgba(196, 203, 214, 0.6); }
 .signup-row input[type="email"]:focus-visible { outline: 2px solid #c8b795; outline-offset: 4px; }
 .signup-row input[aria-invalid="true"] { border-bottom-color: #e7b8a8; }
 .signup-row button {
   min-height: 48px;
   padding: 0 26px;
-  background: transparent;
-  color: #f3f0e8;
+  background: #c8b795;
+  color: #081536;
   border: 1px solid #c8b795;
   border-radius: 999px;
-  font: 500 14px Inter, system-ui, sans-serif;
+  font: 600 14px Inter, system-ui, sans-serif;
   letter-spacing: 0.04em;
   cursor: pointer;
   transition: background-color 0.25s, color 0.25s;
 }
-.signup-row button:hover { background: #c8b795; color: #081536; }
+.signup-row button:hover { background: #d8c9a8; color: #081536; }
 .signup-row button:focus-visible { outline: 2px solid #c8b795; outline-offset: 3px; }
 .signup-row button:disabled { opacity: 0.6; cursor: progress; }
 .signup-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }

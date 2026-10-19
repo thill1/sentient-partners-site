@@ -25,6 +25,11 @@ export default function SignupBand() {
           <h2 id="signup-title" className="signup-title">
             A short, practical note for local business owners, every other week.
           </h2>
+          {__INSIGHTS_LIVE__ && (
+            <a className="signup-latest" href="/insights/">
+              Read recent issues →
+            </a>
+          )}
         </div>
         {state === "done" ? (
           <p className="signup-status" role="status">
@@ -41,6 +46,7 @@ export default function SignupBand() {
                 type="email"
                 name="email"
                 autoComplete="email"
+                placeholder="you@yourbusiness.com"
                 required
                 value={email}
                 aria-invalid={state === "invalid"}

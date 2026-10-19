@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { duration, ease, loadFabric, revealText } from "../../fabric/motion";
 import "./outcomes.css";
 
@@ -8,21 +8,29 @@ const outcomes = [
     "Attract & Convert",
     "Make it easier to find you. And choose you.",
     "Distinctive websites, local search visibility, and a clear path from first impression to inquiry.",
+    "#capabilities:websites",
+    "See websites and search",
   ],
   [
     "Automate & Communicate",
     "Be responsive, without being everywhere.",
     "Helpful voice and chat experiences, timely follow-up, and fewer routine tasks for your team.",
+    "#capabilities:ai-chatbots",
+    "See chat and voice assistants",
   ],
   [
     "Operate & Scale",
     "Give your business room to grow.",
     "Connected scheduling, customer operations, applications, and invoicing that work together.",
+    "#capabilities:business-apps",
+    "See business applications",
   ],
   [
     "Advise & Grow",
     "Move forward with a practical plan.",
     "A clear-eyed view of your business, a sensible technology roadmap, and hands-on implementation.",
+    "#process",
+    "See how we partner",
   ],
 ] as const;
 
@@ -267,14 +275,14 @@ export default function Outcomes() {
           <header className="ov-head">
             <p className="eyebrow">What we help you accomplish</p>
             <h2 id="outcomes-title" className="ov-heading">
-              Better business.
+              Start where
               <br />
-              <em>By intention.</em>
+              <em>it hurts most.</em>
             </h2>
             <p className="ov-intro">
-              Start with what needs to work better.
+              Four places growing businesses lose time or customers.
               <br />
-              We'll bring the strategy and the systems.
+              Pick one. We bring the strategy and the systems.
             </p>
             <ol className="ov-rail" aria-hidden="true">
               {outcomes.map(([title], i) => (
@@ -296,7 +304,7 @@ export default function Outcomes() {
             </div>
           </div>
           <ol className="ov-list">
-            {outcomes.map(([title, heading, body], i) => (
+            {outcomes.map(([title, heading, body, href, cta], i) => (
               <li key={title} className="ov-item">
                 <span className="ov-number-inline" aria-hidden="true">
                   {pad(i + 1)}
@@ -305,12 +313,8 @@ export default function Outcomes() {
                   <span className="ov-label">{title}</span>
                   <h3>{heading}</h3>
                   <p className="ov-body">{body}</p>
-                  <a
-                    className="text-link ov-link"
-                    href="#capabilities"
-                    aria-label={`Explore ${title.toLowerCase()} capabilities`}
-                  >
-                    Capabilities <ArrowUpRight size={15} />
+                  <a className="text-link ov-link" href={href}>
+                    {cta} <ArrowRight size={15} aria-hidden="true" />
                   </a>
                 </div>
               </li>
