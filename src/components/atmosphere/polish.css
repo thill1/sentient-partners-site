@@ -639,10 +639,11 @@
 /* ——— Pacing (Phase 2): shorter pinned tracks, same choreography ———
    The timelines are progress-based, so a shorter track plays the same
    sequence with less scrolling. Roughly four fewer screens on desktop. */
-.motion-ok .perspective-v2 {
-  height: 190svh;
-}
 @media (min-width: 900px) and (min-height: 640px) {
+  /* Desktop only: phones size this section to its content. */
+  .motion-ok .perspective-v2 {
+    height: 190svh;
+  }
   .motion-ok .outcomes-v2 {
     height: 300svh;
   }
