@@ -118,7 +118,7 @@ const newLeadId = () =>
 export const submitLead = async (
   payload: LeadSubmission,
   honey = "",
-  options: { autoresponse?: string; timeoutMs?: number } = {},
+  options: { timeoutMs?: number } = {},
 ): Promise<LeadSubmissionResult> => {
   const leadId = newLeadId();
   const controller = new AbortController();
@@ -138,11 +138,7 @@ export const submitLead = async (
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        ...buildFormSubmitLead(payload, leadId, honey),
-        // FormSubmit emails this text to the address in `email` (the visitor).
-        ...(options.autoresponse ? { _autoresponse: options.autoresponse } : {}),
-      }),
+      body: JSON.stringify(buildFormSubmitLead(payload, leadId, honey)),
       signal: controller.signal,
     });
     const data = (await response.json().catch(() => ({}))) as {
