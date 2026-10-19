@@ -234,6 +234,11 @@ function ActionDock() {
     const hero = document.querySelector(".golden-gate");
     const finale = document.querySelector("#contact");
     const footer = document.querySelector(".atmosphere-footer");
+    // On desktop the pinned Capabilities panel puts its own action where the
+    // floating pill sits, so the dock steps aside there too.
+    const showcase = matchMedia("(min-width: 851px)").matches
+      ? document.querySelector("#capabilities")
+      : null;
     let pastHero = false;
     let nearEnd = false;
     const sync = () => setShown(pastHero && !nearEnd);
@@ -250,7 +255,7 @@ function ActionDock() {
       sync();
     });
     if (hero) heroObserver.observe(hero);
-    [finale, footer].forEach((el) => el && endObserver.observe(el));
+    [finale, footer, showcase].forEach((el) => el && endObserver.observe(el));
     return () => {
       heroObserver.disconnect();
       endObserver.disconnect();
