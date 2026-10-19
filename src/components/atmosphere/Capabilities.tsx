@@ -270,6 +270,9 @@ export function Capabilities() {
         });
 
         mm.add(STAGED, () => {
+          // A tab chosen before the motion library loaded wins over scroll
+          // position: once pinned, move to that tab's slot instead of resetting.
+          const chosen = activeRef.current;
           const st = f.ScrollTrigger.create({
             trigger: el,
             start: "top top",
@@ -286,6 +289,11 @@ export function Capabilities() {
             },
           });
           triggerRef.current = { start: st.start, end: st.end };
+          if (chosen > 0 && st.isActive) {
+            const slot = (st.end - st.start) / capabilities.length;
+            f.lenis?.scrollTo(st.start + slot * (chosen + 0.5), { duration: 0.8 });
+            setActive(chosen);
+          }
           const tl = f.gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
