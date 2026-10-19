@@ -50,7 +50,7 @@ export default function SiteCheck() {
   const [error, setError] = useState("");
   const [report, setReport] = useState<Report | null>(null);
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState<"" | "sending" | "sent" | "failed">("");
+  const [sent, setSent] = useState<"" | "sending" | "sent" | "queued" | "failed">("");
   const results = useRef<HTMLDivElement>(null);
   const inputId = useId();
 
@@ -97,7 +97,24 @@ export default function SiteCheck() {
     const lines = report.checks
       .map((c) => `${statusText[c.status]}: ${c.label}. ${c.detail}`)
       .join("\n");
-    const result = await submitLead({
+    // Two independent jobs: email the report to the visitor, and tell Troy.
+    const emailed = fetch("/api/email-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim(),
+        report: {
+          host: report.host,
+          score: report.score,
+          summary: report.summary,
+          checks: report.checks,
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+    const lead = submitLead({
       name: email.trim(),
       email: email.trim(),
       inquiry: `Website check for ${report.host} (score ${report.score}/100).\n\n${report.summary}\n\n${lines}`,
@@ -105,7 +122,9 @@ export default function SiteCheck() {
       source: "Website check",
       ctaLabel: "Send me this report",
     });
-    setSent(result.success ? "sent" : "failed");
+    const [reportSent, leadResult] = await Promise.all([emailed, lead]);
+    // Only claim an email went out when the mail service confirmed it.
+    setSent(reportSent ? "sent" : leadResult.success ? "queued" : "failed");
   };
 
   const misses = report?.checks.filter((c) => c.status !== "pass").length ?? 0;
@@ -255,9 +274,11 @@ export default function SiteCheck() {
                 >
                   Book a 20-minute intro call <ArrowRight size={16} aria-hidden="true" />
                 </a>
-                {sent === "sent" ? (
+                {sent === "sent" || sent === "queued" ? (
                   <p className="sc-sent" role="status">
-                    Sent. Troy will follow up with the report personally.
+                    {sent === "sent"
+                      ? "Sent. Check your inbox for the report (and spam, just in case)."
+                      : "Got it. Troy will email you the report personally."}
                   </p>
                 ) : (
                   <form className="sc-email" onSubmit={emailReport}>
