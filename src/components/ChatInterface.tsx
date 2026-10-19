@@ -124,6 +124,12 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   const [isThinkingOrSpeaking, setIsThinkingOrSpeaking] = useState(false);
   // Set when the visitor asks to message Troy or set a time; shows the note form.
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
+  // Bumped per request so a new ask remounts the form with fresh text and state.
+  const [noteRequestId, setNoteRequestId] = useState(0);
+  const openNote = (text: string) => {
+    setNoteDraft(text);
+    setNoteRequestId((n) => n + 1);
+  };
   const currentOutputTransRef = useRef('');
 
   // Voice engine refs (browser STT + server-backed TTS playback)
@@ -568,7 +574,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         ...prev,
         { id: `${Date.now()}-note`, role: 'model', text: NOTE_REPLY_TEXT, timestamp: new Date() },
       ]);
-      setNoteDraft(userMsg.text);
+      openNote(userMsg.text);
       return;
     }
 
@@ -843,7 +849,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
       // A request to message Troy or set a time gets an honest, fixed reply and
       // the on-screen note form; the model is not asked to improvise it.
       const noteRequest = wantsNoteForTroy(clean);
-      if (noteRequest) setNoteDraft(clean);
+      if (noteRequest) openNote(clean);
 
       // Ask Gemini (retry once if first attempt returns error copy)
       const reply = noteRequest ? NOTE_REPLY_VOICE : await askGeminiOnce(clean);
@@ -1050,7 +1056,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
               {activeTab === 'chat' ? <>
                 <div className="concierge-messages" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
                   {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
-                  {noteDraft !== null && <NoteForTroy key="note-chat" initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
+                  {noteDraft !== null && <NoteForTroy key={`note-chat-${noteRequestId}`} initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                   <div ref={messagesEndRef} />
                 </div>
                 {messages.some(m => m.role === 'user') && <ConciergeNextSteps
@@ -1073,7 +1079,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? 'Sentient is responding…' : isLiveConnected ? 'Listening. Tap the microphone to end.' : 'Tap the microphone to begin.'}</p>
                 {isThinkingOrSpeaking && !isVoiceLoading && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
                 {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
-                {noteDraft !== null && <NoteForTroy key="note-voice" initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
+                {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                 <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
                   {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}
                   {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> {turn.text}</p>)}

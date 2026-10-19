@@ -12,6 +12,10 @@ describe("wantsNoteForTroy", () => {
     "can we meet tomorrow at 1pm",
     "I want to schedule a call Thursday at 2",
     "1 PM tomorrow works for a meeting",
+    "Can Troy call me back?",
+    "I'd like Troy to reach out to me",
+    "could you call me tomorrow at 2pm",
+    "let's talk Thursday at 3",
   ])("treats %j as a request to reach Troy", (text) => {
     expect(wantsNoteForTroy(text)).toBe(true);
   });
@@ -22,6 +26,10 @@ describe("wantsNoteForTroy", () => {
     "I'd like to book a 20-minute introductory call.",
     "Can the assistant schedule appointments at 3pm for my customers?",
     "What does Troy's background look like?",
+    "What hours can I call today?",
+    "I have a call tomorrow; can you help me prepare?",
+    "I have a meeting at 3pm tomorrow, how should I follow up with a lead?",
+    "Does Troy call clients after a project ships?",
     "ok",
     "",
   ])("leaves %j to the assistant", (text) => {

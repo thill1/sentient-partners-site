@@ -21,12 +21,25 @@ const TO_TROY: RegExp[] = [
   /\b(tell|let|notify|ask|have|get)\b[^.?!]{0,12}\btroy\b/i,
 ];
 
+// "can Troy call me back?", "I'd like Troy to reach out", "Troy call me"
+const TROY_FIRST: RegExp[] = [
+  /\b(can|could|would|will|please|should)\b[^.?!]{0,8}\btroy\b[^.?!]{0,20}\b(call|contact|reach out|reach|reply|respond|email|text|phone|ring|message|get back)\b/i,
+  /\btroy\b[^.?!]{0,10}\b(call|contact|reach out to|reach|email|text|phone|ring|message|reply to|respond to|get back to)\s+(me|us)\b/i,
+];
+
+// Scheduling intent, not just a call or meeting mentioned near a time.
+// "I have a call tomorrow, can you help me prepare?" and "what hours can I
+// call today?" are ordinary questions and stay with the assistant.
 const MEETING_WITH_TIME = new RegExp(
-  `\\b(meet|meeting|appointment|call|talk|chat|schedule|book)\\b[^.?!]{0,40}\\b(${TIME_WORDS})`,
+  `\\b(meet|schedule|book|set up|arrange|reschedule)\\b[^.?!]{0,40}\\b(${TIME_WORDS})`,
+  "i",
+);
+const CALL_WITH_TIME = new RegExp(
+  `(?:\\b(?:can|could|shall|should|will|would)\\s+(?:we|you)\\b|\\blet'?s\\b|\\b(?:want|like|love|need|wanna)\\b[^.?!]{0,6}\\bto\\b)[^.?!]{0,15}\\b(?:call|talk|chat|speak)\\b[^.?!]{0,40}\\b(?:${TIME_WORDS})`,
   "i",
 );
 const MEETING_WITH_TIME_REVERSED = new RegExp(
-  `\\b(${TIME_WORDS})\\b[^.?!]{0,40}\\b(meet|meeting|appointment|call|talk|chat)\\b`,
+  `\\b(?:${TIME_WORDS})\\b[^.?!]{0,40}\\b(?:works?|good|fine|suits)\\b[^.?!]{0,20}\\b(?:meeting|meet|call|chat|talk)\\b|\\b(?:${TIME_WORDS})\\b[^.?!]{0,40}\\bmeet\\b`,
   "i",
 );
 const ABOUT_THEIR_CUSTOMERS = /\b(customers?|clients?|callers?|patients?|leads?|guests?)\b/i;
@@ -35,11 +48,11 @@ const MENTIONS_TROY = /\btroy\b/i;
 export function wantsNoteForTroy(text: string): boolean {
   const t = String(text || "").trim();
   if (t.length < 8) return false;
-  if (TO_TROY.some((re) => re.test(t))) return true;
+  if (TO_TROY.some((re) => re.test(t)) || TROY_FIRST.some((re) => re.test(t))) return true;
   // A meeting at a specific time is a scheduling request we can't confirm,
   // unless they're asking how the product handles their own customers.
   if (ABOUT_THEIR_CUSTOMERS.test(t) && !MENTIONS_TROY.test(t)) return false;
-  return MEETING_WITH_TIME.test(t) || MEETING_WITH_TIME_REVERSED.test(t);
+  return MEETING_WITH_TIME.test(t) || CALL_WITH_TIME.test(t) || MEETING_WITH_TIME_REVERSED.test(t);
 }
 
 /** Shown in chat. */
