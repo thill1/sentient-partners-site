@@ -23,6 +23,12 @@ import { CHAT_EVENT, openBookingModal, type CtaEventDetail } from '../lib/siteAc
 import { submitLead } from '../services/geminiService';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
 import { ConciergeLauncher } from './ConciergeLauncher';
+import { NoteForTroy } from './NoteForTroy';
+import { NOTE_REPLY_TEXT, NOTE_REPLY_VOICE, wantsNoteForTroy } from '../lib/noteIntent';
+import { splitForSpeech } from '../lib/speechChunks';
+
+/** Wait this long after the visitor stops talking before answering (merges quick back-to-back finals). */
+const VOICE_FINAL_DEBOUNCE_MS = 750;
 
 const SUGGESTED_ACTIONS = CHAT_WIDGET_CONTENT.suggestedActions;
 
@@ -116,6 +122,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   >([]);
   const [interimInput, setInterimInput] = useState('');
   const [isThinkingOrSpeaking, setIsThinkingOrSpeaking] = useState(false);
+  // Set when the visitor asks to message Troy or set a time; shows the note form.
+  const [noteDraft, setNoteDraft] = useState<string | null>(null);
   const currentOutputTransRef = useRef('');
 
   // Voice engine refs (browser STT + server-backed TTS playback)
@@ -126,6 +134,9 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   const activeSourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeAudioResolveRef = useRef<(() => void) | null>(null);
+  // Bumped whenever playback is stopped so a multi-part reply stops between parts.
+  const playbackTokenRef = useRef<number>(0);
+  const announcedListeningRef = useRef<boolean>(false);
 
   // Debounce buffer for STT finals (prevents multiple fast calls + random “server error”)
   const finalBufferRef = useRef<string>('');
@@ -138,6 +149,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   const visualizerCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const stopAudioPlayback = () => {
+    playbackTokenRef.current += 1;
     if (activeAudioResolveRef.current) {
       try {
         activeAudioResolveRef.current();
@@ -164,30 +176,27 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     }
   };
 
-  const playVoiceResponse = async (text: string) => {
-    const clean = String(text || '').trim();
-    if (!clean || !siteSettings.ai.voiceEnabled) {
-      return;
-    }
-
-    stopAudioPlayback();
-
+  const fetchVoiceBytes = async (text: string) => {
     const response = await fetch('/api/voice', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: clean,
+        text,
         voiceId: siteSettings.ai.voiceId,
       }),
     });
     if (!response.ok) {
       throw new Error(`Failed to fetch voice: ${response.status}`);
     }
+    return {
+      bytes: await response.arrayBuffer(),
+      contentType: response.headers.get('content-type') || 'audio/mpeg',
+    };
+  };
 
-    const bytes = await response.arrayBuffer();
-
+  const playVoiceBytes = async (bytes: ArrayBuffer, contentType: string) => {
     // Play through the AudioContext the mic tap already unlocked. iOS Safari
     // refuses audio.play() on an element created after an await (no user
     // gesture), which surfaced as "Voice playback failed." on iPhone.
@@ -227,7 +236,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
       }
     }
 
-    const blob = new Blob([bytes], { type: response.headers.get('content-type') || 'audio/mpeg' });
+    const blob = new Blob([bytes], { type: contentType });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
 
@@ -291,6 +300,29 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         reject(err);
       });
     });
+  };
+
+  // Speaks a reply in a few parts. All parts are requested at once; the first is
+  // short, so audio starts as soon as it is ready instead of after the whole reply.
+  const playVoiceResponse = async (text: string) => {
+    const clean = String(text || '').trim();
+    if (!clean || !siteSettings.ai.voiceEnabled) {
+      return;
+    }
+
+    stopAudioPlayback();
+    const token = playbackTokenRef.current;
+
+    const pending = splitForSpeech(clean).map((part) => fetchVoiceBytes(part));
+    // A later part may fail after we stop early; don't leave that unhandled.
+    pending.forEach((request) => request.catch(() => undefined));
+
+    for (const request of pending) {
+      const audio = await request;
+      if (token !== playbackTokenRef.current) return; // interrupted or ended
+      await playVoiceBytes(audio.bytes, audio.contentType);
+      if (token !== playbackTokenRef.current) return;
+    }
   };
 
   // --- Boot/open listeners ---
@@ -528,6 +560,18 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
 
     setMessages((prev) => [...prev, userMsg]);
     setInputValue('');
+
+    // "Send a note to Troy" / "meet tomorrow at 1": the assistant can't do either,
+    // so say so and open the note form instead of letting the model improvise.
+    if (wantsNoteForTroy(userMsg.text)) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `${Date.now()}-note`, role: 'model', text: NOTE_REPLY_TEXT, timestamp: new Date() },
+      ]);
+      setNoteDraft(userMsg.text);
+      return;
+    }
+
     setIsLoading(true);
 
     const responseId = (Date.now() + 1).toString();
@@ -651,7 +695,11 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         if (!connectionActiveRef.current) return;
         setIsLiveConnected(true);
         setIsVoiceLoading(false);
-        dispatchToast('Listening…', 'success');
+        // The mic reopens after every reply; only announce it the first time.
+        if (!announcedListeningRef.current) {
+          announcedListeningRef.current = true;
+          dispatchToast('Listening…', 'success');
+        }
       };
 
       recognition.onerror = (e: Event & { error?: string }) => {
@@ -704,7 +752,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
             finalBufferRef.current = '';
             finalTimerRef.current = null;
             if (combined) await respondToVoice(combined);
-          }, 1300);
+          }, VOICE_FINAL_DEBOUNCE_MS);
         }
       };
 
@@ -792,8 +840,13 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
       }
       analyzerRef.current = null;
 
+      // A request to message Troy or set a time gets an honest, fixed reply and
+      // the on-screen note form; the model is not asked to improvise it.
+      const noteRequest = wantsNoteForTroy(clean);
+      if (noteRequest) setNoteDraft(clean);
+
       // Ask Gemini (retry once if first attempt returns error copy)
-      const reply = await askGeminiOnce(clean);
+      const reply = noteRequest ? NOTE_REPLY_VOICE : await askGeminiOnce(clean);
 
       const isErrorString =
         reply.toLowerCase().includes('rate limit exceeded') ||
@@ -888,6 +941,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
 
   const stopLiveSession = (keepError = false) => {
     connectionActiveRef.current = false;
+    announcedListeningRef.current = false;
     isSpeakingOrFetchingRef.current = false;
     setIsThinkingOrSpeaking(false);
 
@@ -956,6 +1010,11 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     }
   };
 
+  const bookInstead = () => {
+    setIsOpen(false);
+    openBookingModal({ source: 'Concierge note', ctaLabel: 'Pick a time instead' });
+  };
+
   // --- UI ---
   if (!isOpen) return showLauncher ? <ConciergeLauncher floating onClick={() => setIsOpen(true)} /> : null;
 
@@ -987,10 +1046,11 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 document.getElementById(`concierge-tab-${next}`)?.focus();
               }}>{tab === 'chat' ? <MessageSquare size={17} /> : <Mic size={17} />}{tab === 'chat' ? 'Chat' : 'Voice'}</button>)}
             </div>
-            <div id="concierge-content" className={`concierge-content is-${activeTab}`} role="tabpanel" aria-labelledby={`concierge-tab-${activeTab}`}>
+            <div id="concierge-content" className={`concierge-content is-${activeTab}${noteDraft !== null ? ' has-note' : ''}`} role="tabpanel" aria-labelledby={`concierge-tab-${activeTab}`}>
               {activeTab === 'chat' ? <>
                 <div className="concierge-messages" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
                   {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
+                  {noteDraft !== null && <NoteForTroy key="note-chat" initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                   <div ref={messagesEndRef} />
                 </div>
                 {messages.some(m => m.role === 'user') && <ConciergeNextSteps
@@ -1013,6 +1073,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? 'Sentient is responding…' : isLiveConnected ? 'Listening. Tap the microphone to end.' : 'Tap the microphone to begin.'}</p>
                 {isThinkingOrSpeaking && !isVoiceLoading && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
                 {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
+                {noteDraft !== null && <NoteForTroy key="note-voice" initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                 <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
                   {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}
                   {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> {turn.text}</p>)}
