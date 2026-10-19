@@ -204,6 +204,15 @@ export function Capabilities() {
 
   useEffect(() => {
     activeRef.current = active;
+    // On phones the tabs are a horizontal row: keep the active one centered.
+    const tab = tabs.current[active];
+    const nav = tab?.parentElement;
+    if (tab && nav && nav.scrollWidth > nav.clientWidth + 4) {
+      nav.scrollTo({
+        left: tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2,
+        behavior: "smooth",
+      });
+    }
   }, [active]);
 
   // Deep links such as "#capabilities:websites" open that capability's window.

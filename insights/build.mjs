@@ -212,4 +212,20 @@ if (approved.length) {
   sm = sm.replace("</urlset>", `${urls}</urlset>`);
   writeFileSync(smPath, sm);
 }
+// llms.txt: list the published Insights so AI assistants can find them.
+const llmsPath = join(OUT, "llms.txt");
+try {
+  if (approved.length) {
+    const lines = approved
+      .slice(0, 20)
+      .map((i) => `- [${i.title}](${SITE}/insights/${i.slug}/): ${i.summary}`)
+      .join("\n");
+    writeFileSync(
+      llmsPath,
+      `${readFileSync(llmsPath, "utf8").trimEnd()}\n\n## Recent insights\n\n${lines}\n`,
+    );
+  }
+} catch {
+  // No llms.txt in this build output; nothing to extend.
+}
 console.log(`insights: ${issues.length} item(s) built (${approved.length} approved, drafts ${drafts ? "on" : "off"}) into ${OUT}`);

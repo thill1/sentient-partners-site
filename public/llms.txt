@@ -1,0 +1,32 @@
+# Sentient Partners
+
+> Sentient Partners is a local business and technology partner based in Auburn, California. It designs and builds websites, business applications and AI assistants (chat and voice) for growing small and mid-sized businesses in Placer County, Greater Sacramento and across Northern California. The firm is founder-led by Troy Hill, formerly Global Quality Director at Hewlett-Packard and Director of Enterprise Quality Assurance at E*TRADE.
+
+Key facts:
+- Location: Auburn, California. Serves Auburn, Placer County, Greater Sacramento and Northern California; also works with clients beyond the region.
+- First step: a free 20-minute introductory call, booked at https://cal.com/sentient-partners-strategy/introductory-call
+- Contact: hello@sentientpartners.ai · (415) 504-2757
+- Founder: Troy Hill (https://www.linkedin.com/in/tghill/)
+- AI assistants on client sites are always disclosed as AI and hand sensitive or complex requests to a person.
+- Pricing is scoped per business after the introductory call; there are no published packages.
+
+## Capabilities
+
+- Premium websites: custom, mobile-first sites with clear messaging, hosting and care.
+- Search visibility: business profile care, local service pages and sound technical foundations.
+- Calendar and scheduling: online booking, team calendar sync, text and email reminders.
+- Business applications: scheduling and dispatch, job notes and photos, invoices and payment links, owner dashboards.
+- Workflow automation: connections between existing tools, readable rules, human approval steps, alerts when something stalls.
+- Reputation and reviews: review requests to every customer, drafted responses the owner approves, monthly summaries.
+- AI chat assistants: website, text and social assistants that answer routine questions, qualify inquiries and hand off with context.
+- AI voice agents: after-hours and overflow call answering, urgency screening, summaries sent to the team.
+
+## Who it helps
+
+Local service businesses, trades and home services (HVAC, cleaning), professional services, fitness and wellness, retail and online stores, and new businesses getting started.
+
+## Pages
+
+- [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
+- [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for local business owners, every other week
+- [Privacy](https://sentientpartners.ai/privacy.html)
