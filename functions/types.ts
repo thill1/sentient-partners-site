@@ -11,6 +11,11 @@ export interface Env {
   ADMIN_SESSION_SECRET?: string;
   ADMIN_USERNAME?: string;
   API_KEY?: string;
+  CAL_API_KEY?: string;
+  FOLLOW_UP_EMAIL?: string;
+  LEADS_WEBHOOK_URL?: string;
+  REPORT_FROM_EMAIL?: string;
+  RESEND_API_KEY?: string;
   GEMINI_API_KEY?: string;
   GEMINI_LIVE_API_KEY?: string;
   GEMINI_LIVE_API_VERSION?: string;

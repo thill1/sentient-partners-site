@@ -138,3 +138,17 @@ retain their existing API contracts.
 
 This branch is for review. The existing deployment command publishes to
 production and must only be run after explicit deployment approval.
+
+
+## Assistant tools (calendar and follow-up)
+
+The chat and live voice assistants can check Troy's calendar, book the introductory call, and ask Troy to follow up. Chat runs on Gemini (`GEMINI_API_KEY`), with Groq as a no-tools fallback.
+
+| Variable | Purpose |
+| --- | --- |
+| `CAL_API_KEY` | cal.com API key. Without it the assistant offers the booking link instead. |
+| `GEMINI_API_KEY` | Chat and voice. Preferred over Groq. |
+| `GEMINI_CHAT_MODEL` | Optional model pin for chat. |
+| `LEADS_WEBHOOK_URL` / `RESEND_API_KEY` | Where "have Troy follow up" is delivered. `FOLLOW_UP_EMAIL` sets the recipient (default hello@sentientpartners.ai). If neither is set, the assistant opens the on-screen note form instead and never claims Troy was told. |
+
+Voice runs the same tools through `/api/assistant-tool`.

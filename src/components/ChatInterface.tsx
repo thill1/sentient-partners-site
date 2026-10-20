@@ -14,6 +14,7 @@ import {
 import { Message } from '../types';
 import {
   sendMessageToGemini,
+  setAssistantUiHandler,
   sendTranscript,
   dispatchToast,
 } from '../services/geminiService';
@@ -24,7 +25,6 @@ import { submitLead } from '../services/geminiService';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
 import { ConciergeLauncher } from './ConciergeLauncher';
 import { NoteForTroy } from './NoteForTroy';
-import { NOTE_REPLY_TEXT, NOTE_REPLY_VOICE, wantsNoteForTroy } from '../lib/noteIntent';
 import { splitForSpeech } from '../lib/speechChunks';
 import { startLiveVoice, LiveStartError, type LiveVoiceHandle } from '../services/liveVoice';
 
@@ -133,12 +133,20 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     setNoteDraft(text);
     setNoteRequestId((n) => n + 1);
   };
+  // Set when the assistant books the introductory call.
+  const [bookedLabel, setBookedLabel] = useState<string | null>(null);
+  useEffect(() => {
+    setAssistantUiHandler((ui) => {
+      if (ui.type === 'note') openNote(ui.note);
+      else setBookedLabel(ui.label);
+    });
+    return () => setAssistantUiHandler(null);
+  }, []);
   const currentOutputTransRef = useRef('');
 
   // Real-time voice (Gemini Live). If it is unavailable the turn-based voice below takes over.
   const liveHandleRef = useRef<LiveVoiceHandle | null>(null);
   const realtimeUnavailableRef = useRef(false);
-  const noteTurnRef = useRef(false);
   const [liveSecondsLeft, setLiveSecondsLeft] = useState<number | null>(null);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
 
@@ -577,17 +585,6 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     setMessages((prev) => [...prev, userMsg]);
     setInputValue('');
 
-    // "Send a note to Troy" / "meet tomorrow at 1": the assistant can't do either,
-    // so say so and open the note form instead of letting the model improvise.
-    if (wantsNoteForTroy(userMsg.text)) {
-      setMessages((prev) => [
-        ...prev,
-        { id: `${Date.now()}-note`, role: 'model', text: NOTE_REPLY_TEXT, timestamp: new Date() },
-      ]);
-      openNote(userMsg.text);
-      return;
-    }
-
     setIsLoading(true);
 
     const responseId = (Date.now() + 1).toString();
@@ -856,13 +853,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
       }
       analyzerRef.current = null;
 
-      // A request to message Troy or set a time gets an honest, fixed reply and
-      // the on-screen note form; the model is not asked to improvise it.
-      const noteRequest = wantsNoteForTroy(clean);
-      if (noteRequest) openNote(clean);
-
-      // Ask Gemini (retry once if first attempt returns error copy)
-      const reply = noteRequest ? NOTE_REPLY_VOICE : await askGeminiOnce(clean);
+      const reply = await askGeminiOnce(clean);
 
       const isErrorString =
         reply.toLowerCase().includes('rate limit exceeded') ||
@@ -931,20 +922,12 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
           onSpeaking: setIsThinkingOrSpeaking,
           onUserText: (text) => {
             setTranscriptHistory((prev) => [...prev, { role: 'user', text }]);
-            if (wantsNoteForTroy(text)) {
-              noteTurnRef.current = true;
-              openNote(text);
-            }
           },
           onModelText: (text) => {
             setTranscriptHistory((prev) => [...prev, { role: 'model', text }]);
-            noteTurnRef.current = false;
           },
-          onNote: (note) => {
-            // The words the visitor said may already have opened the form this turn.
-            if (!noteTurnRef.current) openNote(note);
-            noteTurnRef.current = true;
-          },
+          onNote: openNote,
+          onBooked: (info) => setBookedLabel(info.label),
           onEnded: ({ reason, heardAssistant }) => {
             liveHandleRef.current = null;
             analyzerRef.current = null;
@@ -1154,7 +1137,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
               {activeTab === 'chat' ? <>
                 <div className="concierge-messages" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
                   {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
-                  {noteDraft !== null && <NoteForTroy key={`note-chat-${noteRequestId}`} initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
+                  {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
+                {noteDraft !== null && <NoteForTroy key={`note-chat-${noteRequestId}`} initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                   <div ref={messagesEndRef} />
                 </div>
                 {messages.some(m => m.role === 'user') && <ConciergeNextSteps
@@ -1179,6 +1163,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 {isThinkingOrSpeaking && !isVoiceLoading && liveSecondsLeft === null && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
                 {voiceNotice && <p className="concierge-disclosure" role="status">{voiceNotice}</p>}
                 {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
+                {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
                 {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                 <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
                   {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}

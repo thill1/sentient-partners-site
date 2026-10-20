@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { Env } from "../types";
 import { getSiteSettings } from "../lib/siteSettings";
+import { validTimeZone } from "../lib/assistantTools";
 import { takeLiveSlot } from "../lib/liveLimits";
 import {
   buildLiveSessionConfig,
@@ -55,7 +56,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const model = String(env.GEMINI_LIVE_MODEL || DEFAULT_LIVE_MODEL).trim();
   const apiVersion = String(env.GEMINI_LIVE_API_VERSION || DEFAULT_LIVE_API_VERSION).trim();
-  const config = buildLiveSessionConfig(String(env.SENTIENT_SITE_MEMORY || ""));
+  let timeZone = "";
+  try {
+    timeZone = String(((await request.json()) as { timeZone?: unknown })?.timeZone ?? "");
+  } catch {
+    timeZone = "";
+  }
+  const config = buildLiveSessionConfig(String(env.SENTIENT_SITE_MEMORY || ""), {
+    now: new Date(),
+    timeZone: validTimeZone(timeZone),
+  });
 
   try {
     const client = new GoogleGenAI({ apiKey, httpOptions: { apiVersion } });

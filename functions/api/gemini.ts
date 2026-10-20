@@ -3,6 +3,8 @@ import { GoogleGenAI } from "@google/genai";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
 import { formatTimeIntentResponse, resolveTimeIntent } from "../lib/timeIntent";
 import { groqChat } from "../lib/groq";
+import { chatToolConfig, runChat, type ModelTurn } from "../lib/chatAgent";
+import { validTimeZone, type AssistantEnv } from "../lib/assistantTools";
 
 // Cloudflare Pages Function: /api/gemini
 // - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
@@ -33,9 +35,10 @@ export const onRequestGet = async () => {
   });
 };
 
-interface Env {
+interface Env extends AssistantEnv {
   API_KEY?: string;
   GEMINI_API_KEY?: string;
+  GEMINI_CHAT_MODEL?: string;
   GROQ_API_KEY?: string;
   GROQ_MODEL?: string;
   SENTIENT_SITE_MEMORY?: string;
@@ -45,6 +48,12 @@ interface PagesFunctionContext {
   request: Request;
   env: Env;
 }
+
+/** Newest first. A model id that Google does not know is remembered and skipped. */
+const DEFAULT_CHAT_MODELS = ["gemini-3.8-flash", "gemini-2.5-flash"];
+const unavailableModels = new Set<string>();
+
+const statusOf = (err: any): number => Number(err?.status) || Number(err?.code) || 500;
 
 export const onRequestPost = async (context: PagesFunctionContext) => {
   const { request, env } = context;
@@ -70,154 +79,133 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     });
   }
 
-  const apiKey = String(env?.GROQ_API_KEY || env?.API_KEY || env?.GEMINI_API_KEY || "").trim();
-  if (!apiKey) {
+  const legacyKey = String(env?.API_KEY || "").trim();
+  const groqKey = String(env?.GROQ_API_KEY || (legacyKey.startsWith("gsk_") ? legacyKey : "")).trim();
+  const geminiKey = String(env?.GEMINI_API_KEY || (legacyKey.startsWith("gsk_") ? "" : legacyKey)).trim();
+  if (!geminiKey && !groqKey) {
     return json(
       {
-        error: "Missing API key. Set GROQ_API_KEY, API_KEY, or GEMINI_API_KEY in Cloudflare Pages environment variables, then redeploy.",
+        error: "Missing API key. Set GEMINI_API_KEY (or GROQ_API_KEY) in Cloudflare Pages environment variables, then redeploy.",
       },
       { status: 500 },
     );
   }
 
-  const isGroq = apiKey.startsWith("gsk_");
   const siteMemory = String(env?.SENTIENT_SITE_MEMORY || "").trim();
-  const systemInstruction = buildAiSystemInstruction(siteMemory);
-  const history = Array.isArray(body?.history) ? body.history : [];
+  const timeZone = validTimeZone(body?.timeZone);
+  const now = new Date();
+  const history = (Array.isArray(body?.history) ? body.history : [])
+    .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
+    .slice(-6);
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 
-  if (isGroq) {
+  let lastError: any = null;
+
+  if (geminiKey) {
+    const systemInstruction = buildAiSystemInstruction(siteMemory, { tools: true, now, timeZone });
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    const contents = [
+      ...history.map((h: any) => ({ role: h.role, parts: [{ text: String(h.text) }] })),
+      { role: "user", parts: [{ text: message }] },
+    ];
+    const models = [String(env?.GEMINI_CHAT_MODEL || "").trim(), ...DEFAULT_CHAT_MODELS].filter(
+      (m, i, all) => m && all.indexOf(m) === i && !unavailableModels.has(m),
+    );
+
+    for (const model of models) {
+      const generate = async (convo: unknown[]): Promise<ModelTurn> => {
+        let attempts = 0;
+        for (;;) {
+          try {
+            const result: any = await ai.models.generateContent({
+              model,
+              contents: convo as any,
+              config: {
+                systemInstruction,
+                temperature: 0.6,
+                topP: 0.9,
+                maxOutputTokens: 900,
+                ...chatToolConfig(),
+              },
+            });
+            const calls = (result?.functionCalls ?? []).map((c: any) => ({ name: String(c?.name || ""), args: c?.args }));
+            return { text: String(result?.text || ""), calls, content: result?.candidates?.[0]?.content };
+          } catch (err: any) {
+            attempts += 1;
+            const status = statusOf(err);
+            if (attempts < 3 && (status === 503 || status === 429)) {
+              await new Promise((resolve) => setTimeout(resolve, 300 * attempts));
+              continue;
+            }
+            throw err;
+          }
+        }
+      };
+      try {
+        const { text, ui } = await runChat(generate, contents, env, { ip, timeZone, now });
+        return json({ ok: true, text, model, ui });
+      } catch (err: any) {
+        lastError = err;
+        if (statusOf(err) === 404) unavailableModels.add(model);
+      }
+    }
+  }
+
+  if (groqKey) {
+    // Last resort: Groq has no calendar tools, so it gets the prompt that says so.
     try {
-      // OpenAI-style history: [{ role: "user"|"assistant", content }]
       const messages = [
-        { role: "system" as const, content: systemInstruction },
-        ...history
-          .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
-          .slice(-6)
-          .map((h: any) => ({
-            role: (h.role === "model" ? "assistant" : "user") as "assistant" | "user",
-            content: String(h.text),
-          })),
+        { role: "system" as const, content: buildAiSystemInstruction(siteMemory, { now, timeZone }) },
+        ...history.map((h: any) => ({
+          role: (h.role === "model" ? "assistant" : "user") as "assistant" | "user",
+          content: String(h.text),
+        })),
         { role: "user" as const, content: message },
       ];
       const result = await groqChat({
-        apiKey,
+        apiKey: groqKey,
         messages,
         pinnedModel: env?.GROQ_MODEL,
         maxTokens: 900,
         temperature: 0.6,
       });
-      if (!result.ok) {
+      if (result.ok) return json({ ok: true, text: result.text, model: result.model });
+      if (!lastError) {
         return json(
           { error: "Groq API error", message: result.error ?? "", status: result.status, model: result.model },
           { status: result.status === 429 ? 429 : 502 },
         );
       }
-      return json({ ok: true, text: result.text, model: result.model });
     } catch (err: any) {
-      return json(
-        {
-          error: "Connection problem with Groq API",
-          message: String(err?.message || err || ""),
-        },
-        { status: 502 }
-      );
-    }
-  }
-
-  // Fallback to Gemini
-  const model = String(body?.model || "gemini-2.5-flash");
-  const ai = new GoogleGenAI({ apiKey });
-
-  try {
-    // Build contents (history + latest user message)
-    const contents = [
-      ...history
-        .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
-        .slice(-6)
-        .map((h: any) => ({
-          role: h.role,
-          parts: [{ text: h.text }],
-        })),
-      { role: "user", parts: [{ text: message }] },
-    ];
-
-    // If you want the model to be able to pull fresh info, you can enable googleSearch tool here.
-    const tools = body?.googleSearch === true ? [{ googleSearch: {} }] : undefined;
-
-    const config: Record<string, unknown> = {
-      systemInstruction,
-      temperature: 0.6,
-      topP: 0.9,
-      maxOutputTokens: 900,
-      ...(tools ? { tools } : {}),
-    };
-
-    let result;
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts) {
-      try {
-        result = await ai.models.generateContent({
-          model,
-          contents,
-          config,
-        });
-        break; // Successful request
-      } catch (err: any) {
-        attempts += 1;
-        const status = Number(err?.status) || Number(err?.code) || 500;
-        const isRetryable = status === 503 || status === 429;
-
-        if (attempts < maxAttempts && isRetryable) {
-          // Exponential backoff wait (300ms, 600ms)
-          await new Promise((resolve) => setTimeout(resolve, 300 * attempts));
-          continue;
-        }
-        throw err;
+      if (!lastError) {
+        return json(
+          { error: "Connection problem with Groq API", message: String(err?.message || err || "") },
+          { status: 502 },
+        );
       }
     }
+  }
 
-    // The SDK provides `result.text` in examples.
-    const text = String((result as any)?.text || "").trim();
-
-    return json({
-      ok: true,
-      text,
-      model,
-    });
-  } catch (err: any) {
-    const status =
-      Number(err?.status) ||
-      Number(err?.code) ||
-      500;
-
-    // If Gemini throttles you, forward 429 so your UI can show “retry in X seconds”
-    if (status === 429) {
-      const retryAfter = parseRetryAfterSeconds(err) ?? 30;
-      return json(
-        {
-          error: "Rate limited by Gemini (429).",
-          message: String(err?.message || err || ""),
-          details: err?.details || null,
-          retryAfterSeconds: retryAfter,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfter),
-          },
-        },
-      );
-    }
-
+  const err = lastError;
+  const status = statusOf(err);
+  if (status === 429) {
+    const retryAfter = parseRetryAfterSeconds(err) ?? 30;
     return json(
       {
-        error: "Gemini error",
+        error: "Rate limited by Gemini (429).",
         message: String(err?.message || err || ""),
-        status,
+        details: err?.details || null,
+        retryAfterSeconds: retryAfter,
       },
-      { status: status >= 400 && status <= 599 ? status : 500 },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
     );
   }
+  return json(
+    {
+      error: "Gemini error",
+      message: String(err?.message || err || ""),
+      status,
+    },
+    { status: status >= 400 && status < 600 ? status : 502 },
+  );
 };
