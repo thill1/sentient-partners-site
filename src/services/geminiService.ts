@@ -301,6 +301,25 @@ export async function decodeAudioData(
 
 export const initializeChat = () => null;
 
+export type AssistantUi =
+  | { type: "booked"; start: string; timeZone: string; label: string }
+  | { type: "note"; note: string };
+
+let assistantUiHandler: ((ui: AssistantUi) => void) | null = null;
+
+/** The screen registers here to show what the assistant did (a booking, a note form). */
+export const setAssistantUiHandler = (handler: ((ui: AssistantUi) => void) | null) => {
+  assistantUiHandler = handler;
+};
+
+const visitorTimeZone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  } catch {
+    return "";
+  }
+};
+
 export const sendMessageToGemini = async function* (message: string) {
   try {
     const historyToSend = memory.slice(-6);
@@ -311,7 +330,7 @@ export const sendMessageToGemini = async function* (message: string) {
       body: JSON.stringify({
         message,
         history: historyToSend,
-        model: "gemini-2.5-flash",
+        timeZone: visitorTimeZone(),
       }),
     });
 
@@ -347,6 +366,8 @@ export const sendMessageToGemini = async function* (message: string) {
     }
 
     const text = String(data?.text || "");
+    const uiHints = (data as { ui?: AssistantUi[] })?.ui;
+    if (Array.isArray(uiHints)) uiHints.forEach((hint) => assistantUiHandler?.(hint));
     memory.push({ role: "user", text: String(message || "") });
     memory.push({ role: "model", text });
     persistMemoryToStorage();

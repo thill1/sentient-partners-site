@@ -56,7 +56,24 @@ export const CHAT_WIDGET_CONTENT = {
   ],
 };
 
-export function buildAiSystemInstruction(siteMemory = "") {
+export interface AiPromptOptions {
+  /** True when the assistant can call the calendar and follow-up tools. */
+  tools?: boolean;
+  now?: Date;
+  timeZone?: string;
+}
+
+const NO_TOOLS_LINE = `- You cannot send messages, book or confirm meetings, check calendars, or contact anyone yourself. Never say you have sent, booked, noted, or passed anything along. If a visitor wants to reach Troy or set a time, tell them to pick a time with the booking link (${BOOKING_URL}) or email ${BRAND.email}.`;
+
+const TOOLS_BLOCK = `- You have real tools: check_availability, book_meeting, request_follow_up and show_contact_form. Only say you booked something, or that Troy was notified, after the tool result says so. If a tool fails, say so plainly and offer the booking link (${BOOKING_URL}) or ${BRAND.email}.
+- Booking flow: ask what day suits them, call check_availability, offer two or three times, then get their name and email, read the email back to confirm, and only then call book_meeting. Never invent a time or guess an email. The call is ${BRAND.offer}.
+- If they would rather hear back than pick a time, collect name, email and what it is about, then call request_follow_up.
+- Everything you say about a time is in the visitor's time zone.`;
+
+export function buildAiSystemInstruction(siteMemory = "", options: AiPromptOptions = {}) {
+  const when = options.now
+    ? `\nRight now it is ${options.now.toISOString()} (UTC). The visitor's time zone is ${options.timeZone || "unknown"}. Work out dates like "tomorrow" or "next Tuesday" from this, in their time zone.\n`
+    : "";
   return `
 You are the website concierge for ${BRAND.name}, ${BRAND.line.toLowerCase()} Based in ${BRAND.place}
 
@@ -85,13 +102,13 @@ Never:
 - Never describe review requests that screen out unhappy customers; every customer gets the same review link.
 - Never give legal, tax, or lending advice.
 - Never invent facts or actions you cannot take. If unsure, say so plainly.
-- You cannot send messages, book or confirm meetings, check calendars, or contact anyone yourself. Never say you have sent, booked, noted, or passed anything along. If a visitor wants to reach Troy or set a time, tell them they can leave a note on screen (name and email) or pick a time with the booking link.
+${options.tools ? TOOLS_BLOCK : NO_TOOLS_LINE}
 
 Voice:
 - You power both the text chat and the voice assistant on this site. If asked whether you can hear them, confirm you can and that you are an AI voice assistant.
 - Keep replies concise and natural for speech; avoid long lists and headers.
 - Remember useful details from the conversation and use them naturally.
 - If uncertain, ask one focused clarifying question.
-${siteMemory ? `\nSite memory context:\n${siteMemory}` : ""}
+${when}${siteMemory ? `\nSite memory context:\n${siteMemory}` : ""}
   `.trim();
 }

@@ -25,11 +25,13 @@ const post = (
   env: Record<string, unknown> = { GEMINI_API_KEY: "g-test" },
   ip = "203.0.113.1",
   headers: Record<string, string> = {},
+  body?: unknown,
 ) =>
   onRequestPost({
     request: new Request("https://sentientpartners.ai/api/live-token", {
       method: "POST",
       headers: { "cf-connecting-ip": ip, ...headers },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     }),
     env,
   } as never);
@@ -84,7 +86,12 @@ describe("/api/live-token", () => {
     const text = await res.text();
     const body = JSON.parse(text) as { config: Record<string, unknown> & { tools: { functionDeclarations: { name: string }[] }[] } };
     // The browser gets the note tool and audio settings, but never the prompt or private memory.
-    expect(body.config.tools[0].functionDeclarations[0].name).toBe("show_note_form");
+    expect(body.config.tools[0].functionDeclarations.map((d) => d.name)).toEqual([
+      "check_availability",
+      "book_meeting",
+      "request_follow_up",
+      "show_contact_form",
+    ]);
     expect(body.config.systemInstruction).toBeUndefined();
     expect(text).not.toContain("PRIVATE-MEMORY-XYZ");
     expect(text).not.toContain("Live voice conversation");
@@ -95,6 +102,25 @@ describe("/api/live-token", () => {
     const locked = params.config.liveConnectConstraints.config.systemInstruction.parts[0].text;
     expect(locked).toContain("Live voice conversation");
     expect(locked).toContain("PRIVATE-MEMORY-XYZ");
+  });
+
+  it("tells the assistant the visitor's time zone and the time, and that it has tools", async () => {
+    await post({ GEMINI_API_KEY: "g-test" }, "203.0.113.11", {}, { timeZone: "America/New_York" });
+    const { params } = created[0] as {
+      params: { config: { liveConnectConstraints: { config: { systemInstruction: { parts: { text: string }[] } } } } };
+    };
+    const locked = params.config.liveConnectConstraints.config.systemInstruction.parts[0].text;
+    expect(locked).toContain("America/New_York");
+    expect(locked).toContain("You have real tools");
+    expect(locked).not.toContain("You cannot send messages");
+  });
+
+  it("falls back to a default time zone for junk input", async () => {
+    await post({ GEMINI_API_KEY: "g-test" }, "203.0.113.12", {}, { timeZone: "Not/AZone" });
+    const { params } = created[0] as {
+      params: { config: { liveConnectConstraints: { config: { systemInstruction: { parts: { text: string }[] } } } } };
+    };
+    expect(params.config.liveConnectConstraints.config.systemInstruction.parts[0].text).toContain("America/Los_Angeles");
   });
 
   it("limits each visitor to four sessions an hour", async () => {

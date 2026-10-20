@@ -1,6 +1,10 @@
 import type { LiveServerMessage, Session } from '@google/genai';
 import { base64ToPcm16, downsampleTo16k, floatToPcm16, pcm16ToBase64, pcm16ToFloat32 } from '../lib/pcm';
 
+export type ToolUi =
+  | { type: 'booked'; start: string; timeZone: string; label: string }
+  | { type: 'note'; note: string };
+
 /**
  * Real-time, two-way voice with Gemini Live. The visitor can talk over the
  * assistant, and the assistant stops when they do. The Google key stays on the
@@ -8,7 +12,6 @@ import { base64ToPcm16, downsampleTo16k, floatToPcm16, pcm16ToBase64, pcm16ToFlo
  * five-minute cap.
  */
 
-export const NOTE_TOOL_NAME = 'show_note_form';
 const OUTPUT_SAMPLE_RATE = 24000;
 
 export type LiveEndReason = 'user' | 'time' | 'error' | 'server';
@@ -24,6 +27,8 @@ export interface LiveVoiceEvents {
   onModelText?: (text: string) => void;
   /** The assistant asked to show the note form. */
   onNote?: (note: string) => void;
+  /** The assistant booked the introductory call. */
+  onBooked?: (info: { start: string; timeZone: string; label: string }) => void;
   onEnded?: (info: { reason: LiveEndReason; heardAssistant: boolean }) => void;
 }
 
@@ -58,10 +63,22 @@ type AudioContextCtor = typeof AudioContext;
 const getAudioContextCtor = (): AudioContextCtor | null =>
   window.AudioContext ?? (window as Window & { webkitAudioContext?: AudioContextCtor }).webkitAudioContext ?? null;
 
+const visitorTimeZone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    return '';
+  }
+};
+
 async function fetchToken(): Promise<TokenResponse & { issuedAt: number }> {
   let response: Response;
   try {
-    response = await fetch('/api/live-token', { method: 'POST' });
+    response = await fetch('/api/live-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timeZone: visitorTimeZone() }),
+    });
   } catch {
     throw new LiveStartError('failed', 'Could not reach the voice service.');
   }
@@ -214,6 +231,36 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     events.onEnded?.({ reason, heardAssistant });
   };
 
+  // ---- Actions the assistant asks for -------------------------------------------------
+  // Booking and follow-up run on the server, which holds the calendar key.
+  const runToolCalls = async (calls: NonNullable<LiveServerMessage['toolCall']>['functionCalls']) => {
+    const responses = await Promise.all(
+      (calls ?? []).map(async (call) => {
+        let response: Record<string, unknown> = { ok: false, error: 'That did not work. Offer the booking link instead.' };
+        try {
+          const reply = await fetch('/api/assistant-tool', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: call.name, args: call.args ?? {}, timeZone: visitorTimeZone() }),
+          });
+          const outcome = (await reply.json()) as { response?: Record<string, unknown>; ui?: ToolUi };
+          if (outcome.response) response = outcome.response;
+          if (!stopped && outcome.ui?.type === 'note') events.onNote?.(outcome.ui.note);
+          if (!stopped && outcome.ui?.type === 'booked') events.onBooked?.(outcome.ui);
+        } catch {
+          void 0;
+        }
+        return { id: call.id, name: call.name, response };
+      }),
+    );
+    if (stopped || !session) return;
+    try {
+      session.sendToolResponse({ functionResponses: responses });
+    } catch {
+      void 0;
+    }
+  };
+
   // ---- Messages from the assistant ---------------------------------------------------
   const handleMessage = (message: LiveServerMessage) => {
     if (stopped) return;
@@ -243,28 +290,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     }
 
     const calls = message.toolCall?.functionCalls;
-    if (calls?.length && session) {
-      const responses = calls.map((call) => {
-        if (call.name === NOTE_TOOL_NAME) {
-          const note = String((call.args as { note?: unknown } | undefined)?.note ?? '').trim();
-          if (note) events.onNote?.(note);
-          return {
-            id: call.id,
-            name: call.name,
-            response: {
-              result: 'ok',
-              message: "The note form is now on the visitor's screen. They still add their name and email and tap Send.",
-            },
-          };
-        }
-        return { id: call.id, name: call.name, response: { error: 'Unknown tool.' } };
-      });
-      try {
-        session.sendToolResponse({ functionResponses: responses });
-      } catch {
-        void 0;
-      }
-    }
+    if (calls?.length) void runToolCalls(calls);
 
     if (message.goAway) stop('server');
   };

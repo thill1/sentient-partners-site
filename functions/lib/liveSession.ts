@@ -1,4 +1,5 @@
-import { Modality, Type } from "@google/genai";
+import { Modality } from "@google/genai";
+import { TOOL_DECLARATIONS } from "./assistantTools";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
 
 /** Hard cap on one conversation. The client stops at this mark too. */
@@ -12,45 +13,30 @@ export const DEFAULT_LIVE_MODEL = "gemini-3.8-live";
 export const DEFAULT_LIVE_API_VERSION = "v1alpha";
 export const LIVE_VOICE_NAME = "Kore";
 
-export const NOTE_TOOL_NAME = "show_note_form";
-
 const VOICE_ADDENDUM = `
 
 Live voice conversation:
 - You are speaking out loud, in real time. Use one to three short sentences per turn, and stop so the visitor can answer.
 - Start by greeting the visitor in one short sentence and asking what they would like to know.
-- If the visitor wants to leave a message for Troy, send him a note, or set a time to talk, call ${NOTE_TOOL_NAME} with their request in the visitor's own words. Then tell them you have put a short note on their screen: they add their name and email and tap Send. Never say you sent anything yourself.
+- Spell nothing out loud that is on screen; when you need an email address, ask the visitor to say it slowly, then read it back letter by letter and wait for a yes before booking.
 - If the visitor goes quiet or says goodbye, say a brief goodbye.`;
 
+export interface LiveContext {
+  now?: Date;
+  timeZone?: string;
+}
+
 /** The model, prompt, voice and tools for one live session. Fixed on the server. */
-export function buildLiveSessionConfig(siteMemory = "") {
+export function buildLiveSessionConfig(siteMemory = "", context: LiveContext = {}) {
   return {
     responseModalities: [Modality.AUDIO],
-    systemInstruction: { parts: [{ text: buildAiSystemInstruction(siteMemory) + VOICE_ADDENDUM }] },
+    systemInstruction: {
+      parts: [{ text: buildAiSystemInstruction(siteMemory, { tools: true, ...context }) + VOICE_ADDENDUM }],
+    },
     inputAudioTranscription: {},
     outputAudioTranscription: {},
     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE_NAME } } },
-    tools: [
-      {
-        functionDeclarations: [
-          {
-            name: NOTE_TOOL_NAME,
-            description:
-              "Show an on-screen form so the visitor can leave a note for Troy or ask for a time to talk. The visitor still has to add their name and email and tap Send.",
-            parameters: {
-              type: Type.OBJECT,
-              properties: {
-                note: {
-                  type: Type.STRING,
-                  description: "What the visitor wants to tell Troy or ask him, in their own words.",
-                },
-              },
-              required: ["note"],
-            },
-          },
-        ],
-      },
-    ],
+    tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
   };
 }
 
