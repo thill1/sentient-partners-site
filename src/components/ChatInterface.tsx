@@ -26,6 +26,9 @@ import { ConciergeLauncher } from './ConciergeLauncher';
 import { NoteForTroy } from './NoteForTroy';
 import { NOTE_REPLY_TEXT, NOTE_REPLY_VOICE, wantsNoteForTroy } from '../lib/noteIntent';
 import { splitForSpeech } from '../lib/speechChunks';
+import { startLiveVoice, LiveStartError, type LiveVoiceHandle } from '../services/liveVoice';
+
+const formatClock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 /** Wait this long after the visitor stops talking before answering (merges quick back-to-back finals). */
 const VOICE_FINAL_DEBOUNCE_MS = 750;
@@ -131,6 +134,13 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     setNoteRequestId((n) => n + 1);
   };
   const currentOutputTransRef = useRef('');
+
+  // Real-time voice (Gemini Live). If it is unavailable the turn-based voice below takes over.
+  const liveHandleRef = useRef<LiveVoiceHandle | null>(null);
+  const realtimeUnavailableRef = useRef(false);
+  const noteTurnRef = useRef(false);
+  const [liveSecondsLeft, setLiveSecondsLeft] = useState<number | null>(null);
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
 
   // Voice engine refs (browser STT + server-backed TTS playback)
   const connectionActiveRef = useRef<boolean>(false);
@@ -913,6 +923,50 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
 
     if (connectionActiveRef.current || isLiveConnected) return;
 
+    // Real-time voice goes first. It starts here, inside the tap, so the browser lets it make sound.
+    const realtime = realtimeUnavailableRef.current
+      ? null
+      : startLiveVoice({
+          onSecondsLeft: setLiveSecondsLeft,
+          onSpeaking: setIsThinkingOrSpeaking,
+          onUserText: (text) => {
+            setTranscriptHistory((prev) => [...prev, { role: 'user', text }]);
+            if (wantsNoteForTroy(text)) {
+              noteTurnRef.current = true;
+              openNote(text);
+            }
+          },
+          onModelText: (text) => {
+            setTranscriptHistory((prev) => [...prev, { role: 'model', text }]);
+            noteTurnRef.current = false;
+          },
+          onNote: (note) => {
+            // The words the visitor said may already have opened the form this turn.
+            if (!noteTurnRef.current) openNote(note);
+            noteTurnRef.current = true;
+          },
+          onEnded: ({ reason, heardAssistant }) => {
+            liveHandleRef.current = null;
+            analyzerRef.current = null;
+            connectionActiveRef.current = false;
+            setIsLiveConnected(false);
+            setIsVoiceLoading(false);
+            setIsThinkingOrSpeaking(false);
+            setLiveSecondsLeft(null);
+            if (reason === 'time') {
+              setVoiceNotice('That’s the five-minute limit for one conversation. Tap the microphone to start another.');
+            } else if (reason === 'error' || reason === 'server') {
+              if (!heardAssistant) realtimeUnavailableRef.current = true;
+              setVoiceError(
+                heardAssistant
+                  ? 'Live voice disconnected. Tap the microphone to start again.'
+                  : 'Live voice could not start. Tap the microphone to try again.',
+              );
+            }
+          },
+        });
+    realtime?.catch(() => undefined);
+
     // 1. Warm up / unlock browser Web Audio API context directly in this click gesture thread (BEFORE any awaits!)
     let ctxInstance = inputContextRef.current;
     try {
@@ -941,11 +995,54 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     connectionActiveRef.current = true;
     setIsVoiceLoading(true);
     setVoiceError(null);
+    setVoiceNotice(null);
+
+    if (realtime) {
+      const releaseWarmUp = () => {
+        try {
+          inputContextRef.current?.close?.();
+        } catch {
+          void 0;
+        }
+        inputContextRef.current = null;
+      };
+      try {
+        const handle = await realtime;
+        if (!connectionActiveRef.current) {
+          // The visitor closed the panel while it was connecting.
+          handle.stop('user');
+          return;
+        }
+        liveHandleRef.current = handle;
+        analyzerRef.current = handle.analyser;
+        releaseWarmUp();
+        setIsLiveConnected(true);
+        setIsVoiceLoading(false);
+        return;
+      } catch (error) {
+        if (error instanceof LiveStartError && (error.kind === 'busy' || error.kind === 'mic')) {
+          // A limit or a denied microphone is shown as it is, not worked around.
+          releaseWarmUp();
+          connectionActiveRef.current = false;
+          setIsVoiceLoading(false);
+          setVoiceError(error.message);
+          return;
+        }
+        if (error instanceof LiveStartError && error.kind === 'unavailable') realtimeUnavailableRef.current = true;
+        // Anything else: carry on with the turn-based voice below.
+      }
+    }
 
     await acquireMicAndListen();
   };
 
   const stopLiveSession = (keepError = false) => {
+    const liveHandle = liveHandleRef.current;
+    if (liveHandle) {
+      liveHandleRef.current = null;
+      liveHandle.stop('user');
+    }
+    setLiveSecondsLeft(null);
     connectionActiveRef.current = false;
     announcedListeningRef.current = false;
     isSpeakingOrFetchingRef.current = false;
@@ -1013,6 +1110,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     setIsVoiceLoading(false);
     if (!keepError) {
       setVoiceError(null);
+      setVoiceNotice(null);
     }
   };
 
@@ -1076,8 +1174,10 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                   <canvas ref={visualizerCanvasRef} aria-hidden="true" />
                   <button type="button" className={`concierge-mic${isLiveConnected ? ' is-connected' : ''}`} onClick={isLiveConnected ? () => stopLiveSession() : startLiveSession} disabled={isVoiceLoading} aria-label={isVoiceLoading ? 'Connecting microphone' : isLiveConnected ? 'End voice conversation' : 'Start voice conversation'}>{isVoiceLoading ? <Loader2 size={26} className="concierge-loading" /> : isLiveConnected ? <MicOff size={26} /> : <Mic size={26} />}</button>
                 </div>
-                <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? 'Sentient is responding…' : isLiveConnected ? 'Listening. Tap the microphone to end.' : 'Tap the microphone to begin.'}</p>
-                {isThinkingOrSpeaking && !isVoiceLoading && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
+                <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? (liveSecondsLeft !== null ? 'Sentient is speaking. Talk any time to jump in.' : 'Sentient is responding…') : isLiveConnected ? (liveSecondsLeft !== null ? 'Listening. Just talk.' : 'Listening. Tap the microphone to end.') : 'Tap the microphone to begin.'}</p>
+                {liveSecondsLeft !== null && !isVoiceLoading && <p className="concierge-disclosure" aria-live="off">{formatClock(liveSecondsLeft)} left in this conversation.</p>}
+                {isThinkingOrSpeaking && !isVoiceLoading && liveSecondsLeft === null && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
+                {voiceNotice && <p className="concierge-disclosure" role="status">{voiceNotice}</p>}
                 {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
                 {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                 <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">

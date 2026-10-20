@@ -2,7 +2,7 @@ import type { SiteSettings } from '../src/lib/siteSettingsSchema';
 
 export interface KVNamespaceLike {
   get(key: string): Promise<string | null>;
-  put(key: string, value: string): Promise<void>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
 }
 
 export interface Env {
@@ -12,6 +12,9 @@ export interface Env {
   ADMIN_USERNAME?: string;
   API_KEY?: string;
   GEMINI_API_KEY?: string;
+  GEMINI_LIVE_API_KEY?: string;
+  GEMINI_LIVE_API_VERSION?: string;
+  GEMINI_LIVE_MODEL?: string;
   SENTIENT_SITE_MEMORY?: string;
   SITE_SETTINGS?: KVNamespaceLike;
   TTS_API_KEY?: string;
