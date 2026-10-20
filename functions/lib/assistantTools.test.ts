@@ -52,6 +52,18 @@ describe("check_availability", () => {
   });
 });
 
+describe("check_availability dates", () => {
+  it.each(["2026-02-30", "2026-13-01", "tomorrow"])("rejects %s without calling the calendar", async (date) => {
+    const fetcher = vi.fn();
+    const out = await runTool("check_availability", { from_date: date, to_date: date }, { CAL_API_KEY: "k" }, {
+      ...ctx(),
+      fetcher: fetcher as unknown as typeof fetch,
+    });
+    expect(out.response.ok).toBe(false);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+});
+
 describe("book_meeting", () => {
   const args = { start: "2026-10-21T17:00:00Z", name: "Jane Doe", email: "jane@example.com", note: "Website help" };
 
@@ -165,6 +177,26 @@ describe("runChat", () => {
     expect(out.ui).toEqual([{ type: "note", note: "hi" }]);
     const second = generate.mock.calls[1][0] as { role: string; parts: { functionResponse: { name: string } }[] }[];
     expect(second.at(-1)?.parts[0].functionResponse.name).toBe("show_contact_form");
+  });
+
+  it("keeps a completed booking when the model fails afterwards, instead of replaying it", async () => {
+    const fetcher = async () => reply({ data: { uid: "u1", start: "2026-10-21T17:00:00.000Z", end: "" } }, 201);
+    const generate = vi
+      .fn()
+      .mockResolvedValueOnce({
+        text: "",
+        calls: [{ name: "book_meeting", args: { start: "2026-10-21T17:00:00Z", name: "Jane", email: "jane@example.com" } }],
+        content: {},
+      })
+      .mockRejectedValueOnce(new Error("model down"));
+    const out = await runChat(generate, [], { CAL_API_KEY: "k" }, { ...ctx(), fetcher: fetcher as unknown as typeof fetch });
+    expect(out.text).toContain("Booked for");
+    expect(out.ui[0]).toMatchObject({ type: "booked" });
+  });
+
+  it("still throws when the model fails before any action", async () => {
+    const generate = vi.fn().mockRejectedValue(new Error("model down"));
+    await expect(runChat(generate, [], {}, ctx())).rejects.toThrow("model down");
   });
 
   it("stops a model that never stops calling tools", async () => {

@@ -124,6 +124,13 @@ const clip = (value: unknown, max: number) => String(value ?? "").replace(/\s+/g
 const EMAIL = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** A real calendar day: rejects 2026-02-30 and 2026-13-01 instead of shifting or throwing. */
+const isRealDate = (value: string): boolean => {
+  if (!DATE.test(value)) return false;
+  const d = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
+};
+
 export const validTimeZone = (zone: unknown, fallback = "America/Los_Angeles"): string => {
   const value = String(zone ?? "").trim();
   if (!value) return fallback;
@@ -263,8 +270,8 @@ export async function runTool(
       }
       const from = clip(args.from_date, 10);
       let to = clip(args.to_date, 10);
-      if (!DATE.test(from)) return fail("from_date must be YYYY-MM-DD.");
-      if (!DATE.test(to) || to < from) to = from;
+      if (!isRealDate(from)) return fail("from_date must be a real date, YYYY-MM-DD.");
+      if (!isRealDate(to) || to < from) to = from;
       if (to > addDays(from, 7)) to = addDays(from, 7);
       const range = {
         start: startOfDay(from, timeZone).toISOString(),

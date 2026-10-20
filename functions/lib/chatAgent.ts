@@ -33,20 +33,33 @@ export async function runChat(
 ): Promise<{ text: string; ui: ToolUi[] }> {
   const convo = [...contents];
   const ui: ToolUi[] = [];
+  // What booking or follow-up already happened. If the model fails after that,
+  // we report it ourselves rather than let another model redo it.
+  const done: string[] = [];
+  const doneText = () => done.join(" ");
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-    const turn = await generate(convo);
-    if (!turn.calls.length) return { text: turn.text.trim() || FALLBACK_TEXT, ui };
+    let turn: ModelTurn;
+    try {
+      turn = await generate(convo);
+    } catch (err) {
+      if (done.length) return { text: doneText(), ui };
+      throw err;
+    }
+    if (!turn.calls.length) return { text: turn.text.trim() || doneText() || FALLBACK_TEXT, ui };
     if (round === MAX_TOOL_ROUNDS) break;
     convo.push(turn.content);
     const parts: unknown[] = [];
     for (const call of turn.calls.slice(0, 4)) {
       const outcome = await runTool(call.name, call.args, env, ctx);
       if (outcome.ui) ui.push(outcome.ui);
+      if (outcome.response.booked === true || outcome.response.delivered === true) {
+        done.push(String(outcome.response.message ?? ""));
+      }
       parts.push({ functionResponse: { name: call.name, response: outcome.response } });
     }
     convo.push({ role: "user", parts });
   }
-  return { text: FALLBACK_TEXT, ui };
+  return { text: doneText() || FALLBACK_TEXT, ui };
 }
 
 export const chatToolConfig = () => ({ tools: [{ functionDeclarations: TOOL_DECLARATIONS }] });
