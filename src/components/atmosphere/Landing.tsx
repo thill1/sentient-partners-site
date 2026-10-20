@@ -30,6 +30,8 @@ import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
 import "./polish.css";
+import "./relai.css";
+import { RelaiMark, RelaiWordmark } from "./RelaiMark";
 
 const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
@@ -496,8 +498,9 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
               </article>
               <article>
                 <div className="work-visual relay-visual" aria-hidden="true">
-                  <div className="relay-symbol">
-                    r<span>elay</span>
+                  <div className="relai-card-lockup">
+                    <RelaiMark size={78} />
+                    <RelaiWordmark size={52} />
                   </div>
                   <div className="relay-lines">
                     <span>Customers</span>
@@ -507,33 +510,73 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                     <span>Insights</span>
                   </div>
                 </div>
-                <p className="eyebrow">Sentient Relay · In development</p>
+                <p className="eyebrow">Relai · Our platform for service businesses</p>
                 <h3>
                   Connected operations.
                   <br />A stronger foundation.
                 </h3>
                 <p>
-                  Our reusable service-business platform brings together lessons
-                  from custom applications, automation, and QuickBooks-connected
-                  workflows.
+                  Customers, jobs, and invoices in one place, built from our
+                  work with local service businesses.
                 </p>
-                <button
-                  className="text-link"
-                  onClick={() =>
-                    openContactModal({
-                      source: "Sentient Relay interest",
-                      inquiry:
-                        "I would like to learn about Sentient Relay, currently in development.",
-                    })
-                  }
-                >
-                  Ask about Sentient Relay <ArrowRight size={15} aria-hidden="true" />
-                </button>
+                <a className="text-link" href="#relai">
+                  See how Relai works <ArrowRight size={15} aria-hidden="true" />
+                </a>
               </article>
             </div>
             <p className="work-disclosure">
               Illustrations of the kinds of systems we build.
             </p>
+          </div>
+        </section>
+        <section id="relai" className="relai-section" aria-labelledby="relai-title">
+          <div className="page-width relai-inner">
+            <div className="relai-copy">
+              <div className="relai-lockup">
+                <RelaiMark size={72} />
+                <RelaiWordmark size={56} />
+              </div>
+              <p className="relai-by">By Sentient Partners · Working with three service businesses</p>
+              <h2 id="relai-title">
+                Calls, jobs, and invoices, <em>in one place.</em>
+              </h2>
+              <p>
+                Relai is the platform we built for service businesses: trades,
+                home services, wellness, and professional services. It greets
+                your customers, keeps jobs and schedules moving, and connects
+                to QuickBooks so the work you do ends up on an invoice.
+              </p>
+              <div className="relai-actions">
+                <button
+                  className="button button-light"
+                  onClick={() =>
+                    openContactModal({
+                      source: "Relai interest",
+                      inquiry: "I would like to learn about Relai for my service business.",
+                    })
+                  }
+                >
+                  Ask about Relai <ArrowRight size={15} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <ol className="relai-pillars">
+              <li>
+                <span className="relai-num" aria-hidden="true">01</span>
+                <h3>Customers</h3>
+                <p>Calls, texts, and an AI front desk that greets and captures new leads.</p>
+              </li>
+              <li>
+                <span className="relai-num" aria-hidden="true">02</span>
+                <h3>Operations</h3>
+                <p>Scheduling, jobs, and invoicing in one flow, connected to QuickBooks.</p>
+              </li>
+              <li>
+                <span className="relai-num" aria-hidden="true">03</span>
+                <h3>Insights</h3>
+                <p>A clear view of where your work comes from and what is waiting on you.</p>
+              </li>
+            </ol>
           </div>
         </section>
         <SiteCheck />
