@@ -13,8 +13,11 @@ export type ToolUi =
  */
 
 const OUTPUT_SAMPLE_RATE = 24000;
-/** Fixed playback level. */
-const OUTPUT_GAIN = 0.9;
+/**
+ * Fixed playback level. Below 1 so full-scale model audio never clips, which is
+ * why no limiter or compressor is needed anywhere on the output.
+ */
+const OUTPUT_GAIN = 0.8;
 /** Buffer before the first chunk of each reply plays. */
 const PLAYBACK_LEAD_SECONDS = 0.12;
 /** Room echo keeps arriving briefly after playback stops. */
@@ -63,6 +66,8 @@ export interface LiveVoiceEvents {
 
 export interface LiveVoiceHandle {
   stop: (reason?: LiveEndReason) => void;
+  /** Mute the visitor's microphone. The track stays open; silence is sent instead. */
+  setMuted: (muted: boolean) => void;
   /** Level meter for the on-screen visualizer: the microphone and the assistant's voice. */
   analyser: AnalyserNode;
 }
@@ -132,6 +137,17 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     throw new LiveStartError('unavailable', 'This browser cannot do live voice.');
   }
 
+  // Safari 16.4+: declare a two-way call up front. Otherwise WebKit switches the
+  // audio session between playback and play-and-record as capture starts, which
+  // re-routes and re-levels the speaker mid-conversation.
+  const audioSession = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+  if (audioSession) {
+    try {
+      audioSession.type = 'play-and-record';
+    } catch {
+      void 0;
+    }
+  }
   const ctx = new Ctor();
   void ctx.resume().catch(() => undefined);
 
@@ -139,6 +155,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   let session: Session | null = null;
   let stopped = false;
   let heardAssistant = false;
+  let muted = false;
   let timer: ReturnType<typeof setInterval> | null = null;
   let captureNode: AudioNode | null = null;
   const cleanups: Array<() => void> = [];
@@ -176,26 +193,17 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   const micStream = micResult.value;
 
   // ---- Playing the assistant's voice -------------------------------------------------
-  // One fixed gain and nothing that reacts to the signal. The old compressor
-  // (-18 dB threshold, 0.25 s release) sat right in the voice's normal range, so
-  // it kept pulling the level down on louder words and letting it swell back up
-  // in between: the audible up-and-down. A brick-wall limiter only at -1 dBFS
-  // remains as a clip guard; normal speech never reaches it.
+  // Source -> one fixed gain -> speakers. Nothing on this path reacts to the
+  // signal: no compressor, no limiter, no per-chunk ramps, no ducking. Any of
+  // those turns natural loudness changes into an audible rise and fall.
   const outputGain = ctx.createGain();
   outputGain.gain.value = OUTPUT_GAIN;
-  const leveller = ctx.createDynamicsCompressor();
-  leveller.threshold.value = -1;
-  leveller.knee.value = 0;
-  leveller.ratio.value = 20;
-  leveller.attack.value = 0.001;
-  leveller.release.value = 0.05;
-  outputGain.connect(leveller);
-  leveller.connect(ctx.destination);
-  leveller.connect(analyser);
+  outputGain.connect(ctx.destination);
+  outputGain.connect(analyser);
   // Measures what the assistant is playing, for the echo gate below.
   const outputMeter = ctx.createAnalyser();
   outputMeter.fftSize = 1024;
-  leveller.connect(outputMeter);
+  outputGain.connect(outputMeter);
   const playing = new Set<AudioBufferSourceNode>();
   let lastPlaybackEnd = 0;
   let nextStart = 0;
@@ -444,6 +452,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   const send = (frame: Float32Array) => {
     if (stopped) return;
     let floats = frame;
+    if (muted) floats = new Float32Array(frame.length);
     if (playing.size > 0 || ctx.currentTime < lastPlaybackEnd + ECHO_TAIL_SECONDS) {
       if (!isBargeIn(rms(frame), outputLevel())) floats = new Float32Array(frame.length);
     }
@@ -521,5 +530,11 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     if (left <= 0) stop('time');
   }, 1000);
 
-  return { stop, analyser };
+  return {
+    stop,
+    analyser,
+    setMuted: (value: boolean) => {
+      muted = value;
+    },
+  };
 }

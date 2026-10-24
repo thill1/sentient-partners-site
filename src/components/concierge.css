@@ -145,3 +145,50 @@
 .concierge-link:hover{color:#f3f0e8}
 .concierge-link:focus-visible{outline:2px solid #c8b795;outline-offset:3px;border-radius:2px}
 .concierge-voice-links{margin:10px 0 0;text-align:center;font-size:13px;line-height:1.6;color:#c4cbd6}
+
+/* ---- Voice panel (v15): compact header, transcript-first, controls at the bottom ---- */
+.concierge-content.is-voice { overflow: hidden; }
+.cv { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; padding-top: 4px; }
+.cv-hero { text-align: center; padding: 6px 0 2px; }
+.concierge-panel .cv-hero h3 { font-size: 30px; }
+.cv-hero p { color: #c6d0d3; font-size: 13px; line-height: 1.6; margin-top: 8px; }
+.cv-bar { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 8px 12px 8px 8px; border: 1px solid #c8b79533; border-radius: 999px; background: #ffffff06; }
+.cv-orb { width: 40px; height: 40px; flex-shrink: 0; }
+.cv-pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; background: #c8b7951f; color: #ead7b3; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
+.cv-dot { width: 7px; height: 7px; border-radius: 50%; background: #8a979e; }
+.cv-pill.is-listening .cv-dot { background: #7fd1a4; }
+.cv-pill.is-speaking .cv-dot { background: #c8b795; }
+.cv-pill.is-connecting .cv-dot { background: #c8b795; animation: cv-blink 1s ease-in-out infinite; }
+.cv-pill.is-muted { background: #e1ac9126; color: #f0bda5; }
+.cv-pill.is-muted .cv-dot { background: #e1ac91; }
+.cv-timer { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 13px; color: #bfcbd0; }
+.cv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cv-log { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 2px 4px 2px 0; }
+.cv-log .concierge-message { margin: 0; max-width: 86%; }
+.cv-log .concierge-message p { margin-top: 3px; line-height: 1.6; }
+.cv-log .concierge-message.is-model { align-self: flex-start; padding: 10px 14px; background: #ffffff0d; border-radius: 4px 16px 16px 16px; }
+.cv-log .concierge-message.is-user { align-self: flex-end; margin-left: 0; padding: 10px 14px; background: #c8b79529; border-radius: 16px 4px 16px 16px; }
+.cv-log .concierge-message.is-interim p { opacity: .7; font-style: italic; }
+.cv-empty { margin: auto 0; text-align: center; color: #bfcbd0; font-size: 12px; }
+.cv-controls { display: flex; justify-content: center; align-items: center; gap: 14px; flex-shrink: 0; }
+.concierge-panel .cv-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 64px; min-height: 56px; padding: 6px 10px; border-radius: 16px; background: #ffffff0d; font-size: 11px; color: #e6e1d6; }
+.concierge-panel .cv-btn.is-on { background: #e1ac9133; color: #f0bda5; }
+.concierge-panel .cv-end { min-width: 76px; background: #b4543f; color: #fff; }
+.concierge-panel .cv-end:hover:not(:disabled) { background: #c9614a; color: #fff; }
+.concierge-panel .cv-start { flex: 1; max-width: 260px; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 999px; background: #c8b795; color: #0D1F4E; font: 600 15px Inter, system-ui, sans-serif; }
+.concierge-panel .cv-start:hover:not(:disabled) { background: #ead7b3; color: #0D1F4E; }
+.cv-foot { flex-shrink: 0; text-align: center; font-size: 11.5px; line-height: 1.5; color: #c4cbd6; }
+@keyframes cv-blink { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .cv-pill.is-connecting .cv-dot { animation: none; } }
+@media (max-width: 600px) {
+  .concierge-panel, .concierge-panel.is-fullscreen {
+    inset: 0; width: 100%; max-width: none; border: 0;
+    height: var(--concierge-vvh, 100dvh);
+    padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .concierge-panel h2 { font-size: 26px; }
+}
+@media (max-height: 600px) {
+  .concierge-content.is-voice { overflow: hidden; display: flex; }
+  .cv-hero { display: none; }
+}

@@ -10,6 +10,7 @@ import {
   AlertCircle,
   X,
   MessageSquare,
+  PhoneOff,
 } from 'lucide-react';
 import { Message } from '../types';
 import {
@@ -151,6 +152,8 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
   const realtimeUnavailableRef = useRef(false);
   const [liveSecondsLeft, setLiveSecondsLeft] = useState<number | null>(null);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const voiceLogEndRef = useRef<HTMLDivElement | null>(null);
 
   // Voice engine refs (browser STT + server-backed TTS playback)
   const connectionActiveRef = useRef<boolean>(false);
@@ -425,90 +428,92 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     return () => stopLiveSession();
   }, []);
 
-  // --- Visualizer (mic-based) ---
+  // --- Orb: a small level-driven glow in the voice header. Read-only: it never touches the audio. ---
   useEffect(() => {
     if (!isOpen || activeTab !== 'voice') return;
-
-    let animId: number;
     const canvas = visualizerCanvasRef.current;
     if (!canvas) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        canvas.width = width;
-        canvas.height = height;
-      }
-    });
-
-    if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
-
-    const bars = 64;
-    const radiusBase = 62;
+    let animId = 0;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    let rotation = 0;
-
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const size = canvas.clientWidth || 44;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    let level = 0;
+    let t = 0;
+    const data = new Uint8Array(128);
     const render = () => {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const dataArray = new Uint8Array(bars);
-
+      const g = canvas.getContext('2d');
+      if (!g) return;
+      let target = 0;
       if (analyzerRef.current && isLiveConnected) {
-        const bufferLength = analyzerRef.current.frequencyBinCount;
-        const fullData = new Uint8Array(bufferLength);
-        analyzerRef.current.getByteFrequencyData(fullData);
-
-        const step = Math.max(1, Math.floor(bufferLength / bars));
-        for (let i = 0; i < bars; i++) dataArray[i] = fullData[i * step] || 0;
+        analyzerRef.current.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < 48; i++) sum += data[i];
+        target = Math.min(1, sum / 48 / 140);
+      } else if (isVoiceLoading) {
+        target = 0.25 + Math.sin(t * 4) * 0.15;
       }
-
-      if (!reduced.matches) rotation += 0.005;
-
-      for (let i = 0; i < bars; i++) {
-        let barHeight = isLiveConnected
-          ? Math.max(4, dataArray[i] * 0.07)
-          : 4 + Math.sin(i * 0.5 + rotation * 5) * 5;
-
-        if (isVoiceLoading) {
-          if (!reduced.matches) rotation += 0.02;
-          barHeight = 15 + Math.sin(i * 0.5 + rotation * 15) * 10;
-        }
-
-        const rad = (i / bars) * Math.PI * 2 + rotation;
-        const x1 = centerX + Math.cos(rad) * radiusBase;
-        const y1 = centerY + Math.sin(rad) * radiusBase;
-        const x2 = centerX + Math.cos(rad) * (radiusBase + barHeight);
-        const y2 = centerY + Math.sin(rad) * (radiusBase + barHeight);
-
-        const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-        gradient.addColorStop(0, '#c8b795');
-        gradient.addColorStop(1, '#aab7bf');
-
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 1.5;
-        ctx.lineCap = 'round';
-
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-      }
-
+      level += (target - level) * 0.18;
+      t += 0.016;
+      const c = canvas.width / 2;
+      const base = c * 0.52;
+      const r = base * (1 + level * 0.55);
+      g.clearRect(0, 0, canvas.width, canvas.height);
+      const halo = g.createRadialGradient(c, c, base * 0.4, c, c, c);
+      halo.addColorStop(0, `rgba(200,183,149,${0.25 + level * 0.35})`);
+      halo.addColorStop(1, 'rgba(200,183,149,0)');
+      g.fillStyle = halo;
+      g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+      const core = g.createRadialGradient(c - r * 0.3, c - r * 0.3, r * 0.1, c, c, r);
+      core.addColorStop(0, '#f1e6cf');
+      core.addColorStop(1, '#c8b795');
+      g.fillStyle = core;
+      g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.fill();
       if ((isLiveConnected || isVoiceLoading) && !reduced.matches) animId = requestAnimationFrame(render);
     };
-
     render();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      resizeObserver.disconnect();
-    };
+    return () => cancelAnimationFrame(animId);
   }, [isLiveConnected, isVoiceLoading, activeTab, isOpen]);
+
+  // Keep the newest words in view.
+  useEffect(() => {
+    voiceLogEndRef.current?.scrollIntoView({ block: 'end', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }, [transcriptHistory, interimInput, activeTab]);
+
+  // Fit the sheet to the visible area when the iPhone toolbar or keyboard moves.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!isOpen || !vv) return;
+    const apply = () => document.documentElement.style.setProperty('--concierge-vvh', `${vv.height}px`);
+    apply();
+    vv.addEventListener('resize', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      document.documentElement.style.removeProperty('--concierge-vvh');
+    };
+  }, [isOpen]);
+
+  // Dev-only mock state for layout screenshots: ?voiceDemo=pre|live. Stripped from production builds.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const demo = new URLSearchParams(window.location.search).get('voiceDemo');
+    if (!demo) return;
+    setIsOpen(true);
+    setActiveTab('voice');
+    if (demo === 'live') {
+      setIsLiveConnected(true);
+      setLiveSecondsLeft(252);
+      setIsThinkingOrSpeaking(true);
+      setTranscriptHistory([
+        { role: 'model', text: 'Hi, I’m the Sentient assistant. What would you like to know?' },
+        { role: 'user', text: 'What are your capabilities?' },
+        { role: 'model', text: 'We help leadership teams turn strategy into working systems: AI agents for field and office operations, custom software, and the measurement to prove it pays off.' },
+        { role: 'user', text: 'Could I book a call with Troy next week?' },
+        { role: 'model', text: 'Of course. Which day works best for a 20-minute introductory call?' },
+      ]);
+    }
+  }, []);
 
   // --- Transcript helpers ---
   const prepareTranscriptData = () => {
@@ -1002,6 +1007,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
         }
         liveHandleRef.current = handle;
         analyzerRef.current = handle.analyser;
+        setIsMuted(false);
         releaseWarmUp();
         setIsLiveConnected(true);
         setIsVoiceLoading(false);
@@ -1157,28 +1163,50 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 </form>
                 <p className="concierge-disclosure">You’re speaking with an AI assistant.</p>
               </> : <>
-                <div className="concierge-voice-intro"><h3>A conversation,<br />at your pace.</h3><p>Speak with the Sentient AI assistant<br />about your business.</p></div>
-                <div className={`concierge-voice-control${isLiveConnected || isVoiceLoading ? ' is-active' : ''}`}>
-                  <canvas ref={visualizerCanvasRef} aria-hidden="true" />
-                  <button type="button" className={`concierge-mic${isLiveConnected ? ' is-connected' : ''}`} onClick={isLiveConnected ? () => stopLiveSession() : startLiveSession} disabled={isVoiceLoading} aria-label={isVoiceLoading ? 'Connecting microphone' : isLiveConnected ? 'End voice conversation' : 'Start voice conversation'}>{isVoiceLoading ? <Loader2 size={26} className="concierge-loading" /> : isLiveConnected ? <MicOff size={26} /> : <Mic size={26} />}</button>
-                </div>
-                <p className="concierge-voice-status" role="status">{isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? (liveSecondsLeft !== null ? 'Sentient is speaking. Talk any time to jump in.' : 'Sentient is responding…') : isLiveConnected ? (liveSecondsLeft !== null ? 'Listening. Just talk.' : 'Listening. Tap the microphone to end.') : 'Tap the microphone to begin.'}</p>
-                {liveSecondsLeft !== null && !isVoiceLoading && <p className="concierge-disclosure" aria-live="off">{formatClock(liveSecondsLeft)} left in this conversation.</p>}
-                {isThinkingOrSpeaking && !isVoiceLoading && liveSecondsLeft === null && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
-                {voiceNotice && <p className="concierge-disclosure" role="status">{voiceNotice}</p>}
-                {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
-                {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
-                {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
-                <p className="concierge-voice-links">
-                  <button type="button" className="concierge-link" onClick={() => { setIsOpen(false); openBookingModal({ source: 'Concierge voice', ctaLabel: 'Book a 20-minute intro call' }); }}>Book a 20-minute introductory call</button>
-                  <span aria-hidden="true"> · </span>
-                  <a className="concierge-link" href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
-                </p>
-                <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
-                  {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}
-                  {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> <RichText text={turn.text} /></p>)}
-                  {interimInput && <p><strong>You:</strong> {interimInput}</p>}
-                </div>
+                {(() => {
+                  const inSession = isLiveConnected || isVoiceLoading;
+                  const hasTalk = transcriptHistory.length > 0 || !!interimInput;
+                  const status = isVoiceLoading ? 'Connecting…' : isMuted && isLiveConnected ? 'Muted' : isThinkingOrSpeaking ? 'Speaking' : isLiveConnected ? 'Listening' : hasTalk ? 'Ended' : 'Ready';
+                  const statusHint = isVoiceLoading ? CHAT_WIDGET_CONTENT.voiceLoadingLabel : isThinkingOrSpeaking ? 'Sentient is speaking. Talk any time to jump in.' : isLiveConnected ? (isMuted ? 'Your microphone is muted.' : 'Listening. Just talk.') : '';
+                  return <div className={`cv${inSession ? ' is-live' : ''}${hasTalk ? ' has-talk' : ''}`}>
+                    {!inSession && !hasTalk && <div className="cv-hero">
+                      <h3>Talk it through.</h3>
+                      <p>A real-time conversation with the Sentient AI assistant. Interrupt any time.</p>
+                    </div>}
+                    <div className="cv-bar">
+                      <canvas ref={visualizerCanvasRef} className="cv-orb" aria-hidden="true" />
+                      <span className={`cv-pill is-${status.toLowerCase().replace('…', '')}`}><span className="cv-dot" aria-hidden="true" />{status}</span>
+                      <span className="cv-sr" role="status">{statusHint}</span>
+                      {liveSecondsLeft !== null && !isVoiceLoading && <span className="cv-timer" aria-label={`${formatClock(liveSecondsLeft)} left`}>{formatClock(liveSecondsLeft)}</span>}
+                    </div>
+                    <div className="cv-log concierge-messages" role="log" aria-label="Voice transcript" aria-live="polite">
+                      {!hasTalk && <p className="cv-empty">{inSession ? 'Say hello. Your words and the replies appear here.' : 'Your microphone starts only when you choose to begin.'}</p>}
+                      {transcriptHistory.map((turn, index) => <div key={index} className={`concierge-message is-${turn.role === 'user' ? 'user' : 'model'}`}><span className="concierge-message-author">{turn.role === 'user' ? 'You' : 'Sentient AI'}</span><p><RichText text={turn.text} /></p></div>)}
+                      {interimInput && <div className="concierge-message is-user is-interim"><span className="concierge-message-author">You</span><p>{interimInput}</p></div>}
+                      {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
+                      {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
+                      <div ref={voiceLogEndRef} />
+                    </div>
+                    {voiceNotice && <p className="concierge-disclosure" role="status">{voiceNotice}</p>}
+                    {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
+                    {isThinkingOrSpeaking && !isVoiceLoading && liveSecondsLeft === null && <button type="button" className="concierge-interrupt" onClick={handleInterrupt}>Interrupt response</button>}
+                    <div className="cv-controls">
+                      {inSession ? <>
+                        <button type="button" className={`cv-btn${isMuted ? ' is-on' : ''}`} aria-pressed={isMuted} disabled={!isLiveConnected || !liveHandleRef.current} onClick={() => { const next = !isMuted; liveHandleRef.current?.setMuted(next); setIsMuted(next); }}>{isMuted ? <MicOff size={20} /> : <Mic size={20} />}<span>{isMuted ? 'Unmute' : 'Mute'}</span></button>
+                        <button type="button" className="cv-btn cv-end" onClick={() => stopLiveSession()} aria-label="End voice conversation"><PhoneOff size={22} /><span>End</span></button>
+                        <button type="button" className="cv-btn" onClick={() => setActiveTab('chat')}><MessageSquare size={20} /><span>Chat</span></button>
+                      </> : <>
+                        <button type="button" className="cv-start" onClick={startLiveSession}><Mic size={20} />{hasTalk ? 'Talk again' : 'Start talking'}</button>
+                        <button type="button" className="cv-btn" onClick={() => setActiveTab('chat')}><MessageSquare size={20} /><span>Chat</span></button>
+                      </>}
+                    </div>
+                    <p className="cv-foot">
+                      <button type="button" className="concierge-link" onClick={() => { setIsOpen(false); openBookingModal({ source: 'Concierge voice', ctaLabel: 'Book a 20-minute intro call' }); }}>Book a 20-minute introductory call</button>
+                      <span aria-hidden="true"> · </span>
+                      <a className="concierge-link" href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
+                    </p>
+                  </div>;
+                })()}
               </>}
             </div>
           </>
