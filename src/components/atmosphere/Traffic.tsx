@@ -209,11 +209,14 @@ export default function Traffic() {
       };
       if (endU === noseU && headlights > 0.02)
         lamp(noseU, `rgba(255, 230, 168, ${headlights})`, 8);
-      if (endU === tailU && (car.hesitate > 0 || headlights > 0.02))
+      // In daylight no lamps show at all, brake lights included: lit
+      // vehicles and lamp trails belong to dusk and night only.
+      const dusk = Math.max(lighting.headlights, lighting.deckLamps);
+      if (endU === tailU && dusk > 0.02 && (car.hesitate > 0 || headlights > 0.02))
         lamp(
           tailU,
           car.hesitate > 0
-            ? "rgba(255, 70, 50, 0.95)"
+            ? `rgba(255, 70, 50, ${0.95 * Math.min(1, dusk)})`
             : `rgba(220, 60, 44, ${0.8 * headlights})`,
           4,
         );

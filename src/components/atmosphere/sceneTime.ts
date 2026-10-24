@@ -138,10 +138,11 @@ export const sceneLighting: Record<Scene, Lighting> = {
     stars: 0.18,
     city: 0.55,
   },
+  // Golden hour after dawn: only a few, faint lamps; none by full day.
   sunrise: {
-    headlights: 0.6,
-    litShare: 0.35,
-    deckLamps: 0.3,
+    headlights: 0.3,
+    litShare: 0.2,
+    deckLamps: 0.12,
     planeLights: 0.7,
     stars: 0.1,
     city: 0.3,
