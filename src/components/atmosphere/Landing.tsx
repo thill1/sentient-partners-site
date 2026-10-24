@@ -24,6 +24,8 @@ import {
 import FooterFinale from "./FooterFinale";
 import SignupBand from "./SignupBand";
 import ToolsPage from "./ToolsPage";
+import MissedCallCalculator from "./tools/MissedCallCalculator";
+import AiReadiness from "./tools/AiReadiness";
 import { RelayShowcase } from "./RelayShowcase";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
@@ -63,7 +65,8 @@ const links = [
   ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
 /** Which page is showing. Section links are "#x" at home, "/#x" elsewhere. */
-const PageContext = createContext<"home" | "tools">("home");
+export type PageName = "home" | "tools" | "missed-call" | "ai-readiness";
+const PageContext = createContext<PageName>("home");
 const useHref = () => {
   const page = useContext(PageContext);
   return (href: string) => (page !== "home" && href.startsWith("#") ? `/${href}` : href);
@@ -389,7 +392,7 @@ function WorkSection() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function Landing({ page = "home" }: { banner: BannerDisplayState; page?: "home" | "tools" }) {
+export default function Landing({ page = "home" }: { banner: BannerDisplayState; page?: PageName }) {
   useScrollReveal();
   useWorkMotion();
   useFounderMotion();
@@ -407,7 +410,7 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
       <Navigation />
       <main id="main-content" tabIndex={-1}>
         {!home ? (
-          <ToolsPage />
+          page === "missed-call" ? <MissedCallCalculator /> : page === "ai-readiness" ? <AiReadiness /> : <ToolsPage />
         ) : (
         <>
         {/* Flow: promise (hero) → how we help → what it looks like →

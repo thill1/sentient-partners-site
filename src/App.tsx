@@ -6,7 +6,7 @@ import { BookingModal } from "./components/BookingModal";
 import { ContactModal } from "./components/ContactModal";
 import { Toast } from "./components/Toast";
 import { rememberVisit } from "./lib/visitorMemory";
-import Landing from "./components/atmosphere/Landing";
+import Landing, { type PageName } from "./components/atmosphere/Landing";
 import {
   getAdminSettings,
   loginAdmin,
@@ -21,11 +21,14 @@ function getCurrentRoute(hash: string): AppRoute {
   return hash === "#/admin" ? "admin" : "home";
 }
 
+export function pageFor(path: string): PageName {
+  if (path.startsWith("/tools/missed-call-calculator")) return "missed-call";
+  if (path.startsWith("/tools/ai-readiness")) return "ai-readiness";
+  return path.startsWith("/tools") ? "tools" : "home";
+}
+
 function App({ path }: { path?: string } = {}) {
-  const page =
-    (path ?? (typeof window === "undefined" ? "/" : window.location.pathname)).startsWith("/tools")
-      ? "tools"
-      : "home";
+  const page = pageFor(path ?? (typeof window === "undefined" ? "/" : window.location.pathname));
   const siteSettings = useSiteSettings();
 
   useEffect(() => {
