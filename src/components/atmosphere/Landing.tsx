@@ -232,7 +232,6 @@ function Navigation() {
 function ActionDock() {
   const [shown, setShown] = useState(false);
   useEffect(() => {
-    const hero = document.querySelector(".golden-gate");
     const finale = document.querySelector("#contact");
     const footer = document.querySelector(".atmosphere-footer");
     // On desktop the pinned Capabilities panel puts its own action where the
@@ -240,13 +239,12 @@ function ActionDock() {
     const showcase = matchMedia("(min-width: 851px)").matches
       ? document.querySelector("#capabilities")
       : null;
-    let pastHero = false;
+    // Visible from first paint: the hero no longer has its own CTA row, so
+    // the same bar serves the whole page with no swap when scrolling.
+    const pastHero = true;
     let nearEnd = false;
     const sync = () => setShown(pastHero && !nearEnd);
-    const heroObserver = new IntersectionObserver(([entry]) => {
-      pastHero = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-      sync();
-    });
+    sync();
     const visible = new Set<Element>();
     const endObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) =>
@@ -257,10 +255,8 @@ function ActionDock() {
       nearEnd = visible.size > 0;
       sync();
     });
-    if (hero) heroObserver.observe(hero);
     [finale, footer, showcase].forEach((el) => el && endObserver.observe(el));
     return () => {
-      heroObserver.disconnect();
       endObserver.disconnect();
     };
   }, []);
@@ -272,6 +268,7 @@ function ActionDock() {
       <a
         className="dock-book"
         href={BOOKING_URL}
+        aria-label="Book a call: a 20-minute introductory call"
         tabIndex={shown ? 0 : -1}
         onClick={(e) => {
           e.preventDefault();

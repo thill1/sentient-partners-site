@@ -1,10 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowRight } from "lucide-react";
-import { BOOKING_URL } from "../../content/siteContent";
-import { openBookingModal, openSentientChat } from "../../lib/siteActions";
+import { ArrowDown } from "lucide-react";
 import { HeroClock } from "./HeroClock";
 import { hasHardwareGpu } from "../../lib/gpu";
-import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
 import "./scenes.css";
@@ -169,31 +166,7 @@ export function GoldenGate() {
             See how we help <ArrowDown size={16} />
           </a>
         </div>
-        <div className="hero-bottom header-rail">
-          {/* One row with the launcher: same bottom offset, safe area and centre line. */}
-          <a
-            className="cta-primary hero-cta"
-            aria-label="Let's talk: book a 20-minute introductory call"
-            href={BOOKING_URL}
-            onClick={(e) => {
-              e.preventDefault();
-              openBookingModal({
-                source: "Cinematic hero",
-                ctaLabel: "Book a 20-minute introductory call",
-              });
-            }}
-          >
-            Let&rsquo;s talk <ArrowRight size={18} aria-hidden="true" />
-          </a>
-          <ConciergeLauncher
-            onClick={() =>
-              openSentientChat({
-                source: "Cinematic hero",
-                ctaLabel: "Ask Sentient",
-              })
-            }
-          />
-        </div>
+        {/* Book / Ask / Call live in the page-wide action dock (Landing), visible from load. */}
       </div>
     </section>
   );
