@@ -89,7 +89,7 @@ export function GoldenGate() {
         <div className="scene" aria-hidden="true">
           <img
             className="scene-poster"
-            src="/atmosphere/golden-gate-poster.webp"
+            src="/atmosphere/golden-gate-poster-v2.webp"
             alt=""
             width="1536"
             height="1024"
@@ -151,16 +151,15 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
-          <p className="hero-kicker">Websites · Business apps · AI assistants</p>
+          <p className="hero-kicker">Business Strategy. Intelligent Systems. Measurable Results.</p>
           <h1 id="hero-title">
             <span>Global experience. </span>
             <em>Local impact.</em>
           </h1>
           <p className="hero-description">
-            <span className="sub-line">Enterprise-grade strategy and hands-on</span>{" "}
-            <span className="sub-line">builds for growing Northern California</span>{" "}
-            <span className="sub-line">businesses, led by a former</span>{" "}
-            <span className="sub-line">Fortune 500 technology executive.</span>
+            After senior executive leadership roles at Hewlett-Packard and
+            E*TRADE Financial, Troy Hill founded Sentient Partners to be a
+            hands-on technology partner for growing local businesses.
           </p>
           <div className="hero-actions">
             <a

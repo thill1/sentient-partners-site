@@ -1,3 +1,4 @@
+import { MobileMore } from "./MobileMore";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpRight, Menu, Phone, X } from "lucide-react";
@@ -38,17 +39,17 @@ function Brand() {
     <a className="brand-lockup" href="#top">
       <img
         className="monogram-light"
-        src="/atmosphere/sp-monogram-white.png"
+        src="/atmosphere/sp-monogram-white-72.png"
         alt=""
-        width="513"
-        height="835"
+        width="44"
+        height="72"
       />
       <img
         className="monogram-ink"
-        src="/atmosphere/sp-monogram-navy.png"
+        src="/atmosphere/sp-monogram-navy-72.png"
         alt=""
-        width="513"
-        height="835"
+        width="44"
+        height="72"
       />
       <span>Sentient Partners</span>
     </a>
@@ -280,7 +281,7 @@ function ActionDock() {
         tabIndex={shown ? 0 : -1}
         onClick={() => openSentientChat({ source: "Action dock" })}
       >
-        <img src="/atmosphere/sp-monogram-white.png" alt="" width="12" height="20" />
+        <img src="/atmosphere/sp-monogram-white-72.png" alt="" width="12" height="20" />
         Ask Sentient
       </button>
       <a
@@ -345,21 +346,23 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                 <br />
                 Now built for the businesses down the street.
               </p>
-              <p>
-                Troy spent more than a decade at E*TRADE, rising from the global
-                trading desk to Director of Enterprise Quality Assurance. His
-                team stood behind every E*TRADE product release from 2006 to
-                2011, and he led the technology integration of the $2.3B Harris
-                Direct and BrownCo acquisitions.
-              </p>
-              <p>
-                At Hewlett-Packard he became Global Quality Director, running
-                quality operations across 178 countries and leading the
-                migration of more than 12,000 applications. He founded the
-                software-quality consultancy Qualitonomy in 2016, then Sentient
-                Partners, to bring the same discipline to the businesses in his
-                own community.
-              </p>
+              <MobileMore label="Read Troy's full background">
+                <p>
+                  Troy spent more than a decade at E*TRADE, rising from the global
+                  trading desk to Director of Enterprise Quality Assurance. His
+                  team stood behind every E*TRADE product release from 2006 to
+                  2011, and he led the technology integration of the $2.3B Harris
+                  Direct and BrownCo acquisitions.
+                </p>
+                <p>
+                  At Hewlett-Packard he became Global Quality Director, running
+                  quality operations across 178 countries and leading the
+                  migration of more than 12,000 applications. He founded the
+                  software-quality consultancy Qualitonomy in 2016, then Sentient
+                  Partners, to bring the same discipline to the businesses in his
+                  own community.
+                </p>
+              </MobileMore>
               <ul className="founder-facts" aria-label="Career highlights">
                 <li>
                   <strong>178</strong> countries in HP's global quality
@@ -408,7 +411,7 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
                   <em>business actually happens.</em>
                 </h2>
               </div>
-              <p>
+              <p className="m-trim">
                 Service businesses run on calls, schedules, crews and invoices.
                 These are the systems we build to keep all four moving.
               </p>

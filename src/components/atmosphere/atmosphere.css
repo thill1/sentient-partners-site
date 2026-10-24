@@ -1694,3 +1694,41 @@ html {
     margin-top: 35px;
   }
 }
+
+/* Phone reading rhythm: secondary copy folds behind one tap. */
+.mobile-more-toggle {
+  display: none;
+}
+@media (max-width: 600px) {
+  .mobile-more[data-open="false"] .mobile-more-body,
+  .m-trim {
+    display: none !important;
+  }
+  .mobile-more-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 6px;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    color: #d6c5a7;
+    font: 500 14px/1.2 Inter, system-ui, sans-serif;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+  }
+  .mobile-more-toggle:focus-visible {
+    outline: 2px solid #c8b795;
+    outline-offset: 4px;
+  }
+  .mobile-more-body > * + * {
+    margin-top: 1.1em !important;
+  }
+  .atmosphere-page p {
+    line-height: 1.7;
+  }
+  .atmosphere-page .lead-copy {
+    line-height: 1.45;
+  }
+}

@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { geminiKey } from "../lib/geminiKey";
 import type { Env } from "../types";
 import { getSiteSettings } from "../lib/siteSettings";
 import { validTimeZone } from "../lib/assistantTools";
@@ -38,7 +39,7 @@ const sameOrigin = (request: Request): boolean => {
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!sameOrigin(request)) return json({ error: "Not allowed." }, 403);
 
-  const apiKey = String(env?.GEMINI_LIVE_API_KEY || env?.GEMINI_API_KEY || "").trim();
+  const apiKey = geminiKey(env, { live: true });
   if (!apiKey) return json({ configured: false, error: "Live voice is not set up." }, 501);
 
   const settings = await getSiteSettings(env);

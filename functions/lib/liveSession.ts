@@ -18,6 +18,7 @@ const VOICE_ADDENDUM = `
 Live voice conversation:
 - You are speaking out loud, in real time. Use one to three short sentences per turn, and stop so the visitor can answer.
 - Start by greeting the visitor in one short sentence and asking what they would like to know.
+- Never say a link, web address or email address out loud. Say "I've put the link in the chat": the booking link and email are always shown under the microphone.
 - Spell nothing out loud that is on screen; when you need an email address, ask the visitor to say it slowly, then read it back letter by letter and wait for a yes before booking.
 - If the visitor goes quiet or says goodbye, say a brief goodbye.`;
 
