@@ -23,3 +23,28 @@ describe("AI readiness", () => {
     expect(readiness({}).score).toBe(0);
   });
 });
+
+import { timeBack } from "./TimeBack";
+import { countScore, ratingScore, reputation, AREAS } from "./Reputation";
+
+describe("time-back estimator", () => {
+  it("applies the visitor's automation share to their own hours", () => {
+    const r = timeBack({ hours: [3, 2, 2, 3], sharePct: 50, hourly: 40 });
+    expect(r.weekly).toBe(5);
+    expect(r.yearly).toBe(260);
+    expect(r.value).toBe(10400);
+    expect(timeBack({ hours: [NaN, -2, 1, 1], sharePct: 150, hourly: NaN }).weekly).toBe(2);
+  });
+});
+
+describe("reputation snapshot", () => {
+  it("scores what the visitor entered and suggests the weakest areas", () => {
+    expect(ratingScore(4.7)).toBe(3);
+    expect(ratingScore(3.2)).toBe(0);
+    expect(countScore(9)).toBe(0);
+    expect(countScore(200)).toBe(3);
+    const r = reputation({ rating: 3, count: 3, recency: 0, replies: 1, asking: 0 });
+    expect(r.score).toBe(47);
+    expect(r.steps).toEqual([AREAS.recency, AREAS.asking, AREAS.replies]);
+  });
+});

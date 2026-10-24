@@ -382,3 +382,31 @@
     top: 100px;
   }
 }
+
+.atmosphere-page .tool-input.is-hours input {
+  padding-right: 48px;
+}
+.atmosphere-page .tool-input.is-hours::after {
+  content: "hrs";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--f-gold);
+  font-size: 14px;
+  pointer-events: none;
+}
+.atmosphere-page .tool-hint {
+  color: #aeb8c6;
+  font-size: 13px;
+}
+.atmosphere-page .tool-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .atmosphere-page .tool-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
