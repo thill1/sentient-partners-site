@@ -226,9 +226,9 @@ function Navigation() {
   );
 }
 
-/* After the hero, a quiet dock keeps the two next steps in reach: a bottom
-   bar on phones, a floating concierge pill on desktop (the header already
-   carries the booking pill there). It steps aside near the contact finale. */
+/* A quiet dock keeps the next steps in reach: Book a call, Ask Sentient and
+   Call, as a bottom bar on phones and a floating group on desktop. It steps
+   aside near the contact finale. */
 function ActionDock() {
   const [shown, setShown] = useState(false);
   useEffect(() => {
