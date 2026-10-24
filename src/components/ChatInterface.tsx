@@ -60,7 +60,7 @@ function ConciergeNextSteps({ messages, onBook }: { messages: Message[]; onBook:
       intent: 'contact',
       source: 'Concierge handoff',
       ctaLabel: 'Send this conversation to Troy',
-    });
+    }, '', { confirmVisitor: true });
     setHandoff(result.success ? 'sent' : 'failed');
   };
   return (
@@ -69,7 +69,7 @@ function ConciergeNextSteps({ messages, onBook }: { messages: Message[]; onBook:
         Book a 20-minute intro call <ArrowRight size={14} aria-hidden="true" />
       </button>
       {handoff === 'sent' ? (
-        <p className="concierge-next-note" role="status">Sent. Troy will reply personally.</p>
+        <p className="concierge-next-note" role="status">Sent. Troy has your message and will reply by email to {email.trim()}.</p>
       ) : handoff === 'closed' ? (
         <button type="button" className="concierge-next-handoff" onClick={() => setHandoff('open')}>
           Send this conversation to Troy

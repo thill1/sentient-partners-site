@@ -13,6 +13,25 @@ export type ToolUi =
  */
 
 const OUTPUT_SAMPLE_RATE = 24000;
+/** Fixed playback level. */
+const OUTPUT_GAIN = 0.9;
+/** Buffer before the first chunk of each reply plays. */
+const PLAYBACK_LEAD_SECONDS = 0.12;
+/** Room echo keeps arriving briefly after playback stops. */
+const ECHO_TAIL_SECONDS = 0.25;
+
+export const rms = (samples: Float32Array): number => {
+  let sum = 0;
+  for (let i = 0; i < samples.length; i += 1) sum += samples[i] * samples[i];
+  return samples.length ? Math.sqrt(sum / samples.length) : 0;
+};
+
+/**
+ * While the assistant is speaking, is this microphone frame the visitor talking
+ * over it (pass it on) or the assistant's own voice leaking back (send silence)?
+ */
+export const isBargeIn = (micLevel: number, speakerLevel: number): boolean =>
+  micLevel > Math.max(0.03, speakerLevel * 0.6);
 
 export type LiveEndReason = 'user' | 'time' | 'error' | 'server';
 
@@ -125,7 +144,10 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
 
   const micRequest = navigator.mediaDevices
     .getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      // Echo cancellation and noise suppression stay on. Automatic gain control is
+      // off: it keeps re-levelling the microphone around the assistant's voice,
+      // which pumps the level up and down and lets the echo through as "speech".
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: false },
     })
     .catch((error: unknown) => {
       const denied = error instanceof Error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError');
@@ -144,7 +166,25 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   const micStream = micResult.value;
 
   // ---- Playing the assistant's voice -------------------------------------------------
+  // One fixed-level output chain: a steady gain and a gentle compressor so every
+  // chunk plays at the same loudness, with no per-chunk ramps.
+  const outputGain = ctx.createGain();
+  outputGain.gain.value = OUTPUT_GAIN;
+  const leveller = ctx.createDynamicsCompressor();
+  leveller.threshold.value = -18;
+  leveller.knee.value = 12;
+  leveller.ratio.value = 3;
+  leveller.attack.value = 0.01;
+  leveller.release.value = 0.25;
+  outputGain.connect(leveller);
+  leveller.connect(ctx.destination);
+  leveller.connect(analyser);
+  // Measures what the assistant is playing, for the echo gate below.
+  const outputMeter = ctx.createAnalyser();
+  outputMeter.fftSize = 1024;
+  leveller.connect(outputMeter);
   const playing = new Set<AudioBufferSourceNode>();
+  let lastPlaybackEnd = 0;
   let nextStart = 0;
   let speaking = false;
   const setSpeaking = (value: boolean) => {
@@ -160,15 +200,19 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     buffer.copyToChannel(pcm16ToFloat32(samples) as Float32Array<ArrayBuffer>, 0);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
-    source.connect(ctx.destination);
-    source.connect(analyser);
-    nextStart = Math.max(nextStart, ctx.currentTime + 0.03);
+    source.connect(outputGain);
+    // A small buffer at the start of each reply absorbs network jitter, so the
+    // voice does not stutter or dip between chunks.
+    const lead = playing.size === 0 ? PLAYBACK_LEAD_SECONDS : 0.02;
+    nextStart = Math.max(nextStart, ctx.currentTime + lead);
     source.start(nextStart);
     nextStart += buffer.duration;
+    lastPlaybackEnd = nextStart;
     playing.add(source);
     setSpeaking(true);
     source.onended = () => {
       playing.delete(source);
+      source.disconnect();
       if (playing.size === 0) setSpeaking(false);
     };
   };
@@ -319,8 +363,21 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   const live = session;
 
   // ---- Sending the visitor's voice ----------------------------------------------------
-  const send = (floats: Float32Array) => {
+  // Echo gate: while the assistant is talking (and just after), the speaker can
+  // leak back into the microphone. Browser echo cancellation does not always see
+  // Web Audio output, so quiet frames are sent as silence; a visitor speaking up
+  // is far louder than the leak and still interrupts.
+  const meterBuffer = new Float32Array(outputMeter.fftSize);
+  const outputLevel = () => {
+    outputMeter.getFloatTimeDomainData(meterBuffer);
+    return rms(meterBuffer);
+  };
+  const send = (frame: Float32Array) => {
     if (stopped) return;
+    let floats = frame;
+    if (playing.size > 0 || ctx.currentTime < lastPlaybackEnd + ECHO_TAIL_SECONDS) {
+      if (!isBargeIn(rms(frame), outputLevel())) floats = new Float32Array(frame.length);
+    }
     const pcm = floatToPcm16(downsampleTo16k(floats, ctx.sampleRate));
     try {
       live.sendRealtimeInput({ audio: { data: pcm16ToBase64(pcm), mimeType: 'audio/pcm;rate=16000' } });

@@ -63,6 +63,7 @@ export const ContactModal: React.FC = () => {
         ctaLabel: meta.ctaLabel,
       },
       honey,
+      { confirmVisitor: true },
     );
 
     setIsLoading(false);

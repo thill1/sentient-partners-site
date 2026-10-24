@@ -1,4 +1,4 @@
-import { Modality } from "@google/genai";
+import { ActivityHandling, EndSensitivity, Modality, StartSensitivity } from "@google/genai";
 import { TOOL_DECLARATIONS } from "./assistantTools";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
 
@@ -37,6 +37,18 @@ export function buildLiveSessionConfig(siteMemory = "", context: LiveContext = {
     inputAudioTranscription: {},
     outputAudioTranscription: {},
     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICE_NAME } } },
+    // Turn-taking: hard to trigger by background noise or the assistant's own
+    // echo, and patient enough not to cut in when the visitor pauses mid-thought.
+    realtimeInputConfig: {
+      automaticActivityDetection: {
+        disabled: false,
+        startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+        endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+        prefixPaddingMs: 200,
+        silenceDurationMs: 800,
+      },
+      activityHandling: ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
+    },
     tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
   };
 }
@@ -51,6 +63,7 @@ export function toBrowserConfig(config: ReturnType<typeof buildLiveSessionConfig
     inputAudioTranscription: config.inputAudioTranscription,
     outputAudioTranscription: config.outputAudioTranscription,
     speechConfig: config.speechConfig,
+    realtimeInputConfig: config.realtimeInputConfig,
     tools: config.tools,
   };
 }
