@@ -24,6 +24,8 @@ function getCurrentRoute(hash: string): AppRoute {
 export function pageFor(path: string): PageName {
   if (path.startsWith("/tools/missed-call-calculator")) return "missed-call";
   if (path.startsWith("/tools/ai-readiness")) return "ai-readiness";
+  if (path.startsWith("/tools/time-back")) return "time-back";
+  if (path.startsWith("/tools/reputation")) return "reputation";
   return path.startsWith("/tools") ? "tools" : "home";
 }
 

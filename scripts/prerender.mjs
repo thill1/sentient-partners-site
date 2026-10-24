@@ -45,7 +45,7 @@ try {
     {
       path: "/tools/",
       title: "Free tools for growing businesses | Sentient Partners",
-      desc: "Free tools from Sentient Partners: a website check, a missed-call calculator and an AI readiness check. Quick, plain-English and free.",
+      desc: "Free tools from Sentient Partners: website check, missed-call calculator, AI readiness check, time-back estimator and reputation snapshot.",
     },
     {
       path: "/tools/missed-call-calculator/",
@@ -56,6 +56,16 @@ try {
       path: "/tools/ai-readiness/",
       title: "AI readiness check | Sentient Partners",
       desc: "Nine quick questions on calls, booking, follow-up, invoicing and data. Get a score out of 100 and three practical next steps.",
+    },
+    {
+      path: "/tools/time-back/",
+      title: "Time-back estimator | Sentient Partners",
+      desc: "Estimate the hours a week and a year you could get back from scheduling, invoicing, follow-ups and retyping, using your own numbers.",
+    },
+    {
+      path: "/tools/reputation/",
+      title: "Reputation snapshot | Sentient Partners",
+      desc: "A quick self-check of your rating, review count, recency and replies. Get a score out of 100 and three practical next steps.",
     },
   ];
   const homeTitle = /Sentient Partners \| Business Strategy\. Intelligent Systems\. Measurable Results\./g;

@@ -25,6 +25,18 @@ const tools = [
     title: "AI readiness check",
     copy: "Nine quick questions, a score out of 100 and three next steps.",
   },
+  {
+    href: "/tools/time-back/",
+    eyebrow: "Time",
+    title: "Time-back estimator",
+    copy: "Hours a week you might get back from admin, from your own numbers.",
+  },
+  {
+    href: "/tools/reputation/",
+    eyebrow: "Reviews",
+    title: "Reputation snapshot",
+    copy: "A quick self-check of your reviews, with three next steps.",
+  },
 ];
 
 export default function ToolsPage() {
