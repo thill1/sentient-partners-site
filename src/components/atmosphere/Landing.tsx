@@ -6,7 +6,6 @@ import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL, BRAND } from "../../content/siteContent";
 import {
   openBookingModal,
-  openContactModal,
   openSentientChat,
 } from "../../lib/siteActions";
 import { GoldenGate } from "./GoldenGate";
@@ -25,6 +24,7 @@ import {
 import FooterFinale from "./FooterFinale";
 import SignupBand from "./SignupBand";
 import SiteCheck from "./SiteCheck";
+import { RelayShowcase } from "./RelayShowcase";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
@@ -371,46 +371,11 @@ function WorkSection() {
             </h3>
             <p>Websites and estimating tools that make the next step clear.</p>
           </article>
-          <article>
-            <div className="work-visual relay-visual" aria-hidden="true">
-              <div className="relay-symbol">
-                r<span>elay</span>
-              </div>
-              <div className="relay-lines">
-                <span>Customers</span>
-                <i />
-                <span>Operations</span>
-                <i />
-                <span>Insights</span>
-              </div>
-            </div>
-            <p className="eyebrow">Sentient Relay · In development</p>
-            <h3>
-              Connected operations.
-              <br />A stronger foundation.
-            </h3>
-            <p>
-              Our service-business platform, built on what our custom apps and
-              QuickBooks-connected workflows taught us.
-            </p>
-            <button
-              className="text-link"
-              onClick={() =>
-                openContactModal({
-                  source: "Sentient Relay interest",
-                  inquiry:
-                    "I would like to learn about Sentient Relay, currently in development.",
-                })
-              }
-            >
-              Ask about Sentient Relay{" "}
-              <ArrowRight size={15} aria-hidden="true" />
-            </button>
-          </article>
         </div>
         <p className="work-disclosure">
           Illustrations of the kinds of systems we build.
         </p>
+        <RelayShowcase />
       </div>
     </section>
   );

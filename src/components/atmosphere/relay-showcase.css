@@ -1,0 +1,99 @@
+.relay-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
+  margin-top: clamp(56px, 8vw, 110px);
+  padding: clamp(28px, 4vw, 56px);
+  border-radius: 28px;
+  background: radial-gradient(120% 90% at 85% 20%, #1a3266 0%, #0d1f4e 55%, #081536 100%);
+  border: 1px solid #c8b79533;
+  color: #f3f0e8;
+}
+.relay-showcase .eyebrow { color: #c8b795; }
+.relay-showcase h3 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(34px, 3.6vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 10px 0 18px;
+}
+.relay-showcase h3 em { color: #e6d6b5; }
+.rs-outcome { font-size: 17px; line-height: 1.6; color: #dfe4ea; max-width: 30em; }
+.rs-points { list-style: none; margin: 20px 0 26px; padding: 0; display: grid; gap: 10px; }
+.rs-points li { position: relative; padding-left: 22px; font-size: 15px; color: #c9d1da; }
+.rs-points li::before {
+  content: ""; position: absolute; left: 0; top: 0.62em;
+  width: 10px; height: 1px; background: #c8b795;
+}
+.relay-showcase .text-link { color: #f3f0e8; border-color: #c8b79599; }
+.rs-gallery { min-width: 0; }
+.rs-track {
+  list-style: none; margin: 0; padding: 18px 4px 28px;
+  display: flex; gap: 20px;
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.rs-track::-webkit-scrollbar { display: none; }
+.rs-track:focus-visible { outline: 2px solid #c8b795; outline-offset: 4px; border-radius: 12px; }
+.rs-phone {
+  flex: 0 0 auto; width: clamp(190px, 15vw, 230px);
+  scroll-snap-align: center;
+  padding: 9px; border-radius: 38px;
+  background: linear-gradient(160deg, #2a3550, #0b1226 60%, #1c2740);
+  box-shadow: 0 0 0 1px #ffffff1f inset, 0 28px 60px -24px #000c, 0 0 0 1px #00000080;
+}
+.rs-phone img {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 640 / 1432; object-fit: cover; object-position: top;
+  border-radius: 30px; background: #0a1430;
+}
+/* Desktop: a gentle stagger so the row reads as a set, not a strip. */
+@media (min-width: 901px) {
+  .rs-phone:nth-child(even) { transform: translateY(22px); }
+}
+.rs-dots { display: flex; justify-content: center; gap: 4px; }
+.rs-dots button {
+  width: 28px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: grid; place-items: center;
+}
+.rs-dots button::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: #f3f0e85c; transition: width 0.25s, background 0.25s;
+}
+.rs-dots button[aria-current="true"]::before { width: 20px; border-radius: 4px; background: #c8b795; }
+.rs-dots button:focus-visible { outline: 2px solid #c8b795; border-radius: 6px; }
+.rs-note { margin-top: 8px; text-align: center; font-size: 12px; color: #9fb0c0; }
+@media (max-width: 900px) {
+  .relay-showcase { grid-template-columns: minmax(0, 1fr); padding: 28px 0 24px; border-radius: 22px; }
+  .rs-copy { padding: 0 22px; }
+  .rs-outcome { font-size: 16px; }
+  .rs-track { padding-inline: calc(50% - 115px); gap: 16px; }
+  .rs-phone { width: 230px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rs-dots button::before { transition: none; }
+}
+/* Two illustration cards remain above the showcase. */
+@media (min-width: 851px) {
+  .work-section .work-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* The Work section is light; the showcase panel is navy, so set its ink explicitly. */
+.atmosphere-page .work-section .relay-showcase h3,
+.atmosphere-page .work-section .relay-showcase .rs-copy h3 { color: #f3f0e8; }
+.atmosphere-page .work-section .relay-showcase h3 em { color: #e6d6b5; }
+.atmosphere-page .work-section .relay-showcase .eyebrow { color: #c8b795; }
+.atmosphere-page .work-section .relay-showcase .text-link { color: #f3f0e8; border-color: #c8b79599; }
+.atmosphere-page .work-section .relay-showcase .text-link:hover { color: #e6d6b5; }
+/* polish.css inks Work-section links and type for paper with !important. */
+.atmosphere-page main .work-section .relay-showcase .text-link {
+  color: #f3f0e8 !important;
+  border-bottom-color: #c8b795 !important;
+}
+.atmosphere-page main .work-section .relay-showcase h3 { color: #f3f0e8 !important; }
+.atmosphere-page main .work-section .relay-showcase h3 em { color: #e6d6b5 !important; }
+.atmosphere-page main .work-section .relay-showcase p,
+.atmosphere-page main .work-section .relay-showcase li { color: #dfe4ea !important; }
+.atmosphere-page main .work-section .relay-showcase .eyebrow { color: #c8b795 !important; }
+.atmosphere-page main .work-section .relay-showcase .rs-note { color: #9fb0c0 !important; }
