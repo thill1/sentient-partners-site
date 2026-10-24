@@ -5,30 +5,12 @@ import "./relay-showcase.css";
 
 /** Real Relay screens (sample data), captured from the app. */
 const screens = [
-  [
-    "relay-home",
-    "Relay home screen: today's date, a welcome, and shortcuts to add or find a customer, create an estimate or invoice, and record a payment",
-  ],
-  [
-    "relay-calendar",
-    "Relay calendar day view with scheduled visits, addresses and open time slots",
-  ],
-  [
-    "relay-jobs",
-    "Relay jobs list with open and completed tabs, job statuses, and a Record payment button on a job with a balance due",
-  ],
-  [
-    "relay-estimate",
-    "Relay estimate screen with the customer's details, the work needed and the estimate total",
-  ],
-  [
-    "relay-sign",
-    "Relay approval screen where the customer types their name and signs the estimate on the phone",
-  ],
-  [
-    "relay-paid",
-    "Relay payment screen showing the amount received and the payment method",
-  ],
+  ["relay-today", 472, 1024, "Relay Today view: the next visit card, a Needs you list and the Your day timeline"],
+  ["relay-calendar", 640, 1432, "Relay calendar day view with scheduled visits, addresses and open time slots"],
+  ["relay-jobs", 640, 1432, "Relay jobs list with open and completed tabs, job statuses, and a Record payment button on a job with a balance due"],
+  ["relay-estimate", 640, 1432, "Relay estimate screen with the customer's details, the work needed and the estimate total"],
+  ["relay-sign", 640, 1432, "Relay approval screen where the customer types their name and signs the estimate on the phone"],
+  ["relay-paid", 640, 1432, "Relay payment screen showing the amount received and the payment method"],
 ] as const;
 
 export function RelayShowcase() {
@@ -102,13 +84,13 @@ export function RelayShowcase() {
           aria-label="Relay app screens"
           tabIndex={0}
         >
-          {screens.map(([file, alt]) => (
+          {screens.map(([file, w, h, alt]) => (
             <li key={file} className="rs-phone">
               <img
                 src={`/showcase/relay/${file}.webp`}
                 alt={alt}
-                width="640"
-                height="1432"
+                width={w}
+                height={h}
                 loading="lazy"
                 decoding="async"
               />

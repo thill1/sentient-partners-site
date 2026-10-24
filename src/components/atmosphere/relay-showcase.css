@@ -46,7 +46,7 @@
 }
 .rs-phone img {
   display: block; width: 100%; height: auto;
-  aspect-ratio: 640 / 1432; object-fit: cover; object-position: top;
+  /* Each screen keeps its own aspect ratio (from its width/height). */
   border-radius: 30px; background: #0a1430;
 }
 /* Desktop: a gentle stagger so the row reads as a set, not a strip. */
