@@ -168,6 +168,11 @@ export default function AiReadiness() {
                 Start again
               </button>
             </div>
+            <p className="tool-related">
+              Free templates: <a href="/templates/automation-starter-checklist.pdf" download>Automation starter checklist (PDF)</a>
+              {" · "}
+              <a href="/templates/ai-use-policy.docx" download>AI use policy (Word)</a>
+            </p>
             <ToolBack label="Back to all tools" end />
           </div>
         )}

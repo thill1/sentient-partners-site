@@ -93,6 +93,9 @@ export default function TimeBack() {
             set. Not a forecast.
           </p>
           <ToolCta source="Time-back estimator" context={`Time-back estimator: about ${fmt(r.weekly)} hours a week (visitor's inputs).`} />
+          <p className="tool-related">
+            Free template: <a href="/templates/automation-starter-checklist.pdf" download>Automation starter checklist (PDF)</a>
+          </p>
           <ToolBack label="Back to all tools" end />
         </div>
       </div>

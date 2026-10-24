@@ -9,6 +9,10 @@ from reportlab.pdfbase.ttfonts import TTFont as RLFont
 from reportlab.platypus import (BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether)
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
+from reportlab.graphics.shapes import Drawing, Rect
+
+def tickbox():
+    d = Drawing(10, 10); d.add(Rect(0.5, 0.5, 9, 9, strokeColor=HexColor("#8A7650"), fillColor=None, strokeWidth=0.8)); return d
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "public", "templates")
@@ -209,4 +213,155 @@ def build_scorecard_pdf():
 
 for p in [build_xlsx(), build_csv(), build_scorecard_pdf()]:
     pass
+
+# ---- 4. Estimate and quote template ------------------------------------------------------
+EST_LINES = 12
+FOLLOW_UP = [
+    ("Day estimate is sent", "Send the estimate with a short note and the one next step to accept."),
+    ("2 days later", "Check it arrived and ask if there are any questions."),
+    ("1 week later", "Offer to adjust scope or timing if needed."),
+    ("2 weeks later", "A last friendly check-in; then mark it won, lost or on hold."),
+]
+
+def build_estimate_xlsx():
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    wb = Workbook(); ws = wb.active; ws.title = "Estimate"
+    navy, paper = "0D1F4E", "F6F3EC"
+    thin = Side(style="thin", color="D9D4C7"); box = Border(top=thin, bottom=thin, left=thin, right=thin)
+    ws["A1"] = "[Your business name]"; ws["A1"].font = Font(name="Georgia", size=18, color=navy)
+    ws["A2"] = "[Address] · [Phone] · [Email] · [Website]"; ws["A2"].font = Font(size=9, color="5B6577")
+    ws["E1"] = "ESTIMATE"; ws["E1"].font = Font(bold=True, size=14, color=navy); ws["E1"].alignment = Alignment(horizontal="right")
+    info = [("Estimate #", "[0001]"), ("Date", "[Date]"), ("Valid until", "[Date]")]
+    for i, (k, v) in enumerate(info):
+        ws.cell(2 + i, 4, k).font = Font(bold=True, color=navy); ws.cell(2 + i, 5, v)
+    ws["A6"] = "Prepared for"; ws["A6"].font = Font(bold=True, color=navy)
+    for i, t in enumerate(["[Customer name]", "[Address]", "[Phone / email]"]): ws.cell(7 + i, 1, t)
+    hr = 11
+    for j, h in enumerate(["Description", "", "Qty", "Unit price", "Amount"], 1):
+        c = ws.cell(hr, j, h); c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=navy)
+    ws.merge_cells(start_row=hr, start_column=1, end_row=hr, end_column=2)
+    for r in range(hr + 1, hr + 1 + EST_LINES):
+        ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=2)
+        ws.cell(r, 3).number_format = "0.##"; ws.cell(r, 4).number_format = '"$"#,##0.00'
+        ws.cell(r, 5, f'=IF(AND(C{r}<>"",D{r}<>""),C{r}*D{r},"")').number_format = '"$"#,##0.00'
+        for col in range(1, 6): ws.cell(r, col).border = box
+    ws.cell(hr + 1, 1, "[Line item, e.g. labor]")
+    last = hr + EST_LINES; t = last + 2
+    rows = [("Subtotal", f"=SUM(E{hr+1}:E{last})"), ("Tax rate", 0), ("Tax", f"=E{t}*E{t+1}"), ("Total", f"=E{t}+E{t+2}")]
+    for i, (k, v) in enumerate(rows):
+        r = t + i; ws.cell(r, 4, k).font = Font(bold=True, color=navy); c = ws.cell(r, 5, v)
+        c.number_format = "0.00%" if k == "Tax rate" else '"$"#,##0.00'; c.border = box
+        if k == "Tax rate": c.fill = PatternFill("solid", fgColor=paper)
+        if k == "Total": c.font = Font(bold=True, size=12, color=navy)
+    ws.cell(t + 1, 6, "← enter your rate").font = Font(size=8, color="5B6577")
+    tr = t + 6
+    ws.cell(tr, 1, "Terms").font = Font(bold=True, color=navy)
+    for i, line in enumerate(["[Payment terms, e.g. deposit and when the balance is due]", "[What's included and not included]", "[Warranty or guarantee, if any]", "[How to accept: sign below or reply to this email]"]):
+        ws.cell(tr + 1 + i, 1, line)
+    ws.cell(tr + 6, 1, "Accepted by: ______________________     Date: __________")
+    ws.column_dimensions["A"].width = 30; ws.column_dimensions["B"].width = 18
+    for col, wdt in zip("CDEF", [8, 14, 16, 18]): ws.column_dimensions[col].width = wdt
+    fu = wb.create_sheet("Follow-up schedule")
+    fu["A1"] = "Follow-up schedule (a suggestion; adjust to suit)"; fu["A1"].font = Font(name="Georgia", size=15, color=navy)
+    for j, h in enumerate(["When", "What to do", "Done"], 1):
+        c = fu.cell(3, j, h); c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor=navy)
+    for i, (w, d) in enumerate(FOLLOW_UP):
+        fu.cell(4 + i, 1, w); fu.cell(4 + i, 2, d); fu.cell(4 + i, 3, "☐")
+    fu.column_dimensions["A"].width = 22; fu.column_dimensions["B"].width = 70; fu.column_dimensions["C"].width = 8
+    fu["A10"] = "Sentient Partners · sentientpartners.ai · hello@sentientpartners.ai"; fu["A10"].font = Font(size=9, color="5B6577")
+    path = os.path.join(OUT, "estimate-quote-template.xlsx"); wb.save(path); return path
+
+def build_estimate_pdf():
+    path = os.path.join(OUT, "estimate-quote-template.pdf")
+    d = doc(path, "Estimate and quote template")
+    head = Table([[Paragraph("<b>[Your business name]</b><br/>[Address]<br/>[Phone] · [Email]", S["script"]),
+                   Paragraph("<b>ESTIMATE</b><br/>Estimate # [0001]<br/>Date [ ]<br/>Valid until [ ]", S["script"])]], colWidths=[d.width * 0.6, d.width * 0.4])
+    cust = Paragraph("<b>Prepared for</b><br/>[Customer name] · [Address] · [Phone / email]", S["script"])
+    lines = [["Description", "Qty", "Unit price", "Amount"]] + [["", "", "", ""] for _ in range(8)]
+    lines += [["", "", "Subtotal", ""], ["", "", "Tax ( %)", ""], ["", "", "Total", ""]]
+    t = Table(lines, colWidths=[d.width * 0.55, d.width * 0.1, d.width * 0.17, d.width * 0.18], rowHeights=[20] + [20] * 11)
+    t.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), NAVY), ("TEXTCOLOR", (0, 0), (-1, 0), white), ("FONTNAME", (0, 0), (-1, -1), "Sans"),
+        ("FONTNAME", (0, 0), (-1, 0), "SansBold"), ("FONTSIZE", (0, 0), (-1, -1), 8.5), ("GRID", (0, 0), (-1, 8), 0.5, HexColor("#D9D4C7")),
+        ("GRID", (2, 9), (-1, -1), 0.5, HexColor("#D9D4C7")), ("FONTNAME", (2, 9), (2, -1), "SansBold"), ("TEXTCOLOR", (2, 9), (2, -1), NAVY),
+        ("BACKGROUND", (2, 11), (-1, 11), PAPER), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+    fu = Table([["When", "What to do", "Done"]] + [[w, Paragraph(x, S["script"]), tickbox()] for w, x in FOLLOW_UP], colWidths=[d.width * 0.22, d.width * 0.68, d.width * 0.1])
+    fu.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), NAVY), ("TEXTCOLOR", (0, 0), (-1, 0), white), ("FONTNAME", (0, 0), (-1, -1), "Sans"),
+        ("FONTNAME", (0, 0), (-1, 0), "SansBold"), ("FONTSIZE", (0, 0), (-1, -1), 8.5), ("GRID", (0, 0), (-1, -1), 0.5, HexColor("#D9D4C7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+    d.build([Paragraph("Estimate and quote template", S["h1"]), head, Spacer(1, 8), cust, Spacer(1, 10), t,
+             Paragraph("Terms", S["h2"]), Paragraph("[Payment terms] · [What's included and not included] · [Warranty, if any] · [How to accept]", S["body"]),
+             Paragraph("Accepted by: ______________________________&nbsp;&nbsp;&nbsp; Date: ____________", S["body"]),
+             Paragraph("Follow-up schedule (a suggestion; adjust to suit)", S["h2"]), fu])
+    return path
+
+# ---- 5. Automation starter checklist -----------------------------------------------------
+CHECKLIST = [
+    ("Missed-call text-back", "Calling people back hours later, or never."),
+    ("Online booking with reminders", "Phone tag to find a time, and reminder calls."),
+    ("Quote follow-ups", "Remembering to chase every estimate."),
+    ("Review requests after each job", "Asking in person, if at all."),
+    ("Invoices from the job record, paid online", "Typing invoices and waiting on checks."),
+    ("Payment reminders", "Awkward calls about overdue bills."),
+    ("Leads into one list", "Copying form emails and voicemails into a spreadsheet."),
+    ("Confirmations and on-my-way texts", "Texting each customer by hand."),
+    ("Syncing customers between tools", "Retyping the same details in two or three places."),
+    ("A weekly numbers summary", "Pulling figures together by hand, or not at all."),
+]
+
+def build_checklist_pdf():
+    path = os.path.join(OUT, "automation-starter-checklist.pdf")
+    d = doc(path, "Automation starter checklist")
+    rows = [["", "#", "Automate", "What it replaces"]] + [[tickbox(), str(i), Paragraph(f"<b>{a}</b>", S["script"]), Paragraph(r, S["script"])] for i, (a, r) in enumerate(CHECKLIST, 1)]
+    t = Table(rows, colWidths=[0.35 * inch, 0.35 * inch, d.width * 0.4, d.width - 0.7 * inch - d.width * 0.4])
+    t.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), NAVY), ("TEXTCOLOR", (0, 0), (-1, 0), white), ("FONTNAME", (0, 0), (-1, -1), "Sans"),
+        ("FONTNAME", (0, 0), (-1, 0), "SansBold"), ("FONTSIZE", (0, 0), (-1, -1), 9), ("TEXTCOLOR", (1, 1), (1, -1), HexColor("#8A7650")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, PAPER]), ("LINEBELOW", (0, 0), (-1, -1), 0.5, HexColor("#D9D4C7")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 1), (-1, -1), 8), ("BOTTOMPADDING", (0, 1), (-1, -1), 8)]))
+    d.build([Paragraph("Automation starter checklist", S["h1"]), Paragraph("The first ten things to automate, in order.", S["sub"]),
+             Paragraph("Work down the list. Do one at a time, check it works for a couple of weeks, then move on.", S["body"]),
+             Spacer(1, 6), t, Spacer(1, 10),
+             Paragraph("Keep a person in the loop for anything a customer sees until you trust it. Questions? hello@sentientpartners.ai", S["note"])])
+    return path
+
+# ---- 6. AI use policy for small teams ----------------------------------------------------
+POLICY = [
+    ("Why we have this", ["AI tools can save us time. This page sets out how we use them safely, so customer trust and our own information stay protected."]),
+    ("Fine to use AI for", ["Drafting emails, posts and replies that a person reviews before sending.", "Summarising our own non-confidential notes, manuals or public information.", "Brainstorming, checklists, outlines and rewording.", "Explaining a topic or a spreadsheet formula."]),
+    ("Never put into AI tools", ["Customer names with contact details, addresses, or account numbers.", "Card, bank, payment or ID details of anyone.", "Passwords, access codes or keys.", "Health, legal or HR matters about any person.", "Contracts, pricing or anything we've agreed to keep confidential."]),
+    ("Always", ["Use only the tools listed below, with a work account.", "Check facts, figures and names before anything goes out.", "Stay responsible for the final wording; AI drafts, people decide.", "Ask if you're unsure, before you paste."]),
+    ("Approved tools", ["[Tool name] for [use]", "[Tool name] for [use]"]),
+    ("Questions", ["Ask [owner or manager name] at [email]. We review this policy every [6 months] on [date]."]),
+]
+POLICY_NOTE = "This is a plain-English starting point, not legal advice. Check local rules and any industry requirements that apply to your business."
+
+def build_policy_pdf():
+    path = os.path.join(OUT, "ai-use-policy.pdf")
+    d = doc(path, "AI use policy")
+    story = [Paragraph("AI use policy for [Business]", S["h1"]), Paragraph("What we can and can't put into AI tools.", S["sub"])]
+    for h, items in POLICY:
+        story.append(Paragraph(h, S["h2"]))
+        story += [Paragraph(("• " if len(items) > 1 else "") + i, S["body"]) for i in items]
+    story += [Spacer(1, 6), Paragraph(POLICY_NOTE, S["note"])]
+    d.build(story); return path
+
+def build_policy_docx():
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+    navy, gold = RGBColor(0x0D, 0x1F, 0x4E), RGBColor(0x8A, 0x76, 0x50)
+    doc_ = Document()
+    st = doc_.styles["Normal"]; st.font.name = "Calibri"; st.font.size = Pt(10.5)
+    t = doc_.add_paragraph(); r = t.add_run("AI use policy for [Business]"); r.font.size = Pt(22); r.font.color.rgb = navy; r.font.name = "Georgia"
+    s = doc_.add_paragraph(); r = s.add_run("What we can and can't put into AI tools."); r.italic = True; r.font.color.rgb = gold
+    for h, items in POLICY:
+        p = doc_.add_paragraph(); r = p.add_run(h); r.bold = True; r.font.size = Pt(13); r.font.color.rgb = navy
+        for i in items:
+            doc_.add_paragraph(i, style="List Bullet" if len(items) > 1 else None)
+    n = doc_.add_paragraph(); r = n.add_run(POLICY_NOTE); r.italic = True; r.font.size = Pt(9)
+    sec = doc_.sections[0]
+    fp = sec.footer.paragraphs[0]; fr = fp.add_run("Template from Sentient Partners · sentientpartners.ai · hello@sentientpartners.ai"); fr.font.size = Pt(8)
+    path = os.path.join(OUT, "ai-use-policy.docx"); doc_.save(path); return path
+
+for p in [build_estimate_xlsx(), build_estimate_pdf(), build_checklist_pdf(), build_policy_pdf(), build_policy_docx()]:
+    pass
+
 print("\n".join(sorted(os.listdir(OUT))))
