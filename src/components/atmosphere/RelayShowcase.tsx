@@ -6,11 +6,11 @@ import "./relay-showcase.css";
 /** Real Relay screens (sample data), captured from the app. */
 const screens = [
   ["relay-today", 640, 1387, "Relay Today view: the next visit card, a Needs you list and the Your day timeline"],
-  ["relay-calendar", 640, 1432, "Relay calendar day view with scheduled visits, addresses and open time slots"],
-  ["relay-jobs", 640, 1432, "Relay jobs list with open and completed tabs, job statuses, and a Record payment button on a job with a balance due"],
-  ["relay-estimate", 640, 1432, "Relay estimate screen with the customer's details, the work needed and the estimate total"],
-  ["relay-sign", 640, 1432, "Relay approval screen where the customer types their name and signs the estimate on the phone"],
-  ["relay-paid", 640, 1432, "Relay payment screen showing the amount received and the payment method"],
+  ["relay-job", 640, 1387, "Relay job screen with the customer's address, call, text and map buttons, the next step and the appointment details"],
+  ["relay-calendar", 640, 1387, "Relay calendar day view with a week strip, scheduled visits with their status and open time slots"],
+  ["relay-jobs", 640, 1387, "Relay jobs list with open and completed tabs, today's jobs and a Record payment button on a job that needs payment"],
+  ["relay-customers", 640, 1387, "Relay customers list with search, A to Z and recent sorting, and each customer's location and phone number"],
+  ["relay-documents", 640, 1387, "Relay documents screen listing estimates and invoices with amounts and statuses such as waiting, paid and approved"],
 ] as const;
 
 export function RelayShowcase() {
@@ -59,9 +59,9 @@ export function RelayShowcase() {
           payment, from the field or the office.
         </p>
         <ul className="rs-points">
-          <li>Calendar and jobs, open and completed, in one place</li>
-          <li>Estimates customers approve and sign on their phone</li>
-          <li>Payments recorded against each job</li>
+          <li>Today, calendar and jobs in one place</li>
+          <li>Customer records with call, text and directions</li>
+          <li>Estimates and invoices tracked through to paid</li>
         </ul>
         <button
           type="button"
