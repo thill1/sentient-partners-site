@@ -23,7 +23,7 @@ export default function SignupBand() {
         <div>
           <p className="signup-eyebrow">Insights</p>
           <h2 id="signup-title" className="signup-title">
-            A short, practical note for local business owners, every other week.
+            A short, practical note for owners of growing businesses, every other week.
           </h2>
           {__INSIGHTS_LIVE__ && (
             <a className="signup-latest" href="/insights/">

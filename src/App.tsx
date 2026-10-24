@@ -21,7 +21,11 @@ function getCurrentRoute(hash: string): AppRoute {
   return hash === "#/admin" ? "admin" : "home";
 }
 
-function App() {
+function App({ path }: { path?: string } = {}) {
+  const page =
+    (path ?? (typeof window === "undefined" ? "/" : window.location.pathname)).startsWith("/tools")
+      ? "tools"
+      : "home";
   const siteSettings = useSiteSettings();
 
   useEffect(() => {
@@ -180,7 +184,7 @@ function App() {
 
   return (
     <div>
-      <Landing banner={siteSettings.bannerState} />
+      <Landing banner={siteSettings.bannerState} page={page} />
 
       <ChatInterface showLauncher={false} />
       <BookingModal />
