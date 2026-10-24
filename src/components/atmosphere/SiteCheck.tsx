@@ -140,9 +140,8 @@ export default function SiteCheck() {
             <em>hold up?</em>
           </h2>
           <p>
-            Enter your address. In about 20 seconds you'll get a plain-English
-            check of the basics that win local customers: phones, search, speed,
-            and how easy you are to call or book.
+            A plain-English check of phones, search, speed and booking, in
+            about 20 seconds.
           </p>
           <form className="sc-form" onSubmit={run}>
             <label htmlFor={inputId}>Your website</label>
@@ -172,8 +171,8 @@ export default function SiteCheck() {
               </button>
             </div>
             <p id={`${inputId}-note`} className="sc-note">
-              We look at your public homepage only. Nothing is stored unless you
-              ask us to email the report.
+              Public homepage only. Nothing is stored unless you ask for the
+              report.
             </p>
           </form>
         </div>

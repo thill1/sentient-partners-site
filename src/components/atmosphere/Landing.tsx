@@ -350,19 +350,6 @@ function WorkSection() {
             <p>
               Field apps that connect scheduling, job details and invoicing.
             </p>
-            <button
-              className="text-link"
-              onClick={() =>
-                openContactModal({
-                  source: "Field operations work",
-                  inquiry:
-                    "I would like to discuss field operations for my business.",
-                })
-              }
-            >
-              Talk about field operations{" "}
-              <ArrowRight size={15} aria-hidden="true" />
-            </button>
           </article>
           <article>
             <div className="work-visual customer-visual" aria-hidden="true">
@@ -386,19 +373,6 @@ function WorkSection() {
               From the first inquiry.
             </h3>
             <p>Websites and estimating tools that make the next step clear.</p>
-            <button
-              className="text-link"
-              onClick={() =>
-                openContactModal({
-                  source: "Customer experience work",
-                  inquiry:
-                    "I would like to discuss my website and customer experience.",
-                })
-              }
-            >
-              Talk about your customer experience{" "}
-              <ArrowRight size={15} aria-hidden="true" />
-            </button>
           </article>
           <article>
             <div className="work-visual relay-visual" aria-hidden="true">
@@ -665,9 +639,6 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
           </div>
           <div className="footer-bottom">
             <span>© {new Date().getFullYear()} Sentient Partners.</span>
-            <span>
-              Based in Auburn. Working across Northern California and beyond.
-            </span>
             <a href="/privacy.html">Privacy</a>
           </div>
         </div>
