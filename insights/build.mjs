@@ -102,6 +102,7 @@ ${body}
 </footer>
 <script src="/insights/signup.js" defer></script>
 <script src="/insights/filter.js" defer></script>
+<script src="/insights/track.js" defer></script>
 </body>
 </html>
 `;
@@ -117,7 +118,7 @@ function renderBody(md) {
 
 const dir = join(OUT, "insights");
 mkdirSync(dir, { recursive: true });
-for (const f of ["insights.css", "signup-band.css", "signup.js", "filter.js"]) copyFileSync(join("insights", f), join(dir, f));
+for (const f of ["insights.css", "signup-band.css", "signup.js", "filter.js", "track.js"]) copyFileSync(join("insights", f), join(dir, f));
 
 const typeLabel = (i) =>
   i.type === "newsletter" ? `Newsletter · Issue ${pad(i.issue)}` : i.type === "article" ? "Article" : SOCIAL[i.type];
@@ -209,7 +210,6 @@ let sm = readFileSync(smPath, "utf8");
 if (approved.length) {
   const urls = [
     `<url><loc>${SITE}/insights/</loc><lastmod>${approved[0].date}</lastmod></url>`,
-    ...FILTERS.filter((f) => f.path !== "/insights/").map((f) => `<url><loc>${SITE}${f.path}</loc><lastmod>${approved[0].date}</lastmod></url>`),
     ...approved.map((i) => `<url><loc>${SITE}/insights/${i.slug}/</loc><lastmod>${i.date}</lastmod></url>`),
   ].join("");
   sm = sm.replace("</urlset>", `${urls}</urlset>`);

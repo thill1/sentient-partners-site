@@ -1,3 +1,4 @@
+import { track } from "../lib/track";
 // Server-backed Gemini service for Cloudflare Pages.
 // ✅ No client API key. Calls /api/gemini.
 import { createVoiceRequestBody } from "../lib/voicePlayback";
@@ -348,6 +349,7 @@ export const sendMessageToGemini = async function* (message: string) {
   try {
     const historyToSend = memory.slice(-6);
 
+    track("chat_send", "chat");
     const resp = await fetch("/api/gemini", {
       method: "POST",
       signal: AbortSignal.timeout(CHAT_CLIENT_TIMEOUT_MS),

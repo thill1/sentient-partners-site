@@ -1,5 +1,8 @@
 {
   "name": "sentient-partners-site",
   "compatibility_date": "2026-03-08",
-  "pages_build_output_dir": "dist"
+  "pages_build_output_dir": "dist",
+  // KV for click counts (track:YYYY-MM-DD), voice limits and admin settings.
+  // Top level, so it applies to Production and Preview deployments.
+  "kv_namespaces": [{ "binding": "SITE_SETTINGS", "id": "ebab96f327b149429006ddfd338a9546" }]
 }
