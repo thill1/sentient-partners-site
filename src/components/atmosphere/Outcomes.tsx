@@ -282,7 +282,7 @@ export default function Outcomes() {
             <p className="ov-intro">
               Missed calls. Lost leads. Hours of double entry.
               <br />
-              Start where it costs you most.
+              Pick one. We bring the plan and the systems.
             </p>
             <ol className="ov-rail" aria-hidden="true">
               {outcomes.map(([title], i) => (
