@@ -426,8 +426,8 @@ export function Capabilities() {
               </h2>
             </div>
             <p>
-              Each window is interactive. The left side is what your customers
-              see; the right side is what lands with your team.
+              Interactive samples: what your customers see, and what reaches
+              your team.
             </p>
           </div>
           <div className="cx-atelier">

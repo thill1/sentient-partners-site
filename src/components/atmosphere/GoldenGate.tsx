@@ -1,10 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowRight } from "lucide-react";
-import { BOOKING_URL } from "../../content/siteContent";
-import { openBookingModal, openSentientChat } from "../../lib/siteActions";
+import { ArrowDown } from "lucide-react";
 import { HeroClock } from "./HeroClock";
 import { hasHardwareGpu } from "../../lib/gpu";
-import { ConciergeLauncher } from "../ConciergeLauncher";
 // After the shared sheet, so scene rules win over its defaults.
 import "./atmosphere.css";
 import "./scenes.css";
@@ -128,7 +125,18 @@ export function GoldenGate() {
                 </Suspense>
               )}
               <div className="scene-bridge">
+                {/* The artwork has its deck streetlights painted in. The unlit
+                    copy (lamps retouched out) sits underneath; the lit copy
+                    fades in only from sunrise (faint) to dusk and night. */}
                 <img
+                  className="bridge-unlit"
+                  src="/atmosphere/bridge-unlit.webp"
+                  alt=""
+                  width="1536"
+                  height="1024"
+                />
+                <img
+                  className="bridge-lit"
                   src="/atmosphere/bridge.webp"
                   alt=""
                   width="1536"
@@ -151,34 +159,13 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
-          <p className="hero-kicker">Business Strategy. Intelligent Systems. Measurable Results.</p>
           <h1 id="hero-title">
             <span>Global experience. </span>
             <em>Local impact.</em>
           </h1>
-          <p className="hero-description">
-            After senior executive leadership roles at Hewlett-Packard and
-            E*TRADE Financial, Troy Hill founded Sentient Partners to be a
-            hands-on technology partner for growing local businesses.
+          <p className="hero-tagline">
+            Business Strategy. Intelligent Systems. Measurable Results.
           </p>
-          <div className="hero-actions">
-            <a
-              className="cta-primary"
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                openBookingModal({
-                  source: "Cinematic hero",
-                  ctaLabel: "Book a 20-minute introductory call",
-                });
-              }}
-            >
-              Book a 20-minute intro call <ArrowRight size={18} aria-hidden="true" />
-            </a>
-            <a className="text-link" href="#capabilities">
-              See what we build <ArrowDown size={18} aria-hidden="true" />
-            </a>
-          </div>
         </div>
         <div className="descent-note page-width">
           <p>
@@ -186,16 +173,11 @@ export function GoldenGate() {
             <br />
             <em>Hands-on execution.</em>
           </p>
-          <a href="#perspective" className="text-link">
-            Meet your local partner <ArrowDown size={16} />
+          <a href="#services" className="text-link">
+            See how we help <ArrowDown size={16} />
           </a>
         </div>
-        <div className="hero-bottom header-rail">
-          <ConciergeLauncher onClick={() => openSentientChat({
-            source: "Cinematic hero",
-            ctaLabel: "Ask Sentient",
-          })} />
-        </div>
+        {/* Book / Ask / Call live in the page-wide action dock (Landing), visible from load. */}
       </div>
     </section>
   );
