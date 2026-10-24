@@ -51,7 +51,7 @@ describe("/api/live-token", () => {
     expect(created).toHaveLength(0);
   });
 
-  it("mints a single-use token that expires just after five minutes", async () => {
+  it("mints a token with a few reconnect uses that expires just after five minutes", async () => {
     const before = Date.now();
     const res = await post();
     expect(res.status).toBe(200);
@@ -65,12 +65,12 @@ describe("/api/live-token", () => {
       params: { config: { uses: number; expireTime: string; newSessionExpireTime: string; liveConnectConstraints: { model: string } } };
     };
     expect(opts.apiKey).toBe("g-test");
-    expect(params.config.uses).toBe(1);
+    expect(params.config.uses).toBe(4);
     const life = (Date.parse(params.config.expireTime) - before) / 1000;
     expect(life).toBeGreaterThanOrEqual(300);
     expect(life).toBeLessThanOrEqual(330);
     const start = (Date.parse(params.config.newSessionExpireTime) - before) / 1000;
-    expect(start).toBeLessThanOrEqual(65);
+    expect(start).toBeLessThanOrEqual(305); // reconnects stay possible until the cap
     expect(params.config.liveConnectConstraints.model).toBe(body.model);
   });
 

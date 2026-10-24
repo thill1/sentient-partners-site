@@ -19,6 +19,16 @@ const OUTPUT_GAIN = 0.9;
 const PLAYBACK_LEAD_SECONDS = 0.12;
 /** Room echo keeps arriving briefly after playback stops. */
 const ECHO_TAIL_SECONDS = 0.25;
+/** Seamless reconnects allowed in one conversation (the token allows one more use). */
+const MAX_RESUMES = 3;
+
+/**
+ * Where the next chunk should start. Chunks play back to back; only when the
+ * queue has run dry (first chunk, or a network gap) do we wait a short lead
+ * again, so one late packet does not turn into a run of tiny gaps.
+ */
+export const nextChunkStart = (queuedUntil: number, now: number, lead: number): number =>
+  queuedUntil > now ? queuedUntil : now + lead;
 
 export const rms = (samples: Float32Array): number => {
   let sum = 0;
@@ -166,16 +176,19 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   const micStream = micResult.value;
 
   // ---- Playing the assistant's voice -------------------------------------------------
-  // One fixed-level output chain: a steady gain and a gentle compressor so every
-  // chunk plays at the same loudness, with no per-chunk ramps.
+  // One fixed gain and nothing that reacts to the signal. The old compressor
+  // (-18 dB threshold, 0.25 s release) sat right in the voice's normal range, so
+  // it kept pulling the level down on louder words and letting it swell back up
+  // in between: the audible up-and-down. A brick-wall limiter only at -1 dBFS
+  // remains as a clip guard; normal speech never reaches it.
   const outputGain = ctx.createGain();
   outputGain.gain.value = OUTPUT_GAIN;
   const leveller = ctx.createDynamicsCompressor();
-  leveller.threshold.value = -18;
-  leveller.knee.value = 12;
-  leveller.ratio.value = 3;
-  leveller.attack.value = 0.01;
-  leveller.release.value = 0.25;
+  leveller.threshold.value = -1;
+  leveller.knee.value = 0;
+  leveller.ratio.value = 20;
+  leveller.attack.value = 0.001;
+  leveller.release.value = 0.05;
   outputGain.connect(leveller);
   leveller.connect(ctx.destination);
   leveller.connect(analyser);
@@ -203,8 +216,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     source.connect(outputGain);
     // A small buffer at the start of each reply absorbs network jitter, so the
     // voice does not stutter or dip between chunks.
-    const lead = playing.size === 0 ? PLAYBACK_LEAD_SECONDS : 0.02;
-    nextStart = Math.max(nextStart, ctx.currentTime + lead);
+    nextStart = nextChunkStart(nextStart, ctx.currentTime, PLAYBACK_LEAD_SECONDS);
     source.start(nextStart);
     nextStart += buffer.duration;
     lastPlaybackEnd = nextStart;
@@ -336,22 +348,79 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     const calls = message.toolCall?.functionCalls;
     if (calls?.length) void runToolCalls(calls);
 
-    if (message.goAway) stop('server');
+    const update = message.sessionResumptionUpdate;
+    if (update?.resumable && update.newHandle) resumeHandle = update.newHandle;
+
+    // Google is about to recycle this connection: move to a fresh one now,
+    // carrying the conversation over, while the current one still works.
+    if (message.goAway) void resume();
   };
 
-  // ---- Connect ------------------------------------------------------------------------
-  try {
-    const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: tokenInfo.token, httpOptions: { apiVersion: tokenInfo.apiVersion } });
-    session = await ai.live.connect({
+  // ---- Connect, and reconnect without the visitor noticing ----------------------------
+  // Before, any close or goAway ended the conversation ("disconnected, tap again").
+  // Now the session is resumed on a new socket with the last resumption handle;
+  // audio already queued keeps playing and the microphone stays open.
+  let resumeHandle: string | undefined;
+  let resumes = 0;
+  let reconnecting = false;
+  let generation = 0;
+  const { GoogleGenAI } = await import('@google/genai').catch(() => {
+    abortStart();
+    throw new LiveStartError('failed', 'Could not connect to live voice.');
+  });
+  const ai = new GoogleGenAI({ apiKey: tokenInfo.token, httpOptions: { apiVersion: tokenInfo.apiVersion } });
+
+  const connect = async (): Promise<Session> => {
+    const mine = ++generation;
+    const isCurrent = () => mine === generation && !stopped;
+    return ai.live.connect({
       model: tokenInfo.model,
-      config: tokenInfo.config,
+      config: { ...tokenInfo.config, sessionResumption: resumeHandle ? { handle: resumeHandle } : {} },
       callbacks: {
-        onmessage: handleMessage,
-        onerror: () => stop('error'),
-        onclose: () => stop('server'),
+        onmessage: (message) => {
+          if (isCurrent()) handleMessage(message);
+        },
+        onerror: () => {
+          if (isCurrent()) void resume();
+        },
+        onclose: () => {
+          if (isCurrent()) void resume();
+        },
       },
     });
+  };
+
+  const resume = async () => {
+    if (stopped || reconnecting) return;
+    if (!resumeHandle || resumes >= MAX_RESUMES) {
+      stop('server');
+      return;
+    }
+    reconnecting = true;
+    resumes += 1;
+    const old = session;
+    generation += 1; // ignore anything more from the old socket
+    try {
+      old?.close();
+    } catch {
+      void 0;
+    }
+    try {
+      const next = await connect();
+      if (stopped) {
+        next.close();
+        return;
+      }
+      session = next;
+    } catch {
+      stop('server');
+    } finally {
+      reconnecting = false;
+    }
+  };
+
+  try {
+    session = await connect();
   } catch {
     abortStart();
     throw new LiveStartError('failed', 'Could not connect to live voice.');
@@ -360,7 +429,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     // The socket closed while we were still connecting.
     throw new LiveStartError('failed', 'Live voice disconnected.');
   }
-  const live = session;
+  const first = session;
 
   // ---- Sending the visitor's voice ----------------------------------------------------
   // Echo gate: while the assistant is talking (and just after), the speaker can
@@ -378,9 +447,10 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     if (playing.size > 0 || ctx.currentTime < lastPlaybackEnd + ECHO_TAIL_SECONDS) {
       if (!isBargeIn(rms(frame), outputLevel())) floats = new Float32Array(frame.length);
     }
+    if (reconnecting || !session) return;
     const pcm = floatToPcm16(downsampleTo16k(floats, ctx.sampleRate));
     try {
-      live.sendRealtimeInput({ audio: { data: pcm16ToBase64(pcm), mimeType: 'audio/pcm;rate=16000' } });
+      session.sendRealtimeInput({ audio: { data: pcm16ToBase64(pcm), mimeType: 'audio/pcm;rate=16000' } });
     } catch {
       void 0;
     }
@@ -419,10 +489,25 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
 
   // A short nudge so the assistant greets the visitor instead of waiting in silence.
   try {
-    live.sendRealtimeInput({ text: 'The visitor just tapped the microphone. Greet them in one short sentence.' });
+    first.sendRealtimeInput({ text: 'The visitor just tapped the microphone. Greet them in one short sentence.' });
   } catch {
     void 0;
   }
+
+  // ---- Keep the speaker running ------------------------------------------------------
+  // iPhones suspend ("interrupt") the audio context on a call, a Siri prompt or an
+  // audio route change; Chrome can suspend it when the tab is backgrounded. Wake it
+  // straight back up instead of going silent.
+  const wake = () => {
+    if (stopped) return;
+    if ((ctx.state as string) !== 'running' && (ctx.state as string) !== 'closed') void ctx.resume().catch(() => undefined);
+  };
+  ctx.addEventListener('statechange', wake);
+  document.addEventListener('visibilitychange', wake);
+  cleanups.push(() => {
+    ctx.removeEventListener('statechange', wake);
+    document.removeEventListener('visibilitychange', wake);
+  });
 
   // ---- Time cap -----------------------------------------------------------------------
   // The clock runs from when the pass was issued, the same moment the server

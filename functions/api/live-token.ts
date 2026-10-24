@@ -12,6 +12,7 @@ import {
   LIVE_MAX_SECONDS,
   LIVE_START_WINDOW_SECONDS,
   LIVE_TOKEN_GRACE_SECONDS,
+  LIVE_TOKEN_USES,
 } from "../lib/liveSession";
 
 /**
@@ -73,9 +74,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const now = Date.now();
     const token = await client.authTokens.create({
       config: {
-        uses: 1,
+        // A few uses so the browser can resume the same conversation if the
+        // socket is recycled. The expiry is unchanged, so the time cap still holds.
+        uses: LIVE_TOKEN_USES,
         expireTime: new Date(now + (LIVE_MAX_SECONDS + LIVE_TOKEN_GRACE_SECONDS) * 1000).toISOString(),
-        newSessionExpireTime: new Date(now + LIVE_START_WINDOW_SECONDS * 1000).toISOString(),
+        // Reconnects open a new connection, so they must be allowed for the
+        // whole conversation, not just the first minute.
+        newSessionExpireTime: new Date(now + Math.max(LIVE_START_WINDOW_SECONDS, LIVE_MAX_SECONDS) * 1000).toISOString(),
         liveConnectConstraints: { model, config },
       },
     });

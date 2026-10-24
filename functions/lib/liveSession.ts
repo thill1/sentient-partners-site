@@ -8,6 +8,12 @@ export const LIVE_MAX_SECONDS = 300;
 export const LIVE_TOKEN_GRACE_SECONDS = 20;
 /** How long a visitor has to open the connection after the token is minted. */
 export const LIVE_START_WINDOW_SECONDS = 60;
+/**
+ * Connections one token allows: the first, plus seamless reconnects when Google
+ * recycles the socket (goAway) or the network blips. All stay inside the same
+ * five-minute cap because the token expiry does not move.
+ */
+export const LIVE_TOKEN_USES = 4;
 
 export const DEFAULT_LIVE_MODEL = "gemini-3.8-live";
 export const DEFAULT_LIVE_API_VERSION = "v1alpha";
@@ -50,6 +56,8 @@ export function buildLiveSessionConfig(siteMemory = "", context: LiveContext = {
       activityHandling: ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
     },
     tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
+    // Long conversations keep going instead of hitting the context limit.
+    contextWindowCompression: { slidingWindow: {} },
   };
 }
 
@@ -65,5 +73,6 @@ export function toBrowserConfig(config: ReturnType<typeof buildLiveSessionConfig
     speechConfig: config.speechConfig,
     realtimeInputConfig: config.realtimeInputConfig,
     tools: config.tools,
+    contextWindowCompression: config.contextWindowCompression,
   };
 }
