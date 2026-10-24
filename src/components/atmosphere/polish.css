@@ -883,3 +883,57 @@
     font-size: 17px;
   }
 }
+
+/* ——— Hero v18: a smaller, refined CTA and a quiet scroll cue ——— */
+.atmosphere-page .golden-gate .hero-actions .cta-primary {
+  width: auto;
+  min-height: 46px;
+  padding: 0 22px;
+  font-size: 14px;
+  gap: 10px;
+}
+.atmosphere-page .golden-gate .hero-actions .cta-primary svg {
+  width: 16px;
+  height: 16px;
+}
+.atmosphere-page .golden-gate .hero-scroll-cue {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #f3f0e840;
+  color: #f3f0e8;
+  opacity: 0.8;
+  transition: opacity 0.2s, border-color 0.2s;
+  animation: hero-cue-bob 2.4s ease-in-out infinite;
+}
+.atmosphere-page .golden-gate .hero-scroll-cue:hover,
+.atmosphere-page .golden-gate .hero-scroll-cue:focus-visible {
+  opacity: 1;
+  border-color: #c8b795;
+}
+.atmosphere-page .golden-gate .hero-scroll-cue:focus-visible {
+  outline: 2px solid #c8b795;
+  outline-offset: 3px;
+}
+@keyframes hero-cue-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere-page .golden-gate .hero-scroll-cue { animation: none; }
+}
+.atmosphere-page .golden-gate .hero-actions {
+  gap: 24px;
+}
+@media (max-width: 600px) {
+  .atmosphere-page .golden-gate .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+  }
+  .atmosphere-page .golden-gate .hero-actions .cta-primary {
+    align-self: flex-start;
+  }
+}

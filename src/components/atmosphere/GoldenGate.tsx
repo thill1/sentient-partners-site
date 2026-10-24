@@ -161,6 +161,7 @@ export function GoldenGate() {
           <div className="hero-actions">
             <a
               className="cta-primary"
+              aria-label="Let's talk: book a 20-minute introductory call"
               href={BOOKING_URL}
               onClick={(e) => {
                 e.preventDefault();
@@ -170,10 +171,10 @@ export function GoldenGate() {
                 });
               }}
             >
-              Book a 20-minute intro call <ArrowRight size={18} aria-hidden="true" />
+              Let&rsquo;s talk <ArrowRight size={18} aria-hidden="true" />
             </a>
-            <a className="text-link" href="#capabilities">
-              See what we build <ArrowDown size={18} aria-hidden="true" />
+            <a className="hero-scroll-cue" href="#services" aria-label="Scroll to next section">
+              <ArrowDown size={20} aria-hidden="true" />
             </a>
           </div>
         </div>
