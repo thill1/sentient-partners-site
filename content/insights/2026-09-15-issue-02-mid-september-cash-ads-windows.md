@@ -1,9 +1,9 @@
 ---
-title: "After tax day: rates, hiring, and Windows Update"
-slug: "issue-02-after-tax-day"
+title: "Mid-September: protect cash, check AI Max, patch Windows by Sep 22"
+slug: "issue-02-mid-september-cash-ads-windows"
 issue: 2
 date: 2026-09-15
-summary: "Tax day is behind you and the Fed raised rates. Protect cash, review AI Max search terms, hire only for measured gaps, and push Windows Update before Sep 22."
+summary: "The Sep 15 estimated tax payment is in and the Fed raised rates. Protect cash, review AI Max search terms, hire only for measured gaps, and push Windows Update before Sep 22."
 reading_minutes: 4
 status: approved
 type: newsletter
@@ -13,7 +13,7 @@ type: newsletter
 
 ## Owner signal
 
-Tax day is done. The next decisions are about cash left in the account, what money will cost, and who covers the phone when you are on a job.
+The Sep 15 estimated tax payment is done. The next decisions are about cash left in the account, what money will cost, and who covers the phone when you are on a job.
 
 August CPI came in hotter on the month (BLS: +0.4% seasonally adjusted; +3.4% over the year). Gasoline rose +3.9% on the month and did a large share of that monthly move. Energy is still the loud part of the inflation story (+2.1% on the month; +16.3% over the year).
 
