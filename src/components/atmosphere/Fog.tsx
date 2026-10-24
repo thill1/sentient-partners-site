@@ -93,6 +93,9 @@ void main(){
  gl_FragColor=vec4(color*alpha,alpha);
 }`;
 
+/** Overall fog strength for every layer and scene (0.9 = 10% lighter than the original tuning). Motion is unaffected. */
+const FOG_LEVEL = 0.9;
+
 /** How each scene lights the fog: overall tint, rim colour and strength, which side the light is on, density, and the density of the planes in front of the bridge. */
 const sceneFog: Record<Scene, number[]> = {
   sunrise: [1, 0.96, 0.96, 1, 0.83, 0.72, 1, 0.3, 1.45, 1.05],
@@ -218,7 +221,7 @@ export default function Fog({
       gl.uniform3f(warm, light[3], light[4], light[5]);
       gl.uniform1f(warmth, light[6]);
       gl.uniform1f(sunX, light[7]);
-      gl.uniform1f(density, light[8] * (depth >= 1 ? light[9] : 1));
+      gl.uniform1f(density, FOG_LEVEL * light[8] * (depth >= 1 ? light[9] : 1));
       gl.uniform1f(time, clock.current);
       const c = clock.current;
       const gust = 0.75 + 0.4 * gustNoise(c / (14 + depth * 3) + depth * 7.3);

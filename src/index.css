@@ -16,6 +16,9 @@ body {
 /* The page canvas behind the iPhone status bar, the toolbars and any
    overscroll is always the site's navy, never the browser's default white. */
 html {
+  /* Belt and braces: decorative fog and glow layers wider than the screen
+     must never let a phone pan sideways. */
+  overflow-x: clip;
   background-color: #081536;
   color-scheme: dark;
 }
