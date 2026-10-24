@@ -158,25 +158,6 @@ export function GoldenGate() {
           <p className="hero-tagline">
             Business Strategy. Intelligent Systems. Measurable Results.
           </p>
-          <div className="hero-actions">
-            <a
-              className="cta-primary"
-              aria-label="Let's talk: book a 20-minute introductory call"
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                openBookingModal({
-                  source: "Cinematic hero",
-                  ctaLabel: "Book a 20-minute introductory call",
-                });
-              }}
-            >
-              Let&rsquo;s talk <ArrowRight size={18} aria-hidden="true" />
-            </a>
-            <a className="hero-scroll-cue" href="#services" aria-label="Scroll to next section">
-              <ArrowDown size={20} aria-hidden="true" />
-            </a>
-          </div>
         </div>
         <div className="descent-note page-width">
           <p>
@@ -189,10 +170,29 @@ export function GoldenGate() {
           </a>
         </div>
         <div className="hero-bottom header-rail">
-          <ConciergeLauncher onClick={() => openSentientChat({
-            source: "Cinematic hero",
-            ctaLabel: "Ask Sentient",
-          })} />
+          {/* One row with the launcher: same bottom offset, safe area and centre line. */}
+          <a
+            className="cta-primary hero-cta"
+            aria-label="Let's talk: book a 20-minute introductory call"
+            href={BOOKING_URL}
+            onClick={(e) => {
+              e.preventDefault();
+              openBookingModal({
+                source: "Cinematic hero",
+                ctaLabel: "Book a 20-minute introductory call",
+              });
+            }}
+          >
+            Let&rsquo;s talk <ArrowRight size={18} aria-hidden="true" />
+          </a>
+          <ConciergeLauncher
+            onClick={() =>
+              openSentientChat({
+                source: "Cinematic hero",
+                ctaLabel: "Ask Sentient",
+              })
+            }
+          />
         </div>
       </div>
     </section>
