@@ -151,14 +151,12 @@ export function GoldenGate() {
         </div>
         <HeroClock />
         <div className="hero-copy header-rail">
-          <p className="hero-kicker">Business Strategy. Intelligent Systems. Measurable Results.</p>
           <h1 id="hero-title">
             <span>Global experience. </span>
             <em>Local impact.</em>
           </h1>
-          <p className="hero-description">
-            A clear plan, systems that work together, and results you can
-            measure. For growing businesses.
+          <p className="hero-tagline">
+            Business Strategy. Intelligent Systems. Measurable Results.
           </p>
           <div className="hero-actions">
             <a
