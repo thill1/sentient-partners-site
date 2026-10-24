@@ -34,7 +34,7 @@ const CAPABILITIES = [
 
 export const CHAT_WIDGET_CONTENT = {
   introMessage:
-    "Hello. I'm the Sentient Partners assistant (an AI). Ask me how we help local businesses, or about booking a 20-minute introductory call.",
+    "Hello. I'm the Sentient Partners assistant (an AI). Ask me how we help growing businesses, or about booking a 20-minute introductory call.",
   voiceLoadingLabel: "Starting the voice assistant...",
   suggestedActions: [
     {

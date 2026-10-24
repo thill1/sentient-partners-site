@@ -29,4 +29,5 @@ Local service businesses, trades and home services (HVAC, cleaning), professiona
 
 - [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
 - [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for local business owners, every other week
-- [Privacy](https://sentientpartners.ai/privacy.html)
+- [Privacy](https://sentientpartners.ai/privacy)
+- [Terms](https://sentientpartners.ai/terms)

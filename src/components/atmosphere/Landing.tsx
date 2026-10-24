@@ -632,7 +632,10 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
           </div>
           <div className="footer-bottom">
             <span>© {new Date().getFullYear()} Sentient Partners.</span>
-            <a href="/privacy.html">Privacy</a>
+            <span className="footer-legal">
+              <a href="/privacy">Privacy</a>
+              <a href="/terms">Terms</a>
+            </span>
           </div>
         </div>
       </footer>

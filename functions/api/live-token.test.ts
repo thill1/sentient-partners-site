@@ -30,7 +30,7 @@ const post = (
   onRequestPost({
     request: new Request("https://sentientpartners.ai/api/live-token", {
       method: "POST",
-      headers: { "cf-connecting-ip": ip, ...headers },
+      headers: { "cf-connecting-ip": ip, origin: "https://sentientpartners.ai", ...headers },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     }),
     env,
@@ -133,6 +133,11 @@ describe("/api/live-token", () => {
   });
 
   it("rejects requests from another site", async () => {
+    const missing = await onRequestPost({
+      request: new Request("https://sentientpartners.ai/api/live-token", { method: "POST", headers: { "cf-connecting-ip": "203.0.113.31" } }),
+      env: { GEMINI_API_KEY: "g-test" },
+    } as never);
+    expect(missing.status).toBe(403);
     const res = await post(undefined, "203.0.113.30", { origin: "https://evil.example" });
     expect(res.status).toBe(403);
     expect(created).toHaveLength(0);

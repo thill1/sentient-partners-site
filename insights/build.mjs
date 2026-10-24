@@ -77,7 +77,7 @@ ${body}
   <div class="signup-inner">
     <div>
       <p class="signup-eyebrow">Insights</p>
-      <h2 id="signup-title" class="signup-title">A short, practical note for local business owners, every other week.</h2>
+      <h2 id="signup-title" class="signup-title">A short, practical note for owners of growing businesses, every other week.</h2>
     </div>
     <form class="signup-form" novalidate>
       <label for="signup-email" class="signup-label">Email address</label>
@@ -96,7 +96,8 @@ ${body}
     <a href="/">Home</a>
     ${issues.length ? '<a href="/insights/">Insights</a>' : ""}
     <a href="mailto:hello@sentientpartners.ai">hello@sentientpartners.ai</a>
-    <a href="/privacy.html">Privacy</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
   </nav>
 </footer>
 <script src="/insights/signup.js" defer></script>
@@ -147,12 +148,12 @@ for (const f of FILTERS) {
     join(out, "index.html"),
     page({
       title: f.key === "all" ? "Insights | Sentient Partners" : `${f.label} | Sentient Partners Insights`,
-      description: "Newsletters, articles and posts from Sentient Partners for local business owners.",
+      description: "Newsletters, articles and posts from Sentient Partners for owners of growing businesses.",
       path: f.path,
       noindex: f.key !== "all" || !issues.some((i) => i.status === "approved"),
       body: `<section class="archive">
   <p class="eyebrow">Insights</p>
-  <h1>Notes for local business owners</h1>
+  <h1>Notes for owners of growing businesses</h1>
   <p class="lede">Newsletters, articles and posts from Sentient Partners, all in one place.</p>
   ${issues.length ? filterNav(f.key) : ""}
   ${empty}
@@ -208,6 +209,7 @@ let sm = readFileSync(smPath, "utf8");
 if (approved.length) {
   const urls = [
     `<url><loc>${SITE}/insights/</loc><lastmod>${approved[0].date}</lastmod></url>`,
+    ...FILTERS.filter((f) => f.path !== "/insights/").map((f) => `<url><loc>${SITE}${f.path}</loc><lastmod>${approved[0].date}</lastmod></url>`),
     ...approved.map((i) => `<url><loc>${SITE}/insights/${i.slug}/</loc><lastmod>${i.date}</lastmod></url>`),
   ].join("");
   sm = sm.replace("</urlset>", `${urls}</urlset>`);

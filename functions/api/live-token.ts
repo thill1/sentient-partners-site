@@ -28,8 +28,9 @@ const json = (body: unknown, status = 200, headers: Record<string, string> = {})
   });
 
 const sameOrigin = (request: Request): boolean => {
+  // Browsers always send Origin on this POST; a request without one is a script.
   const origin = request.headers.get("origin");
-  if (!origin) return true;
+  if (!origin) return false;
   try {
     return new URL(origin).host === new URL(request.url).host;
   } catch {
