@@ -5,7 +5,7 @@ import "./relay-showcase.css";
 
 /** Real Relay screens (sample data), captured from the app. */
 const screens = [
-  ["relay-today", 472, 1024, "Relay Today view: the next visit card, a Needs you list and the Your day timeline"],
+  ["relay-today", 640, 1387, "Relay Today view: the next visit card, a Needs you list and the Your day timeline"],
   ["relay-calendar", 640, 1432, "Relay calendar day view with scheduled visits, addresses and open time slots"],
   ["relay-jobs", 640, 1432, "Relay jobs list with open and completed tabs, job statuses, and a Record payment button on a job with a balance due"],
   ["relay-estimate", 640, 1432, "Relay estimate screen with the customer's details, the work needed and the estimate total"],
