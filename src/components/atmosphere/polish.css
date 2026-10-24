@@ -995,3 +995,14 @@
   pointer-events: none;
   background: linear-gradient(180deg, rgba(8, 21, 54, 0) 0%, rgba(8, 21, 54, 0.55) 55%, #081536 100%);
 }
+
+/* Dock labels never wrap ("Book a" / "call" at 390px). */
+.action-dock a,
+.action-dock button {
+  white-space: nowrap;
+}
+@media (max-width: 850px) {
+  .action-dock .dock-book {
+    min-width: max-content;
+  }
+}
