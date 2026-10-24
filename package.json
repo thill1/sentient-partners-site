@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/prerender.mjs && node insights/build.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs && node insights/build.mjs && python3 scripts/og/build.py",
     "build:preview": "INSIGHTS_INCLUDE_DRAFTS=1 npm run build && rm -rf dist-preview && cp -r dist dist-preview && npm run build",
     "deploy:cloudflare": "wrangler pages deploy dist --project-name sentient-partners-site --branch main",
     "lint": "eslint . --max-warnings 0",

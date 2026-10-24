@@ -1,3 +1,4 @@
+import { track } from '../lib/track';
 import type { LiveServerMessage, Session } from '@google/genai';
 import { base64ToPcm16, downsampleTo16k, floatToPcm16, pcm16ToBase64, pcm16ToFloat32 } from '../lib/pcm';
 
@@ -108,6 +109,7 @@ const visitorTimeZone = (): string => {
 async function fetchToken(): Promise<TokenResponse & { issuedAt: number }> {
   let response: Response;
   try {
+    track('voice_start', 'voice');
     response = await fetch('/api/live-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

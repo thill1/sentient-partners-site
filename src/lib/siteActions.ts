@@ -1,3 +1,4 @@
+import { track } from "./track";
 export type LeadIntent = "contact" | "blueprint";
 
 export interface ContactModalPrefill {
@@ -29,12 +30,14 @@ export function openContactModal(detail: ContactModalPrefill = {}) {
 }
 
 export function openBookingModal(detail: CtaEventDetail = {}) {
+  track("book_call", detail.source ?? "");
   window.dispatchEvent(
     new CustomEvent<CtaEventDetail>(BOOKING_MODAL_EVENT, { detail }),
   );
 }
 
 export function openSentientChat(detail: CtaEventDetail = {}) {
+  track("chat_open", detail.source ?? "");
   window.dispatchEvent(new CustomEvent<CtaEventDetail>(CHAT_EVENT, { detail }));
 }
 
