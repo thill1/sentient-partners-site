@@ -13,6 +13,19 @@ body {
   font-variant-numeric: lining-nums;
 }
 
+/* The page canvas behind the iPhone status bar, the toolbars and any
+   overscroll is always the site's navy, never the browser's default white. */
+html {
+  background-color: #081536;
+  color-scheme: dark;
+}
+
+/* viewport-fit=cover lets the hero run behind the Dynamic Island; keep the
+   fixed header's lettering below it. */
+.site-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 #root {
   min-height: 100%;
   overflow-x: clip;

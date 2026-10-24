@@ -10,4 +10,12 @@ describe("live turn-taking", () => {
     expect(vad.silenceDurationMs).toBe(800);
     expect(toBrowserConfig(config).realtimeInputConfig).toEqual(config.realtimeInputConfig);
   });
+
+  it("turns on context compression and allows reconnects on one token", async () => {
+    const { LIVE_TOKEN_USES } = await import("./liveSession");
+    const config = buildLiveSessionConfig();
+    expect(config.contextWindowCompression).toEqual({ slidingWindow: {} });
+    expect(toBrowserConfig(config).contextWindowCompression).toEqual(config.contextWindowCompression);
+    expect(LIVE_TOKEN_USES).toBeGreaterThan(1);
+  });
 });

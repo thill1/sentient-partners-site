@@ -4,7 +4,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#081536",
-  "theme_color": "#0d1f4e",
+  "theme_color": "#081536",
   "description": "Your local business and technology partner in Auburn, California.",
   "icons": [
     {
