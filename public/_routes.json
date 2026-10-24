@@ -1,5 +1,13 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": ["/assets/*", "/atmosphere/*", "/fonts/*", "/email-sig/*"]
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/assets/*",
+    "/atmosphere/*",
+    "/fonts/*",
+    "/email-sig/*",
+    "/templates/*"
+  ]
 }

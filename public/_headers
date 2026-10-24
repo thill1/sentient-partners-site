@@ -13,3 +13,7 @@
   Cache-Control: public, max-age=604800
 /atmosphere/*
   Cache-Control: public, max-age=604800
+/templates/*
+  Cache-Control: public, max-age=3600
+/templates/*.csv
+  Content-Type: text/csv; charset=utf-8
