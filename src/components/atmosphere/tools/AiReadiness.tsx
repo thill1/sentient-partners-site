@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { openContactModal } from "../../../lib/siteActions";
 import ToolCta from "./ToolCta";
+import ToolBack from "./ToolBack";
 
 /** Each answer scores 0-3. Low-scoring areas become the next steps. */
 export const QUESTIONS = [
@@ -83,6 +84,11 @@ export default function AiReadiness() {
 
   return (
     <section className="tool-page section-space" aria-labelledby="ar-title">
+      <nav className="tool-backbar" aria-label="Tools">
+        <div className="page-width">
+          <ToolBack />
+        </div>
+      </nav>
       <div className="page-width tool-layout is-single">
         <div className="tool-intro">
           <p className="eyebrow">Free tool</p>
@@ -162,6 +168,7 @@ export default function AiReadiness() {
                 Start again
               </button>
             </div>
+            <ToolBack label="Back to all tools" end />
           </div>
         )}
       </div>

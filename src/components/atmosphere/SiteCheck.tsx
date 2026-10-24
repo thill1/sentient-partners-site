@@ -4,6 +4,7 @@ import { BOOKING_URL } from "../../content/siteContent";
 import { openBookingModal } from "../../lib/siteActions";
 import { submitLead } from "../../services/geminiService";
 import "./site-check.css";
+import ToolBack from "./tools/ToolBack";
 
 type Status = "pass" | "warn" | "fail";
 interface Check {
@@ -304,6 +305,7 @@ export default function SiteCheck() {
                   </form>
                 )}
               </div>
+              <ToolBack label="Back to all tools" end />
             </div>
           )}
         </div>

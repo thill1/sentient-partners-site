@@ -347,3 +347,38 @@
     padding: 22px;
   }
 }
+
+/* Way back to the hub: top of each tool, and after results. */
+.atmosphere-page .tool-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 6px;
+  color: var(--f-gold);
+  font: 600 14px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.atmosphere-page .tool-back:hover,
+.atmosphere-page .tool-back:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.atmosphere-page .tool-back.is-end {
+  margin: 22px 0 0;
+}
+/* Stays just under the header while the tool scrolls. */
+.atmosphere-page .tool-backbar {
+  position: sticky;
+  top: calc(79px + env(safe-area-inset-top));
+  z-index: 20;
+  margin: -28px 0 18px;
+  padding: 4px 0;
+  background: linear-gradient(180deg, #081536 70%, rgba(8, 21, 54, 0));
+}
+@media (min-width: 851px) {
+  .atmosphere-page .tool-backbar {
+    top: 100px;
+  }
+}
