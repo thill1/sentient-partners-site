@@ -164,6 +164,9 @@ export default function Reputation() {
                 Change answers
               </button>
             </div>
+            <p className="tool-related">
+              Free template: <a href="/templates/review-request-kit.pdf" download>Review request kit (PDF)</a>
+            </p>
             <ToolBack label="Back to all tools" end />
           </div>
         )}

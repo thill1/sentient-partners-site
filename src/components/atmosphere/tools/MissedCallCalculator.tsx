@@ -92,6 +92,9 @@ export default function MissedCallCalculator() {
             source="Missed-call calculator"
             context={`Missed-call calculator: about ${money(r.monthly)} a month at risk (visitor's inputs).`}
           />
+          <p className="tool-related">
+            Free template: <a href="/templates/missed-call-text-back-scripts.pdf" download>Missed-call text-back scripts (PDF)</a>
+          </p>
           <ToolBack label="Back to all tools" end />
         </div>
       </div>

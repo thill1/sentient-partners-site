@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import SiteCheck from "./SiteCheck";
 import "./tools.css";
 
@@ -39,6 +39,29 @@ const tools = [
   },
 ];
 
+/** Free downloads. Files are built by scripts/templates/build.py. */
+export const templates = [
+  {
+    title: "Review request kit",
+    copy: "Texts and emails to ask for reviews, and replies for good, mixed and bad ones.",
+    files: [{ label: "PDF", href: "/templates/review-request-kit.pdf" }],
+  },
+  {
+    title: "Missed-call text-back scripts",
+    copy: "Ready-to-edit texts for after hours, busy moments, voicemails and next-day follow-up.",
+    files: [{ label: "PDF", href: "/templates/missed-call-text-back-scripts.pdf" }],
+  },
+  {
+    title: "Weekly owner scorecard",
+    copy: "Nine numbers to track each week, from calls missed to cash collected.",
+    files: [
+      { label: "Excel", href: "/templates/weekly-owner-scorecard.xlsx" },
+      { label: "CSV", href: "/templates/weekly-owner-scorecard.csv" },
+      { label: "PDF", href: "/templates/weekly-owner-scorecard.pdf" },
+    ],
+  },
+];
+
 export default function ToolsPage() {
   return (
     <>
@@ -64,6 +87,30 @@ export default function ToolsPage() {
                     Start <ArrowRight size={15} aria-hidden="true" />
                   </span>
                 </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+      <section id="templates" className="templates-section" aria-labelledby="templates-title">
+        <div className="page-width">
+          <p className="eyebrow">Free templates</p>
+          <h2 id="templates-title">Take these with you.</h2>
+          <ul className="templates-list">
+            {templates.map((t) => (
+              <li key={t.title} className="template-row">
+                <div>
+                  <strong>{t.title}</strong>
+                  <span>{t.copy}</span>
+                </div>
+                <div className="template-files">
+                  {t.files.map((f) => (
+                    <a key={f.href} className="template-download" href={f.href} download>
+                      <Download size={15} aria-hidden="true" /> {f.label}
+                      <span className="sr-only"> download of {t.title}</span>
+                    </a>
+                  ))}
+                </div>
               </li>
             ))}
           </ul>

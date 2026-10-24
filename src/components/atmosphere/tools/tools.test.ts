@@ -48,3 +48,12 @@ describe("reputation snapshot", () => {
     expect(r.steps).toEqual([AREAS.recency, AREAS.asking, AREAS.replies]);
   });
 });
+
+import { existsSync } from "node:fs";
+import { templates } from "../ToolsPage";
+
+describe("free templates", () => {
+  it("every download link points at a built file", () => {
+    for (const t of templates) for (const f of t.files) expect(existsSync(`public${f.href}`)).toBe(true);
+  });
+});
