@@ -54,7 +54,7 @@ export function NoteForTroy({ initialNote, source, onBook, onClose }: NoteForTro
     return (
       <div ref={root} className="concierge-note" role="status">
         <p className="concierge-note-title">Sent.</p>
-        <p className="concierge-note-status">Troy will get your note and reply to {email.trim()}.</p>
+        <p className="concierge-note-status">Troy has your message and will reply by email to {email.trim()}.</p>
         <div className="concierge-note-actions">
           <button type="button" className="concierge-note-link" onClick={onClose}>Done</button>
         </div>
