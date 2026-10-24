@@ -966,3 +966,34 @@
 :root[data-scene="sunrise"] .scene-bridge > img.bridge-lit {
   opacity: 0.25;
 }
+
+/* Hero bottom edge (v22). On phones the scene layers fill exactly 100% and
+   then lift on scroll (bridge -65px, land -42px), so near the end of the
+   descent their bottom edges rose 14-27px above the frame and the poster
+   underneath (a different crop) showed as a mismatched strip. Overscan the
+   layers below the frame, and fade the frame into the navy section. */
+@media (max-width: 1100px) {
+  .atmosphere-page .scene-poster,
+  .atmosphere-page .scene-bay,
+  .atmosphere-page .scene-ocean,
+  .atmosphere-page .scene-land,
+  .atmosphere-page .scene-ambience,
+  .atmosphere-page .scene-boats,
+  .atmosphere-page .scene-air,
+  .atmosphere-page .scene-bridge {
+    height: 106%;
+    inset: 0 -60% -6% -30%;
+  }
+}
+.atmosphere-page .golden-gate .scene {
+  background: var(--f-deep, #081536);
+}
+.atmosphere-page .golden-gate .scene-sticky::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: clamp(64px, 12svh, 140px);
+  z-index: 7;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8, 21, 54, 0) 0%, rgba(8, 21, 54, 0.55) 55%, #081536 100%);
+}
