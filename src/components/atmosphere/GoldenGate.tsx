@@ -125,7 +125,18 @@ export function GoldenGate() {
                 </Suspense>
               )}
               <div className="scene-bridge">
+                {/* The artwork has its deck streetlights painted in. The unlit
+                    copy (lamps retouched out) sits underneath; the lit copy
+                    fades in only from sunrise (faint) to dusk and night. */}
                 <img
+                  className="bridge-unlit"
+                  src="/atmosphere/bridge-unlit.webp"
+                  alt=""
+                  width="1536"
+                  height="1024"
+                />
+                <img
+                  className="bridge-lit"
                   src="/atmosphere/bridge.webp"
                   alt=""
                   width="1536"

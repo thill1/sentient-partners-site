@@ -953,3 +953,16 @@
     padding-bottom: calc(68px + 19vh + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Bridge streetlights: off by day, faint at sunrise, on at dusk and night. */
+.atmosphere-page .scene-bridge > img.bridge-lit {
+  opacity: 1;
+  transition: filter 2.4s ease, opacity 2.4s ease;
+}
+[data-scene="day"] .atmosphere-page .scene-bridge > img.bridge-lit,
+:root[data-scene="day"] .scene-bridge > img.bridge-lit {
+  opacity: 0;
+}
+:root[data-scene="sunrise"] .scene-bridge > img.bridge-lit {
+  opacity: 0.25;
+}
