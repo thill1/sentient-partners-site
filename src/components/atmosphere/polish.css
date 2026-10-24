@@ -938,46 +938,18 @@
   }
 }
 
-/* ——— Hero v19: centred headline; CTA shares the launcher's row ——— */
+/* ——— Hero v21: the headline block sits at the optical middle of the open
+   area between the header and the page-wide action dock. The extra bottom
+   padding lifts it slightly above true centre. ——— */
 .atmosphere-page .golden-gate .hero-copy {
-  align-items: center;
-  text-align: center;
-}
-.atmosphere-page .golden-gate .hero-copy h1 {
-  align-items: center;
-}
-.atmosphere-page .golden-gate .hero-tagline {
-  margin-inline: auto;
-}
-.atmosphere-page .golden-gate .hero-bottom {
-  justify-content: space-between;
-  align-items: center;
-  bottom: calc(31px + env(safe-area-inset-bottom, 0px));
-}
-.atmosphere-page .golden-gate .hero-bottom .hero-cta {
-  flex-shrink: 0;
-  min-height: 46px;
-  padding: 0 22px;
-  font-size: 14px;
-  letter-spacing: normal;
-  gap: 10px;
-}
-.atmosphere-page .golden-gate .hero-bottom .hero-cta svg {
-  width: 16px;
-  height: 16px;
+  justify-content: center;
+  padding-top: calc(99px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(76px + 20vh + env(safe-area-inset-bottom, 0px));
 }
 @media (max-width: 600px) {
-  .atmosphere-page .golden-gate .hero-bottom {
-    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
-  }
-  .atmosphere-page .golden-gate .hero-bottom .hero-cta {
-    padding: 0 18px;
-  }
-}
-/* The centred headline needs the moon out of its way on wider screens. */
-@media (min-width: 851px) {
-  .atmosphere-page .scene-moon {
-    left: 17%;
-    top: 17%;
+  .atmosphere-page .golden-gate .hero-copy {
+    /* Header 78px; the dock is 68px plus the safe area. */
+    padding-top: calc(78px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(68px + 19vh + env(safe-area-inset-bottom, 0px));
   }
 }
