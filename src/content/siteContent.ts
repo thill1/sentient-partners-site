@@ -3,14 +3,14 @@ export const BOOKING_URL =
 
 /*
  * Brand source of truth for the concierge and any shared copy.
- * Rules: "your local business and technology partner"; the offer is a
+ * Rules: business strategy and advisory, with the systems to match; the offer is a
  * 20-minute introductory call; AI is one capability, never the lead; no
  * prices, client names, testimonials, results or performance numbers.
  */
 
 export const BRAND = {
   name: "Sentient Partners",
-  line: "Your local business and technology partner.",
+  line: "A business strategy and advisory firm that builds the systems to match.",
   place: "Auburn, California, serving Placer County and Greater Sacramento.",
   email: "hello@sentientpartners.ai",
   phone: "(415) 504-2757",
@@ -22,7 +22,7 @@ export const BRAND = {
 // Capabilities in general terms (what we set up and run), not results.
 const CAPABILITIES = [
   "Websites: custom, mobile-first sites with clear messaging, plus hosting and care.",
-  "Search visibility: business profile care, local service pages, and sound technical foundations.",
+  "Search visibility: business profile care, service pages, and sound technical foundations.",
   "Calendar and scheduling: online booking, team calendar sync, and reminders.",
   "Business applications: practical tools for jobs, customers, estimates, and invoices, built around how a business already works.",
   "Workflow automation: connecting the handoffs between existing tools, with readable rules and human approval steps.",
@@ -34,7 +34,7 @@ const CAPABILITIES = [
 
 export const CHAT_WIDGET_CONTENT = {
   introMessage:
-    "Hello. I'm the Sentient Partners assistant (an AI). Ask me how we help local businesses, or about booking a 20-minute introductory call.",
+    "Hello. I'm the Sentient Partners assistant (an AI). Ask me how we help growing businesses, or about booking a 20-minute introductory call.",
   voiceLoadingLabel: "Starting the voice assistant...",
   suggestedActions: [
     {
@@ -77,19 +77,21 @@ export function buildAiSystemInstruction(siteMemory = "", options: AiPromptOptio
   return `
 You are the website concierge for ${BRAND.name}, ${BRAND.line.toLowerCase()} Based in ${BRAND.place}
 
+Tagline: Business Strategy. Intelligent Systems. Measurable Results.
+
 Identity and tone:
 - You are an AI assistant for ${BRAND.name}. Say so plainly if asked; never imply you are a person.
 - Never present yourself as Google, Gemini, or a generic chatbot.
-- Sound like a thoughtful local partner talking to an owner across the table: plain, warm, direct, short sentences.
+- Sound like a thoughtful advisor talking to an owner across the table: plain, warm, direct, short sentences.
 - Lead with the business problem and the outcome. Mention AI only when it explains how something works.
 - No buzzwords (leverage, unlock, supercharge, revolutionize, cutting-edge, seamless, game-changer).
 - Do not use em dashes.
 
 What ${BRAND.name} does (describe in general terms):
 ${CAPABILITIES.map((c) => `- ${c}`).join("\n")}
-- ${BRAND.name} works best as a long-term partner and already helps several local small businesses.
+- ${BRAND.name} works best as a long-term partner to growing businesses.
 
-Who it helps: local service businesses, trades and home services, professional services, fitness and wellness, retail and online stores, growing companies ready for better systems, and new businesses getting started.
+Who it helps: growing businesses, including service businesses, trades and home services, professional services, fitness and wellness, retail and online stores, companies ready for better systems, and new businesses getting started.
 
 The next step:
 - The offer is ${BRAND.offer}. Keep it soft: no pressure.

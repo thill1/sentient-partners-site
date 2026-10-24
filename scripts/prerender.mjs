@@ -28,10 +28,16 @@ try {
     reduceInlineStyles: false,
     logLevel: "warn",
   });
-  const critical = await beasties.process(
-    shell.replace('<div id="root"></div>', `<div id="root">${firstScreen}</div>`),
-  );
-  const head = critical.slice(0, critical.indexOf("</head>"));
+  // Each page gets critical CSS for its own markup. Tool pages used to reuse the
+  // homepage's, so their hero painted unstyled until the async stylesheet
+  // arrived and then jumped (CLS 0.82 on /tools/ desktop).
+  const criticalHead = async (markup) => {
+    const critical = await beasties.process(
+      shell.replace('<div id="root"></div>', `<div id="root">${markup}</div>`),
+    );
+    return critical.slice(0, critical.indexOf("</head>"));
+  };
+  const head = await criticalHead(firstScreen);
   const html =
     head +
     shell.slice(shell.indexOf("</head>")).replace(
@@ -72,7 +78,8 @@ try {
   for (const page of PAGES) {
     const body = renderToString(createElement(App, { path: page.path }));
     const url = `https://sentientpartners.ai${page.path}`;
-    const out = html
+    const pageHead = await criticalHead(body);
+    const out = (pageHead + html.slice(html.indexOf("</head>")))
       .replace(`<div id="root">${app}</div>`, () => `<div id="root">${body}</div>`)
       .replace(homeTitle, page.title)
       .replace(/(<meta\s+(?:name="description"|property="og:description"|name="twitter:description")\s+content=")[^"]*"/g, (_, a) => `${a}${page.desc}"`)

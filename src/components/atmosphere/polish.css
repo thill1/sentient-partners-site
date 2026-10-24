@@ -1006,3 +1006,8 @@
     min-width: max-content;
   }
 }
+
+/* Keep the footer's legal links clear of the floating action dock. */
+.atmosphere-page .footer-bottom {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}

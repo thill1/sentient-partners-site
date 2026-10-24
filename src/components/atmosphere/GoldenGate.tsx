@@ -87,6 +87,8 @@ export function GoldenGate() {
           <img
             className="scene-poster"
             src="/atmosphere/golden-gate-poster-v2.webp"
+            srcSet="/atmosphere/golden-gate-poster-v2-768.webp 768w, /atmosphere/golden-gate-poster-v2.webp 1536w"
+            sizes="(max-width: 850px) 160vw, 100vw"
             alt=""
             width="1536"
             height="1024"
@@ -130,6 +132,8 @@ export function GoldenGate() {
                     fades in only from sunrise (faint) to dusk and night. */}
                 <img
                   className="bridge-unlit"
+                  decoding="async"
+                  fetchPriority="low"
                   src="/atmosphere/bridge-unlit.webp"
                   alt=""
                   width="1536"
@@ -137,6 +141,8 @@ export function GoldenGate() {
                 />
                 <img
                   className="bridge-lit"
+                  decoding="async"
+                  fetchPriority="low"
                   src="/atmosphere/bridge.webp"
                   alt=""
                   width="1536"

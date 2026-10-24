@@ -6,6 +6,8 @@ import { groqChat } from "../lib/groq";
 import { geminiKey as geminiKeyOf, groqKey as groqKeyOf } from "../lib/geminiKey";
 import { chatToolConfig, runChat, type ModelTurn } from "../lib/chatAgent";
 import { validTimeZone, type AssistantEnv } from "../lib/assistantTools";
+import { allowedOrigin } from "../lib/visitorConfirm";
+import { takeLiveSlot, type LiveLimit } from "../lib/liveLimits";
 
 // Cloudflare Pages Function: /api/gemini
 // - GET  -> simple JSON health response (so you can confirm it’s not being rewritten to index.html)
@@ -83,7 +85,44 @@ export function thinkingFor(model: string): Record<string, unknown> {
 
 const THINKING = true;
 
-export const onRequestPost = async (context: PagesFunctionContext) => {
+/** Caps on what one chat request may carry. */
+export const MAX_MESSAGE_CHARS = 1500;
+export const MAX_HISTORY = 6;
+const MAX_HISTORY_CHARS = 1500;
+
+/**
+ * Per-visitor chat limits. In-isolate only (like the website check): chat runs
+ * on every message, so KV writes here would cost more than they protect.
+ */
+export const CHAT_LIMITS: LiveLimit[] = [
+  { name: "chat-10m", windowSeconds: 600, max: 30, scope: "ip" },
+  { name: "chat-day", windowSeconds: 86400, max: 200, scope: "ip" },
+];
+
+/** Never tell the browser which model answered or how long each try took. */
+const PRIVATE_FIELDS = ["model", "timings", "ms", "status", "message"];
+
+export const onRequestPost = async (context: PagesFunctionContext): Promise<Response> => {
+  const { request } = context;
+  if (!allowedOrigin(request)) return json({ error: "Not allowed." }, { status: 403 });
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const retryAfter = await takeLiveSlot(undefined, `chat:${ip}`, Date.now(), CHAT_LIMITS);
+  if (retryAfter !== null) {
+    return json(
+      { error: "Too many messages. Please try again a little later.", retryAfter },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
+  const res = await answer(context);
+  const type = res.headers.get("content-type") || "";
+  if (!type.includes("application/json")) return res;
+  const data = await res.json().catch(() => null);
+  if (!data || typeof data !== "object") return res;
+  for (const key of PRIVATE_FIELDS) delete (data as Record<string, unknown>)[key];
+  return json(data, { status: res.status, headers: res.headers });
+};
+
+const answer = async (context: PagesFunctionContext) => {
   const { request, env } = context;
 
   let body: any = {};
@@ -96,6 +135,9 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
   const message = String(body?.message || "").trim();
   if (!message) {
     return json({ error: "Missing `message`." }, { status: 400 });
+  }
+  if (message.length > MAX_MESSAGE_CHARS) {
+    return json({ error: `Please keep messages under ${MAX_MESSAGE_CHARS} characters.` }, { status: 413 });
   }
 
   const timeIntent = resolveTimeIntent(message);
@@ -123,7 +165,8 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
   const now = new Date();
   const history = (Array.isArray(body?.history) ? body.history : [])
     .filter((h: any) => h && (h.role === "user" || h.role === "model") && typeof h.text === "string")
-    .slice(-6);
+    .slice(-MAX_HISTORY)
+    .map((h: any) => ({ role: h.role, text: h.text.slice(0, MAX_HISTORY_CHARS) }));
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 
   let lastError: any = null;

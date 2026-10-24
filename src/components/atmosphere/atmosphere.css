@@ -1021,8 +1021,13 @@ html {
   padding-top: 23px;
   font-size: 9px;
 }
-.footer-bottom > a {
+.footer-bottom > a,
+.footer-legal a {
   text-decoration: underline;
+}
+.footer-legal {
+  display: inline-flex;
+  gap: 18px;
 }
 @media (min-width: 1700px) {
   .page-width {

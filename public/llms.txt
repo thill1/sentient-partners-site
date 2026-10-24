@@ -1,6 +1,6 @@
 # Sentient Partners
 
-> Sentient Partners is a local business and technology partner based in Auburn, California. It designs and builds websites, business applications and AI assistants (chat and voice) for growing small and mid-sized businesses in Placer County, Greater Sacramento and across Northern California. The firm is founder-led by Troy Hill, formerly Global Quality Director at Hewlett-Packard and Director of Enterprise Quality Assurance at E*TRADE.
+> Sentient Partners is a business strategy and advisory firm based in Auburn, California (Business Strategy. Intelligent Systems. Measurable Results.). It advises growing small and mid-sized businesses in Placer County, Greater Sacramento and across Northern California, and builds the systems to match: websites, business applications and AI assistants (chat and voice). The firm is founder-led by Troy Hill, who held senior executive leadership roles at Hewlett-Packard and E*TRADE Financial.
 
 Key facts:
 - Location: Auburn, California. Serves Auburn, Placer County, Greater Sacramento and Northern California; also works with clients beyond the region.
@@ -13,7 +13,7 @@ Key facts:
 ## Capabilities
 
 - Premium websites: custom, mobile-first sites with clear messaging, hosting and care.
-- Search visibility: business profile care, local service pages and sound technical foundations.
+- Search visibility: business profile care, service pages and sound technical foundations.
 - Calendar and scheduling: online booking, team calendar sync, text and email reminders.
 - Business applications: scheduling and dispatch, job notes and photos, invoices and payment links, owner dashboards.
 - Workflow automation: connections between existing tools, readable rules, human approval steps, alerts when something stalls.
@@ -23,10 +23,11 @@ Key facts:
 
 ## Who it helps
 
-Local service businesses, trades and home services (HVAC, cleaning), professional services, fitness and wellness, retail and online stores, and new businesses getting started.
+Growing businesses: service businesses, trades and home services (HVAC, cleaning), professional services, fitness and wellness, retail and online stores, and new businesses getting started.
 
 ## Pages
 
 - [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
-- [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for local business owners, every other week
-- [Privacy](https://sentientpartners.ai/privacy.html)
+- [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for owners of growing businesses, every other week
+- [Privacy](https://sentientpartners.ai/privacy)
+- [Terms](https://sentientpartners.ai/terms)
