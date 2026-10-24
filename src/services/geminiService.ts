@@ -338,12 +338,19 @@ const visitorTimeZone = (): string => {
   }
 };
 
+/** Shown instead of browser errors like Safari's "Load failed". */
+export const CHAT_UNAVAILABLE_TEXT =
+  "Sorry, I couldn't answer just now. You can pick a time for the 20-minute introductory call at https://cal.com/sentient-partners-strategy/introductory-call, or email hello@sentientpartners.ai.";
+/** A little over the server's 20 s budget, so the server's own fallback normally wins. */
+export const CHAT_CLIENT_TIMEOUT_MS = 24_000;
+
 export const sendMessageToGemini = async function* (message: string) {
   try {
     const historyToSend = memory.slice(-6);
 
     const resp = await fetch("/api/gemini", {
       method: "POST",
+      signal: AbortSignal.timeout(CHAT_CLIENT_TIMEOUT_MS),
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message,
@@ -376,10 +383,11 @@ export const sendMessageToGemini = async function* (message: string) {
         } catch {
           // Keep original string if not JSON
         }
-        yield `Rate Limit Exceeded (429): ${cleanMsg}`;
+        console.warn("chat 429", cleanMsg);
       } else {
-        yield `API Error (${resp.status}): ${data.message || data.error || "Check Cloudflare API_KEY (Production) and redeploy."}`;
+        console.warn(`chat ${resp.status}`, data.message || data.error);
       }
+      yield CHAT_UNAVAILABLE_TEXT;
       return;
     }
 
@@ -391,8 +399,8 @@ export const sendMessageToGemini = async function* (message: string) {
     persistMemoryToStorage();
     yield text || "Empty response.";
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : String(error || "");
-    yield `Connection problem: ${errMsg || "Refresh and try again."}`;
+    console.warn("chat request failed", error);
+    yield CHAT_UNAVAILABLE_TEXT;
   }
 };
 

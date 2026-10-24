@@ -137,19 +137,30 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
     throw new LiveStartError('unavailable', 'This browser cannot do live voice.');
   }
 
-  // Safari 16.4+: declare a two-way call up front. Otherwise WebKit switches the
-  // audio session between playback and play-and-record as capture starts, which
-  // re-routes and re-levels the speaker mid-conversation.
+  // iOS: leave navigator.audioSession on "auto". Forcing "play-and-record" before
+  // capture starts routed Web Audio output to the earpiece (receiver) on iPhones,
+  // so the assistant was effectively silent. With the microphone open WebKit
+  // already picks a two-way session that plays through the speaker.
   const audioSession = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
-  if (audioSession) {
+  if (audioSession && audioSession.type === 'play-and-record') {
     try {
-      audioSession.type = 'play-and-record';
+      audioSession.type = 'auto';
     } catch {
       void 0;
     }
   }
   const ctx = new Ctor();
   void ctx.resume().catch(() => undefined);
+  // Unlock output inside the tap: iOS only lets a context make sound after
+  // something has played from a user gesture.
+  try {
+    const unlock = ctx.createBufferSource();
+    unlock.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    unlock.connect(ctx.destination);
+    unlock.start(0);
+  } catch {
+    void 0;
+  }
 
   let stream: MediaStream | null = null;
   let session: Session | null = null;
@@ -191,6 +202,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   }
   const tokenInfo = tokenResult.value;
   const micStream = micResult.value;
+  if ((ctx.state as string) !== 'running') await ctx.resume().catch(() => undefined);
 
   // ---- Playing the assistant's voice -------------------------------------------------
   // Source -> one fixed gain -> speakers. Nothing on this path reacts to the
@@ -215,6 +227,7 @@ export async function startLiveVoice(events: LiveVoiceEvents = {}): Promise<Live
   };
 
   const playChunk = (base64: string) => {
+    if ((ctx.state as string) !== 'running' && (ctx.state as string) !== 'closed') void ctx.resume().catch(() => undefined);
     const samples = base64ToPcm16(base64);
     if (!samples.length) return;
     const buffer = ctx.createBuffer(1, samples.length, OUTPUT_SAMPLE_RATE);
