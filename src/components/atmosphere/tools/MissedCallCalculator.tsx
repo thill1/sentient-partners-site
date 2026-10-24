@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import ToolCta from "./ToolCta";
+import ToolBack from "./ToolBack";
 
 /** Revenue at risk from missed calls, from the visitor's own numbers only. */
 export function missedCallEstimate(input: { callsPerWeek: number; missedPct: number; bookPct: number; jobValue: number }) {
@@ -39,6 +40,11 @@ export default function MissedCallCalculator() {
 
   return (
     <section className="tool-page section-space" aria-labelledby="mc-title">
+      <nav className="tool-backbar" aria-label="Tools">
+        <div className="page-width">
+          <ToolBack />
+        </div>
+      </nav>
       <div className="page-width tool-layout">
         <div className="tool-intro">
           <p className="eyebrow">Free tool</p>
@@ -86,6 +92,7 @@ export default function MissedCallCalculator() {
             source="Missed-call calculator"
             context={`Missed-call calculator: about ${money(r.monthly)} a month at risk (visitor's inputs).`}
           />
+          <ToolBack label="Back to all tools" end />
         </div>
       </div>
     </section>
