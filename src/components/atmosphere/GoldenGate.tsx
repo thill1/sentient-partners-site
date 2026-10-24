@@ -157,9 +157,8 @@ export function GoldenGate() {
             <em>Local impact.</em>
           </h1>
           <p className="hero-description">
-            After senior executive leadership roles at Hewlett-Packard and
-            E*TRADE Financial, Troy Hill founded Sentient Partners to be a
-            hands-on technology partner for growing local businesses.
+            A clear plan, systems that work together, and results you can
+            measure. For growing businesses.
           </p>
           <div className="hero-actions">
             <a
@@ -186,8 +185,8 @@ export function GoldenGate() {
             <br />
             <em>Hands-on execution.</em>
           </p>
-          <a href="#perspective" className="text-link">
-            Meet your local partner <ArrowDown size={16} />
+          <a href="#services" className="text-link">
+            See how we help <ArrowDown size={16} />
           </a>
         </div>
         <div className="hero-bottom header-rail">

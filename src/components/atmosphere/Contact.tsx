@@ -133,8 +133,8 @@ export default function Contact({ onBook }: { onBook: () => void }) {
             <em>for your business.</em>
           </h2>
           <p className="cf-lede">
-            The right technology should make running your business
-            <br className="desktop-break" /> simpler, not more complicated.
+            Technology should make your business simpler,
+            <br className="desktop-break" /> not more complicated.
           </p>
           <a
             className="cf-cta cta-primary cta-lg"

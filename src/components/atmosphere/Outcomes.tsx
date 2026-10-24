@@ -5,32 +5,32 @@ import "./outcomes.css";
 
 const outcomes = [
   [
+    "Advise & Grow",
+    "Move forward with a practical plan.",
+    "A clear view of your business, a sensible roadmap, and hands-on implementation.",
+    "#process",
+    "See how we partner",
+  ],
+  [
     "Attract & Convert",
     "Make it easier to find you. And choose you.",
-    "Distinctive websites, local search visibility, and a clear path from first impression to inquiry.",
+    "Websites and local search that turn a first impression into an inquiry.",
     "#capabilities:websites",
     "See websites and search",
   ],
   [
     "Automate & Communicate",
     "Be responsive, without being everywhere.",
-    "Helpful voice and chat experiences, timely follow-up, and fewer routine tasks for your team.",
+    "Chat and voice assistants, timely follow-up, and fewer routine tasks.",
     "#capabilities:ai-chatbots",
     "See chat and voice assistants",
   ],
   [
     "Operate & Scale",
     "Give your business room to grow.",
-    "Connected scheduling, customer operations, applications, and invoicing that work together.",
+    "Scheduling, operations, and invoicing that work as one system.",
     "#capabilities:business-apps",
     "See business applications",
-  ],
-  [
-    "Advise & Grow",
-    "Move forward with a practical plan.",
-    "A clear-eyed view of your business, a sensible technology roadmap, and hands-on implementation.",
-    "#process",
-    "See how we partner",
   ],
 ] as const;
 
@@ -273,16 +273,16 @@ export default function Outcomes() {
         </div>
         <div className="ov-content page-width">
           <header className="ov-head">
-            <p className="eyebrow">What we help you accomplish</p>
+            <p className="eyebrow">How we help</p>
             <h2 id="outcomes-title" className="ov-heading">
               Start where
               <br />
               <em>it hurts most.</em>
             </h2>
             <p className="ov-intro">
-              Four places growing businesses lose time or customers.
+              Missed calls. Lost leads. Hours of double entry.
               <br />
-              Pick one. We bring the strategy and the systems.
+              Start where it costs you most.
             </p>
             <ol className="ov-rail" aria-hidden="true">
               {outcomes.map(([title], i) => (
