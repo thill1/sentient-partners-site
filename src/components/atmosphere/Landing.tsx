@@ -1,5 +1,5 @@
 import { MobileMore } from "./MobileMore";
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpRight, Menu, Phone, X } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
@@ -23,7 +23,7 @@ import {
 } from "./sectionMotion";
 import FooterFinale from "./FooterFinale";
 import SignupBand from "./SignupBand";
-import SiteCheck from "./SiteCheck";
+import ToolsPage from "./ToolsPage";
 import { RelayShowcase } from "./RelayShowcase";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
@@ -34,7 +34,7 @@ const book = (source: string) =>
   openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
 function Brand() {
   return (
-    <a className="brand-lockup" href="#top">
+    <a className="brand-lockup" href={useHref()("#top")}>
       <img
         className="monogram-light"
         src="/atmosphere/sp-monogram-white-72.png"
@@ -58,11 +58,18 @@ const links = [
   ["Capabilities", "#capabilities"],
   ["Our work", "#work"],
   ["Our founder", "#founder"],
-  ["Website check", "#website-check"],
+  ["Tools", "/tools/"],
   // Hidden when the build has no published Insights (see insights/lib.mjs).
   ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
+/** Which page is showing. Section links are "#x" at home, "/#x" elsewhere. */
+const PageContext = createContext<"home" | "tools">("home");
+const useHref = () => {
+  const page = useContext(PageContext);
+  return (href: string) => (page !== "home" && href.startsWith("#") ? `/${href}` : href);
+};
 function Navigation() {
+  const href = useHref();
   const [menu, setMenu] = useState(false),
     [onLight, setOnLight] = useState(false),
     [scrolled, setScrolled] = useState(false);
@@ -161,8 +168,8 @@ function Navigation() {
     >
       <div className="header-inner">
         <nav className="desktop-nav" aria-label="Main navigation">
-          {links.map(([label, href]) => (
-            <a key={href} href={href}>
+          {links.map(([label, to]) => (
+            <a key={to} href={href(to)}>
               {label}
             </a>
           ))}
@@ -198,8 +205,8 @@ function Navigation() {
             className="mobile-nav"
             aria-label="Mobile navigation"
           >
-            {links.map(([label, href]) => (
-              <a key={href} href={href} onClick={() => setMenu(false)}>
+            {links.map(([label, to]) => (
+              <a key={to} href={href(to)} onClick={() => setMenu(false)}>
                 {label}
                 <ArrowRight size={18} aria-hidden="true" />
               </a>
@@ -382,20 +389,27 @@ function WorkSection() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function Landing(_props: { banner: BannerDisplayState }) {
+export default function Landing({ page = "home" }: { banner: BannerDisplayState; page?: "home" | "tools" }) {
   useScrollReveal();
   useWorkMotion();
   useFounderMotion();
   useProcessMotion();
   useAuburnMotion();
+  const home = page === "home";
+  const to = (h: string) => (home ? h : `/${h}`);
   return (
-    <div className="atmosphere-page" id="top">
+    <PageContext.Provider value={page}>
+    <div className={`atmosphere-page${home ? "" : " tools-page"}`} id="top">
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
       <PageAtmosphere />
       <Navigation />
       <main id="main-content" tabIndex={-1}>
+        {!home ? (
+          <ToolsPage />
+        ) : (
+        <>
         {/* Flow: promise (hero) → how we help → what it looks like →
             proof → who → how we work → the call. */}
         <GoldenGate />
@@ -545,9 +559,21 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </div>
           </div>
         </section>
-        <SiteCheck />
+        <section className="tools-teaser" aria-label="Free tools">
+          <div className="page-width tools-teaser-inner">
+            <p>
+              Free website check: see how your site does on phones, search,
+              speed and booking.
+            </p>
+            <a className="text-link" href="/tools/">
+              Check your website <ArrowRight size={15} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
         <Contact onBook={() => book("Final invitation")} />
         <SignupBand />
+        </>
+        )}
       </main>
       <ActionDock />
       <footer className="atmosphere-footer">
@@ -566,12 +592,12 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
             </div>
             <div>
               <span>Explore</span>
-              <a href="#services">How we help</a>
-              <a href="#capabilities">Capabilities</a>
-              <a href="#work">Our work</a>
-              <a href="#founder">Our founder</a>
-              <a href="#process">Our approach</a>
-              <a href="#website-check">Free website check</a>
+              <a href={to("#services")}>How we help</a>
+              <a href={to("#capabilities")}>Capabilities</a>
+              <a href={to("#work")}>Our work</a>
+              <a href={to("#founder")}>Our founder</a>
+              <a href={to("#process")}>Our approach</a>
+              <a href="/tools/">Tools</a>
               {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
             </div>
             <div>
@@ -606,5 +632,6 @@ export default function Landing(_props: { banner: BannerDisplayState }) {
         </div>
       </footer>
     </div>
+    </PageContext.Provider>
   );
 }
