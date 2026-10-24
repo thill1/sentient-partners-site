@@ -45,7 +45,7 @@
       })();
     </script>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <title>Sentient Partners | Business Strategy. Intelligent Systems. Measurable Results.</title>
     <meta
@@ -54,8 +54,14 @@
     />
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["ProfessionalService","LocalBusiness"],"@id":"https://sentientpartners.ai/#business","name":"Sentient Partners","url":"https://sentientpartners.ai/","slogan":"Business Strategy. Intelligent Systems. Measurable Results.","description":"Websites, business applications and AI assistants for growing businesses in Northern California, with founder-led strategy and hands-on implementation.","logo":"https://sentientpartners.ai/email-sig/sp-monogram.png","image":"https://sentientpartners.ai/og-image.jpg","email":"hello@sentientpartners.ai","telephone":"+1-415-504-2757","address":{"@type":"PostalAddress","addressLocality":"Auburn","addressRegion":"CA","addressCountry":"US"},"areaServed":[{"@type":"City","name":"Auburn, CA"},{"@type":"AdministrativeArea","name":"Placer County, CA"},{"@type":"Place","name":"Greater Sacramento"},{"@type":"Place","name":"Northern California"}],"founder":{"@id":"https://sentientpartners.ai/#troy-hill"},"sameAs":["https://www.linkedin.com/in/tghill/"],"knowsAbout":["Website design","Local SEO","Business process automation","AI chat assistants","AI voice agents","Software quality engineering"],"potentialAction":{"@type":"ReserveAction","name":"Book a 20-minute introductory call","target":{"@type":"EntryPoint","urlTemplate":"https://cal.com/sentient-partners-strategy/introductory-call","actionPlatform":["https://schema.org/DesktopWebPlatform","https://schema.org/MobileWebPlatform"]}},"hasOfferCatalog":{"@type":"OfferCatalog","name":"Capabilities","itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Premium websites","description":"Custom, mobile-first websites with clear messaging, hosting and care.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Search visibility","description":"Business profile care, local service pages and sound technical foundations.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Calendar and scheduling","description":"Online booking, team calendar sync and reminders.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Business applications","description":"Practical tools for jobs, customers, estimates and invoices.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Workflow automation","description":"Connections between existing tools, with readable rules and human approval steps.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Reputation and reviews","description":"Review requests to every customer and drafted responses the owner approves.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"AI chat assistants","description":"Website and messaging assistants that answer routine questions and hand off to a person.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"AI voice agents","description":"After-hours and overflow call answering with summaries sent to the team.","provider":{"@id":"https://sentientpartners.ai/#business"},"areaServed":"Northern California"}}]}},{"@type":"Person","@id":"https://sentientpartners.ai/#troy-hill","name":"Troy Hill","jobTitle":"Founder & Principal Consultant","worksFor":{"@id":"https://sentientpartners.ai/#business"},"image":"https://sentientpartners.ai/atmosphere/troy-hill-founder-960.webp","sameAs":["https://www.linkedin.com/in/tghill/"],"description":"Former Global Quality Director at Hewlett-Packard and Director of Enterprise Quality Assurance at E*TRADE; founder of Qualitonomy and Sentient Partners.","knowsAbout":["Software quality","Enterprise change management","Customer service technology","Workflow automation"]},{"@type":"WebSite","@id":"https://sentientpartners.ai/#website","url":"https://sentientpartners.ai/","name":"Sentient Partners","publisher":{"@id":"https://sentientpartners.ai/#business"}}]}</script>
     <meta name="robots" content="index, follow" />
-    <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0D1F4E" />
+    <meta name="color-scheme" content="dark" />
+    <!-- Browser chrome (status bar, Dynamic Island band, toolbars) matches the hero's deep navy in every OS theme. -->
+    <meta name="theme-color" content="#081536" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#081536" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#081536" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Navy from the very first paint, before any stylesheet loads, so no white flash or white overscroll band. -->
+    <style>html,body{background-color:#081536}</style>
 
     <link rel="preload" as="font" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" type="font/woff2" crossorigin />
     <link rel="preload" as="font" href="/fonts/inter-normal-400.woff2" type="font/woff2" crossorigin />
@@ -102,7 +108,7 @@
       <script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/insights/*"},{"not":{"href_matches":"/insights/*.xml"}}]},"eagerness":"moderate"}],"prefetch":[{"where":{"href_matches":"/"},"eagerness":"moderate"}]}</script>
   </head>
 
-  <body class="antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-dark-bg transition-colors duration-300">
+  <body class="antialiased text-slate-900 dark:text-slate-100 bg-[#081536] dark:bg-dark-bg transition-colors duration-300">
     <noscript><style>.atmosphere-page button,.cx-atelier,.journey-line,.journey-detail,.motion-toggle{display:none!important}</style></noscript>
 
     <div id="root"></div>
