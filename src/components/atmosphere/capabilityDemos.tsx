@@ -1,3 +1,4 @@
+import { MobileMore } from "./MobileMore";
 import {
   useEffect,
   useMemo,
@@ -110,9 +111,11 @@ function Backstage({
       <p className="cx-back-label">
         <i aria-hidden="true" /> Behind the scenes
       </p>
-      <h4>{title}</h4>
-      <div className="cx-back-body">{children}</div>
-      {note ? <p className="cx-back-note">{note}</p> : null}
+      <h3 className="cx-back-title">{title}</h3>
+      <MobileMore label="See the details">
+        <div className="cx-back-body">{children}</div>
+        {note ? <p className="cx-back-note">{note}</p> : null}
+      </MobileMore>
     </aside>
   );
 }

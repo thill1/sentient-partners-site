@@ -18,8 +18,10 @@ import {
   sendTranscript,
   dispatchToast,
 } from '../services/geminiService';
-import { CHAT_WIDGET_CONTENT } from '../content/siteContent';
+import { BRAND, CHAT_WIDGET_CONTENT } from '../content/siteContent';
 import { useSiteSettings } from '../hooks/useSiteSettings';
+import { RichText } from './RichText';
+import { toSpeakable } from '../lib/speakable';
 import { CHAT_EVENT, openBookingModal, type CtaEventDetail } from '../lib/siteActions';
 import { submitLead } from '../services/geminiService';
 import { getVisitorMemory, isReturningVisitor } from '../lib/visitorMemory';
@@ -337,7 +339,9 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
     stopAudioPlayback();
     const token = playbackTokenRef.current;
 
-    const pending = splitForSpeech(clean).map((part) => fetchVoiceBytes(part));
+    const spoken = toSpeakable(clean);
+    if (!spoken) return;
+    const pending = splitForSpeech(spoken).map((part) => fetchVoiceBytes(part));
     // A later part may fail after we stop early; don't leave that unhandled.
     pending.forEach((request) => request.catch(() => undefined));
 
@@ -1136,7 +1140,7 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
             <div id="concierge-content" className={`concierge-content is-${activeTab}${noteDraft !== null ? ' has-note' : ''}`} role="tabpanel" aria-labelledby={`concierge-tab-${activeTab}`}>
               {activeTab === 'chat' ? <>
                 <div className="concierge-messages" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
-                  {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p>{msg.text}{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
+                  {messages.map(msg => <div key={msg.id} className={`concierge-message is-${msg.role}`}><span className="concierge-message-author">{msg.role === 'user' ? 'You' : 'Sentient AI'}</span><p><RichText text={msg.text} />{msg.isTyping && <span className="concierge-typing" aria-label="Responding">…</span>}</p></div>)}
                   {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
                 {noteDraft !== null && <NoteForTroy key={`note-chat-${noteRequestId}`} initialNote={noteDraft} source="Concierge chat note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
                   <div ref={messagesEndRef} />
@@ -1165,9 +1169,14 @@ export const ChatInterface: React.FC<{ showLauncher?: boolean }> = ({ showLaunch
                 {voiceError && <p className="concierge-error" role="alert"><AlertCircle size={16} />{voiceError}</p>}
                 {bookedLabel && <p className="concierge-disclosure" role="status">Booked: {bookedLabel}. A calendar invitation is on its way to your inbox.</p>}
                 {noteDraft !== null && <NoteForTroy key={`note-voice-${noteRequestId}`} initialNote={noteDraft} source="Concierge voice note" onBook={bookInstead} onClose={() => setNoteDraft(null)} />}
+                <p className="concierge-voice-links">
+                  <button type="button" className="concierge-link" onClick={() => { setIsOpen(false); openBookingModal({ source: 'Concierge voice', ctaLabel: 'Book a 20-minute intro call' }); }}>Book a 20-minute introductory call</button>
+                  <span aria-hidden="true"> · </span>
+                  <a className="concierge-link" href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
+                </p>
                 <div className="concierge-transcript" role="log" aria-label="Voice transcript" aria-live="polite">
                   {transcriptHistory.length === 0 && !interimInput && <p className="concierge-disclosure">Your microphone starts only when you choose to begin.</p>}
-                  {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> {turn.text}</p>)}
+                  {transcriptHistory.slice(-3).map((turn, index) => <p key={index}><strong>{turn.role === 'user' ? 'You' : 'Sentient AI'}:</strong> <RichText text={turn.text} /></p>)}
                   {interimInput && <p><strong>You:</strong> {interimInput}</p>}
                 </div>
               </>}

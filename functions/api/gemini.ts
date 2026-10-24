@@ -3,6 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import { buildAiSystemInstruction } from "../../src/content/siteContent";
 import { formatTimeIntentResponse, resolveTimeIntent } from "../lib/timeIntent";
 import { groqChat } from "../lib/groq";
+import { geminiKey as geminiKeyOf, groqKey as groqKeyOf } from "../lib/geminiKey";
 import { chatToolConfig, runChat, type ModelTurn } from "../lib/chatAgent";
 import { validTimeZone, type AssistantEnv } from "../lib/assistantTools";
 
@@ -79,9 +80,8 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     });
   }
 
-  const legacyKey = String(env?.API_KEY || "").trim();
-  const groqKey = String(env?.GROQ_API_KEY || (legacyKey.startsWith("gsk_") ? legacyKey : "")).trim();
-  const geminiKey = String(env?.GEMINI_API_KEY || (legacyKey.startsWith("gsk_") ? "" : legacyKey)).trim();
+  const groqKey = groqKeyOf(env);
+  const geminiKey = geminiKeyOf(env);
   if (!geminiKey && !groqKey) {
     return json(
       {

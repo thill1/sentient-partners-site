@@ -140,3 +140,8 @@
 .concierge-content.has-note .concierge-voice-intro { display: none; }
 .concierge-content.has-note .concierge-voice-control { height: 112px; }
 @media (max-width: 360px) { .concierge-note-row { grid-template-columns: minmax(0, 1fr); } }
+
+.concierge-link{color:#c8b795;text-decoration:underline;text-underline-offset:3px;word-break:break-word;background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.concierge-link:hover{color:#f3f0e8}
+.concierge-link:focus-visible{outline:2px solid #c8b795;outline-offset:3px;border-radius:2px}
+.concierge-voice-links{margin:10px 0 0;text-align:center;font-size:13px;line-height:1.6;color:#c4cbd6}

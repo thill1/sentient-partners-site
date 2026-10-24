@@ -165,7 +165,7 @@ export default function Perspective() {
               systems, and disciplined execution as any enterprise, without the
               enterprise overhead.
             </p>
-            <p className="pv-reveal">
+            <p className="pv-reveal m-trim">
               We make that expertise practical. From Auburn and Placer County to
               Greater Sacramento and beyond, we help you connect the right
               technology to the work you do every day.

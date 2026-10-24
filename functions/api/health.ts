@@ -1,6 +1,10 @@
+import { geminiKey, groqKey } from "../lib/geminiKey";
+
 export const onRequestGet: PagesFunction = async (context) => {
-  const key = context.env.API_KEY || context.env.GEMINI_API_KEY;
-  const hasApiKey = !!key;
+  const gemini = geminiKey(context.env as never);
+  const groq = groqKey(context.env as never);
+  const hasLiveKey = !!geminiKey(context.env as never, { live: true });
+  const hasApiKey = !!(gemini || groq);
   const hasAdminUsername = !!context.env.ADMIN_USERNAME;
   const hasAdminPassword = !!context.env.ADMIN_PASSWORD;
   const hasAdminPasswordHash = !!context.env.ADMIN_PASSWORD_HASH;
@@ -21,7 +25,10 @@ export const onRequestGet: PagesFunction = async (context) => {
           adminPassword: hasAdminPassword,
           adminPasswordHash: hasAdminPasswordHash,
           adminSessionSecret: hasAdminSessionSecret,
-          geminiApiKey: hasApiKey,
+          geminiApiKey: !!gemini,
+          groqApiKey: !!groq,
+          liveVoiceKey: hasLiveKey,
+          calApiKey: !!context.env.CAL_API_KEY,
           ttsBaseUrl: hasTtsBaseUrl,
           ttsApiKey: hasTtsApiKey,
         },

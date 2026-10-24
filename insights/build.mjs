@@ -59,7 +59,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
 <a class="skip" href="#main">Skip to content</a>
 <header class="ins-header">
   <a class="ins-brand" href="/" aria-label="Sentient Partners home">
-    <img src="/atmosphere/sp-monogram-white.png" alt="" width="22" height="36">
+    <img src="/atmosphere/sp-monogram-white-72.png" alt="" width="22" height="36">
     <span>Sentient Partners</span>
   </a>
   <nav class="ins-nav" aria-label="Main navigation">
