@@ -12,6 +12,7 @@ export interface Env {
   ADMIN_USERNAME?: string;
   API_KEY?: string;
   CAL_API_KEY?: string;
+  CONFIRM_FROM_EMAIL?: string;
   FOLLOW_UP_EMAIL?: string;
   LEADS_WEBHOOK_URL?: string;
   REPORT_FROM_EMAIL?: string;

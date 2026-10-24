@@ -46,7 +46,7 @@ export function NoteForTroy({ initialNote, source, onBook, onClose }: NoteForTro
       intent: 'contact',
       source,
       ctaLabel: 'Note for Troy',
-    });
+    }, '', { confirmVisitor: true });
     setStatus(result.success ? 'sent' : 'failed');
   };
 

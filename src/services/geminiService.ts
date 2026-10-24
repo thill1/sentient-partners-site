@@ -115,10 +115,27 @@ const newLeadId = () =>
  * sentientpartners.ai). Success only when FormSubmit says success "true".
  * /api/leads is pinged for the optional webhook but never decides success.
  */
+/**
+ * After hello@ has the message, ask our server to email the visitor a short,
+ * fixed thank-you. Fire and forget: it never changes what the visitor sees.
+ */
+export const requestVisitorConfirmation = (payload: Pick<LeadSubmission, "name" | "email">, honey = "") => {
+  try {
+    fetch("/api/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: payload.email, name: payload.name, company: honey }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // Never let the confirmation affect the lead.
+  }
+};
+
 export const submitLead = async (
   payload: LeadSubmission,
   honey = "",
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; confirmVisitor?: boolean } = {},
 ): Promise<LeadSubmissionResult> => {
   const leadId = newLeadId();
   const controller = new AbortController();
@@ -146,6 +163,7 @@ export const submitLead = async (
       message?: unknown;
     };
     if (response.ok && String(data.success) === "true") {
+      if (options.confirmVisitor) requestVisitorConfirmation(payload, honey);
       return {
         success: true,
         message: "Thanks. We received your note and will follow up soon.",

@@ -60,7 +60,7 @@ function ConciergeNextSteps({ messages, onBook }: { messages: Message[]; onBook:
       intent: 'contact',
       source: 'Concierge handoff',
       ctaLabel: 'Send this conversation to Troy',
-    });
+    }, '', { confirmVisitor: true });
     setHandoff(result.success ? 'sent' : 'failed');
   };
   return (
