@@ -60,6 +60,27 @@ export const templates = [
       { label: "PDF", href: "/templates/weekly-owner-scorecard.pdf" },
     ],
   },
+  {
+    title: "Estimate and quote template",
+    copy: "Line items with totals worked out, a terms section and a follow-up schedule.",
+    files: [
+      { label: "Excel", href: "/templates/estimate-quote-template.xlsx" },
+      { label: "PDF", href: "/templates/estimate-quote-template.pdf" },
+    ],
+  },
+  {
+    title: "Automation starter checklist",
+    copy: "The first ten things to automate, in order, and what each one replaces.",
+    files: [{ label: "PDF", href: "/templates/automation-starter-checklist.pdf" }],
+  },
+  {
+    title: "AI use policy for small teams",
+    copy: "A one-page, editable policy on what staff can and can't put into AI tools.",
+    files: [
+      { label: "Word", href: "/templates/ai-use-policy.docx" },
+      { label: "PDF", href: "/templates/ai-use-policy.pdf" },
+    ],
+  },
 ];
 
 export default function ToolsPage() {
