@@ -56,7 +56,7 @@ and Open Graph identity. No runtime library was added.
 
 The portrait of Troy Hill and Auburn photograph came from the same repository's
 existing redesign worktree. Founder corporate experience is explicitly distinguished
-from Sentient Partners' work. Sentient Relay is labeled as in development; all
+from Sentient Partners' work. Sentient Relay is labeled as in pilot; all
 miniature capability interfaces are identified as illustrative. No testimonials,
 client endorsements, financial results, or service prices were invented.
 
