@@ -6,11 +6,13 @@ import "./relay-showcase.css";
 /** Real Relay screens (sample data), captured from the app. */
 const screens = [
   ["relay-today", 640, 1387, "Relay Today view: the next visit card, a Needs you list and the Your day timeline"],
+  ["relay-jobs", 640, 1387, "Relay jobs list with open and completed tabs, today's jobs and a Record payment button on a job that needs payment"],
   ["relay-job", 640, 1387, "Relay job screen with the customer's address, call, text and map buttons, the next step and the appointment details"],
   ["relay-calendar", 640, 1387, "Relay calendar day view with a week strip, scheduled visits with their status and open time slots"],
-  ["relay-jobs", 640, 1387, "Relay jobs list with open and completed tabs, today's jobs and a Record payment button on a job that needs payment"],
   ["relay-customers", 640, 1387, "Relay customers list with search, A to Z and recent sorting, and each customer's location and phone number"],
+  ["relay-customer", 640, 1387, "Relay customer profile with call and text buttons, documents, create estimate and create invoice, and a Schedule job button"],
   ["relay-documents", 640, 1387, "Relay documents screen listing estimates and invoices with amounts and statuses such as waiting, paid and approved"],
+  ["relay-more", 640, 1387, "Relay More menu with Needs you, Documents, Help, appearance, map settings and review links"],
 ] as const;
 
 export function RelayShowcase() {
@@ -48,7 +50,7 @@ export function RelayShowcase() {
   return (
     <div className="relay-showcase" aria-labelledby="relay-title">
       <div className="rs-copy">
-        <p className="eyebrow">Sentient Relay · In development</p>
+        <p className="eyebrow">Sentient Relay · In pilot</p>
         <h3 id="relay-title">
           The service day,
           <br />
@@ -70,7 +72,7 @@ export function RelayShowcase() {
             openContactModal({
               source: "Sentient Relay interest",
               inquiry:
-                "I would like to learn about Sentient Relay, currently in development.",
+                "I would like to learn about Sentient Relay, currently in pilot.",
             })
           }
         >
@@ -87,7 +89,7 @@ export function RelayShowcase() {
           {screens.map(([file, w, h, alt]) => (
             <li key={file} className="rs-phone">
               <img
-                src={`/showcase/relay/${file}.webp`}
+                src={`/showcase/relay/${file}.webp?v=8`}
                 alt={alt}
                 width={w}
                 height={h}
