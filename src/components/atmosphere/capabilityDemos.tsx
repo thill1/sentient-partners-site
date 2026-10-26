@@ -734,12 +734,6 @@ const devices = [
   { id: "tablet", label: "Tablet", icon: Tablet },
   { id: "phone", label: "Phone", icon: Smartphone },
 ] as const;
-const vitals = [
-  { label: "Performance", score: 98 },
-  { label: "Accessibility", score: 100 },
-  { label: "Best practices", score: 100 },
-  { label: "SEO", score: 100 },
-];
 
 /** Real Core Web Vitals from this visit (LCP and CLS), read from the browser. */
 function useLiveVitals() {
@@ -784,12 +778,7 @@ export function WebsiteDemo() {
   const [device, setDevice] =
     useState<(typeof devices)[number]["id"]>("desktop");
   const site = useRef<HTMLDivElement>(null);
-  const [drawn, setDrawn] = useState(false);
   const live = useLiveVitals();
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setDrawn(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
   const go = (section: string) => {
     const root = site.current;
     const target = root?.querySelector<HTMLElement>(`[data-part="${section}"]`);
@@ -864,30 +853,8 @@ export function WebsiteDemo() {
       </div>
       <Backstage
         title="Fast, accessible, and measured."
-        note="Rings are sample build targets. The rows below are measured live, from your visit to this page."
+        note="Measured live, from your visit to this page. The sample site above is built to the same standard."
       >
-        <div className="cx-rings">
-          {vitals.map((v) => (
-            <div key={v.label}>
-              <svg viewBox="0 0 44 44" aria-hidden="true">
-                <circle cx="22" cy="22" r="19" />
-                <circle
-                  cx="22"
-                  cy="22"
-                  r="19"
-                  className="is-value"
-                  style={{
-                    strokeDashoffset: drawn
-                      ? 119.4 * (1 - v.score / 100)
-                      : 119.4,
-                  }}
-                />
-              </svg>
-              <strong>{v.score}</strong>
-              <span>{v.label}</span>
-            </div>
-          ))}
-        </div>
         <Field
           label="This page, largest paint"
           value={live.lcp !== undefined ? `${(live.lcp / 1000).toFixed(1)}s on your device` : "Measuring…"}

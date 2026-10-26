@@ -1,0 +1,534 @@
+/* Capabilities as a journey filmstrip (see Capabilities.tsx).
+   Base: a native swipe carousel at every size. Enhanced (.is-pinned, large
+   screens with motion): vertical scroll glides the strip sideways. */
+
+.capabilities-section.jf {
+  --gap: 28px;
+  --peek: 150px;
+  --edge: calc((100% - var(--pw, min(1280px, calc(100% - 144px)))) / 2);
+  position: relative;
+  background: var(--f-navy);
+  color: var(--a-ivory);
+  padding-block: var(--space-3xl) var(--space-2xl);
+  isolation: isolate;
+}
+.jf-stage {
+  position: relative;
+}
+
+/* ——— Sky: the light follows the story's clock ——— */
+.jf-sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.jf-sky i {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jf-sky .is-dusk {
+  background:
+    radial-gradient(70% 55% at 78% 108%, rgba(214, 160, 112, 0.22), transparent 70%),
+    radial-gradient(50% 40% at 15% 0%, rgba(58, 77, 128, 0.55), transparent 70%),
+    linear-gradient(180deg, #13255a 0%, #1a2b5a 100%);
+}
+.jf-sky .is-night {
+  background:
+    radial-gradient(24% 26% at 86% 14%, rgba(243, 240, 232, 0.09), transparent 70%),
+    linear-gradient(180deg, #071233 0%, #0a1638 100%);
+}
+.jf-sky .is-day {
+  background:
+    radial-gradient(60% 50% at 30% -6%, rgba(200, 183, 149, 0.2), transparent 70%),
+    radial-gradient(50% 50% at 90% 100%, rgba(58, 77, 128, 0.6), transparent 70%),
+    linear-gradient(180deg, #1b3168 0%, #172a5e 100%);
+}
+.jf[data-tone="dusk"] .jf-sky .is-dusk,
+.jf[data-tone="night"] .jf-sky .is-night,
+.jf[data-tone="day"] .jf-sky .is-day {
+  opacity: 1;
+}
+
+/* ——— Header: title, the clock, and the progress rail ——— */
+.jf-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+.jf-head .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--f-gold);
+  margin-bottom: 16px;
+}
+.jf-head .eyebrow::before {
+  content: "";
+  width: 36px;
+  height: 1px;
+  background: currentColor;
+}
+.atmosphere-page main .jf .jf-heading {
+  font-size: var(--step-4);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.jf-heading em {
+  color: var(--f-gold);
+}
+.jf .word-mask {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.jf-progress {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: end;
+  gap: 14px 22px;
+  flex-shrink: 0;
+}
+.jf-now {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--f-body);
+  min-height: 20px;
+}
+.jf-now span {
+  display: inline-block;
+  animation: jf-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jf-now b {
+  font-family: var(--a-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 17px;
+  color: var(--a-ivory);
+  margin-right: 8px;
+}
+.jf-ticks {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.jf-ticks button {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 22px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jf-ticks button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: rgba(243, 240, 232, 0.2);
+  transition: background 0.4s;
+}
+.jf-ticks button:hover::before {
+  background: rgba(243, 240, 232, 0.5);
+}
+.jf-ticks button.is-past::before {
+  background: rgba(200, 183, 149, 0.55);
+}
+.jf-ticks button[aria-current="step"] {
+  width: 52px;
+}
+.jf-ticks button[aria-current="step"]::before {
+  background: var(--f-gold);
+}
+.jf-arrows {
+  display: flex;
+  gap: 8px;
+}
+.jf-arrows button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(243, 240, 232, 0.22);
+  color: var(--a-ivory);
+  transition:
+    border-color 0.3s,
+    background 0.3s,
+    opacity 0.3s;
+}
+.jf-arrows button:hover:not(:disabled) {
+  border-color: var(--f-gold);
+  background: rgba(200, 183, 149, 0.08);
+}
+.jf-arrows button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ——— The strip ——— */
+.jf-viewport {
+  position: relative;
+}
+.jf-track {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap);
+  padding: 6px var(--edge) 28px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--edge);
+  scrollbar-width: none;
+}
+.jf-track::-webkit-scrollbar {
+  display: none;
+}
+.jf-track::after {
+  /* Lets the last scene come to rest at the left edge like the others. */
+  content: "";
+  flex: 0 0 calc(var(--peek) - var(--gap));
+}
+
+.jf-scene {
+  flex: 0 0 calc(100% - var(--peek));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.jf-scene-inner {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.36fr) minmax(0, 1fr);
+  grid-template-areas:
+    "moment screen"
+    "detail screen";
+  grid-template-rows: auto 1fr;
+  column-gap: 52px;
+  row-gap: 30px;
+  align-items: start;
+  transform-origin: 50% 50%;
+  transform: scale(calc(1 - var(--a, 0) * 0.06));
+  opacity: calc(1 - var(--a, 0) * 0.6);
+}
+.jf-scene.is-flip .jf-scene-inner {
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.36fr);
+  grid-template-areas:
+    "screen moment"
+    "screen detail";
+}
+.jf-moment {
+  grid-area: moment;
+  align-self: end;
+  /* Parallax: the words drift a touch slower than the screen they sit beside. */
+  transform: translateX(calc(var(--d, 0) * 70px));
+}
+.jf-detail {
+  grid-area: detail;
+  transform: translateX(calc(var(--d, 0) * 40px));
+}
+.jf-screen {
+  /* The paper screens carry their own ink (the section text is ivory). */
+  --cx-ink: #102434;
+  --cx-muted: #53646e;
+  --cx-soft: #6b7b82;
+  --cx-line: #d6dcd7;
+  --cx-gold-deep: #8e733f;
+  background: var(--cx-paper, #fbfbf7);
+  grid-area: screen;
+  min-width: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(243, 240, 232, 0.12);
+  box-shadow:
+    0 50px 90px -40px rgba(3, 8, 26, 0.85),
+    0 18px 40px -24px rgba(3, 8, 26, 0.7);
+}
+.jf-scene[data-tone="night"] .jf-screen {
+  box-shadow:
+    0 0 0 1px rgba(200, 183, 149, 0.14),
+    0 50px 110px -40px rgba(0, 0, 0, 0.95),
+    0 0 120px -30px rgba(120, 150, 220, 0.25);
+}
+/* The demos keep their own behind-the-scenes rail; flip it on alternate
+   scenes so consecutive windows never share a silhouette. */
+.jf-scene.is-flip .cx-split {
+  grid-template-columns: minmax(250px, 1fr) minmax(0, 1.55fr);
+}
+.jf-scene.is-flip .cx-back {
+  order: -1;
+}
+
+/* ——— The moment and its detail ——— */
+.jf-when {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--f-body);
+  margin-bottom: 18px !important;
+}
+.jf-when i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--f-gold);
+  box-shadow: 0 0 0 4px rgba(200, 183, 149, 0.16);
+}
+.jf-scene[data-tone="night"] .jf-when i {
+  background: #dfe6f5;
+  box-shadow: 0 0 0 4px rgba(223, 230, 245, 0.14);
+}
+.atmosphere-page .jf-moment h3 {
+  font-size: clamp(28px, 2.35vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--a-ivory);
+}
+.jf-detail {
+  border-top: 1px solid var(--f-rule);
+  padding-top: 22px;
+}
+.jf-cap {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--f-gold);
+  margin-bottom: 10px !important;
+}
+.jf-copy {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--f-body);
+  max-width: 40ch;
+}
+.jf-detail ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+.jf-detail li {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  border: 1px solid rgba(243, 240, 232, 0.14);
+  color: #dde1e8;
+}
+.jf-discuss {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--a-ivory);
+  border-bottom: 1px solid var(--f-gold);
+  transition: gap 0.3s;
+}
+.jf-discuss:hover {
+  gap: 16px;
+}
+.jf-discuss svg {
+  color: var(--f-gold);
+}
+
+/* Words settle into place as each scene arrives. */
+.jf-moment > *,
+.jf-detail > * {
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.jf-scene:not(.is-active) .jf-moment > *,
+.jf-scene:not(.is-active) .jf-detail > * {
+  opacity: 0.35;
+  transform: translateY(10px);
+}
+.jf-scene.is-active .jf-moment > :nth-child(2) {
+  transition-delay: 0.06s;
+}
+.jf-scene.is-active .jf-detail > :nth-child(n + 2) {
+  transition-delay: 0.14s;
+}
+
+.jf-note {
+  margin-top: 6px !important;
+  font-size: 11px;
+  color: rgba(196, 203, 214, 0.65);
+}
+
+@keyframes jf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ——— Pinned (large screens, motion allowed) ——— */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .jf.is-pinned {
+    height: 360svh;
+    padding-block: 0;
+  }
+  .jf.is-pinned .jf-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 108px 0 22px;
+    overflow: hidden;
+  }
+  .jf.is-pinned .jf-track {
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+  .jf.is-pinned .cx-split {
+    min-height: min(470px, calc(100svh - 360px));
+  }
+}
+@media (min-width: 1024px) and (min-height: 700px) and (max-height: 840px) {
+  .jf.is-pinned .jf-stage {
+    justify-content: flex-start;
+    padding-top: 118px;
+  }
+  .jf-head {
+    margin-bottom: 22px;
+    align-items: center;
+  }
+  .jf .jf-head .eyebrow {
+    display: none;
+  }
+  .jf-progress {
+    grid-template-columns: auto auto auto;
+  }
+  .jf-now {
+    grid-column: auto;
+  }
+  .jf.is-pinned .cx-split {
+    min-height: min(440px, calc(100svh - 300px));
+  }
+  .jf-scene-inner {
+    row-gap: 22px;
+  }
+  .atmosphere-page main .jf .jf-heading {
+    font-size: var(--step-3);
+  }
+  .jf-detail ul {
+    display: none;
+  }
+}
+
+/* ——— Tablet and phone: swipe ——— */
+@media (max-width: 1023px), (max-height: 699px) {
+  .capabilities-section.jf {
+    --peek: 64px;
+    --gap: 18px;
+  }
+  .jf-scene-inner,
+  .jf-scene.is-flip .jf-scene-inner {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "moment"
+      "screen"
+      "detail";
+    grid-template-rows: auto;
+    row-gap: 22px;
+  }
+  .jf-moment,
+  .jf-detail {
+    transform: none;
+  }
+  .jf-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 26px;
+  }
+  .jf-progress {
+    grid-template-columns: 1fr auto;
+    justify-items: start;
+  }
+  .jf-now {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .jf-ticks {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .jf-arrows {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+@media (max-width: 600px) {
+  .capabilities-section.jf {
+    --peek: 24px;
+    --gap: 12px;
+    padding-bottom: 96px;
+  }
+  .jf-ticks {
+    gap: 4px;
+  }
+  .jf-ticks button {
+    width: 18px;
+  }
+  .jf-ticks button[aria-current="step"] {
+    width: 36px;
+  }
+  .atmosphere-page .jf-moment h3 {
+    font-size: 27px;
+  }
+  .jf-scene.is-flip .cx-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .jf-scene.is-flip .cx-back {
+    order: 0;
+  }
+  /* A device switcher means nothing on the device in your hand. */
+  .jf .cx-web .cx-segment {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-scene-inner,
+  .jf-moment,
+  .jf-detail {
+    transform: none;
+  }
+  .jf-moment > *,
+  .jf-detail > *,
+  .jf-sky i {
+    transition: none;
+  }
+}
+
+/* The demos stack their rail below 1100px; keep it beside the screen while
+   pinned so a scene never outgrows the viewport. */
+@media (min-width: 1024px) and (max-width: 1100px) and (min-height: 700px) {
+  .jf.is-pinned .cx-split {
+    grid-template-columns: minmax(0, 1.55fr) minmax(220px, 1fr);
+  }
+  .jf.is-pinned .jf-scene.is-flip .cx-split {
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 1.55fr);
+  }
+}

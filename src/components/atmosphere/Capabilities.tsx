@@ -1,23 +1,7 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import {
-  ArrowUpRight,
-  CalendarDays,
-  LayoutDashboard,
-  MessageSquare,
-  Mic,
-  Monitor,
-  Search,
-  Star,
-  Workflow,
-} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { openContactModal } from "../../lib/siteActions";
-import {
-  duration,
-  ease,
-  loadFabric,
-  revealText,
-  type Fabric,
-} from "../../fabric/motion";
+import { loadFabric, revealText, type Fabric } from "../../fabric/motion";
 import {
   CalendarDemo,
   ChatDemo,
@@ -31,205 +15,306 @@ import {
 // Load after the shared sheet so these rules win over its global button reset.
 import "./atmosphere.css";
 import "./capabilities.css";
-import "./capabilities-stage.css";
+import "./capabilities-journey.css";
 
-const capabilities = [
+type Tone = "dusk" | "night" | "day";
+
+/**
+ * One customer, one broken AC, start to finish. Each scene is a capability,
+ * told as the moment it matters to her. Order follows the story, not the menu.
+ */
+const scenes = [
   {
-    name: "Premium Websites",
-    slug: "websites",
-    icon: Monitor,
-    summary: "Fast, clear, and built to convert.",
-    hint: "Try it · switch devices",
-    title: "Make your first impression count.",
-    copy: "Thoughtful design, clear messaging, and fast experiences that turn interest into a conversation.",
-    includes: [
-      "Custom design",
-      "Mobile-first and accessible",
-      "Copy that converts",
-      "Analytics tied to inquiries",
-    ],
-    Demo: WebsiteDemo,
-  },
-  {
-    name: "Search Visibility",
     slug: "search",
-    icon: Search,
-    summary: "Show up where customers look.",
-    hint: "Try it · toggle the foundations",
-    title: "Be there when your customers look.",
-    copy: "Build a stronger local presence with useful content, sound technical foundations, and meaningful reporting.",
-    includes: [
-      "Business profile care",
-      "Local service pages",
-      "Technical foundations",
-      "Plain-language reporting",
+    name: "Search Visibility",
+    when: "Mon · 6:58 PM",
+    tone: "dusk" as Tone,
+    moment: "Her AC quits on the hottest night of the year. She searches.",
+    copy: "Business profile care, local service pages, and sound technical foundations so you're the name she finds.",
+    includes: ["Business profile", "Service pages", "Plain-language reporting"],
+    // Auto-preview: switch on two foundations so the ranking visibly moves.
+    preview: [
+      '.cx-checks button[aria-checked="false"]',
+      '.cx-checks button[aria-checked="false"]',
     ],
     Demo: SearchDemo,
   },
   {
-    name: "Calendar & Scheduling",
-    slug: "scheduling",
-    icon: CalendarDays,
-    summary: "Booking without the back-and-forth.",
-    hint: "Try it · book a time",
-    title: "Less back-and-forth. More booked.",
-    copy: "Connect availability, appointments, and reminders so customers and your team know what happens next.",
-    includes: [
-      "Online booking",
-      "Team calendar sync",
-      "Text and email reminders",
-      "Easy rescheduling",
-    ],
-    Demo: CalendarDemo,
+    slug: "websites",
+    name: "Premium Websites",
+    when: "Mon · 7:01 PM",
+    tone: "dusk" as Tone,
+    moment: "Yours is the first site that looks like someone will pick up.",
+    copy: "Thoughtful design, clear messaging, and fast pages that turn a first look into an inquiry.",
+    includes: ["Custom design", "Mobile-first", "Analytics tied to inquiries"],
+    preview: [],
+    Demo: WebsiteDemo,
   },
   {
-    name: "Business Applications",
-    slug: "business-apps",
-    icon: LayoutDashboard,
-    summary: "Jobs, crews, and billing in one place.",
-    hint: "Try it · move a job forward",
-    title: "Your business. Working from one place.",
-    copy: "Bring jobs, customers, scheduling, and billing into a practical system built around your operation.",
-    includes: [
-      "Scheduling and dispatch",
-      "Job notes and photos",
-      "Invoices and payment links",
-      "Owner dashboards",
-    ],
-    Demo: OperationsDemo,
-  },
-  {
-    name: "Workflow Automation",
-    slug: "automation",
-    icon: Workflow,
-    summary: "Handoffs that happen on their own.",
-    hint: "Try it · run the workflow",
-    title: "Keep the work moving.",
-    copy: "Connect the handoffs between systems, with clear rules, human review, and visibility when something needs attention.",
-    includes: [
-      "Connections to your existing tools",
-      "Rules you can read",
-      "Human approval steps",
-      "Alerts when something stalls",
-    ],
-    Demo: WorkflowDemo,
-  },
-  {
-    name: "Reputation & Reviews",
-    slug: "reviews",
-    icon: Star,
-    summary: "Earn, answer, and learn from feedback.",
-    hint: "Try it · change the tone",
-    title: "Let good work speak for itself.",
-    copy: "Request honest feedback, make responding easier, and understand what your customers are telling you.",
-    includes: [
-      "Automatic review requests",
-      "Drafted responses you approve",
-      "Themes and sentiment",
-      "A monthly reputation summary",
-    ],
-    Demo: ReviewsDemo,
-  },
-  {
-    name: "AI Chat Assistants",
     slug: "ai-chatbots",
-    icon: MessageSquare,
-    summary: "Answers, qualifies, and hands off.",
-    hint: "Try it · choose a reply",
-    title: "A useful answer. A better first impression.",
-    copy: "Help customers find what they need, qualify inquiries, and hand the right context to your team.",
-    includes: [
-      "Trained on your services and pricing",
-      "Website, text, and social",
-      "Lead qualification",
-      "Human handoff with context",
-    ],
+    name: "AI Chat Assistants",
+    when: "Mon · 7:03 PM",
+    tone: "dusk" as Tone,
+    moment: "She asks a question instead of filling out a form.",
+    copy: "Trained on your services and pricing. Qualifies the inquiry and hands your team the whole story.",
+    includes: ["Website, text, social", "Lead qualification", "Human handoff"],
+    preview: [".cx-replies button", ".cx-replies button"],
     Demo: ChatDemo,
   },
   {
-    name: "AI Voice Agents",
     slug: "voice-agents",
-    icon: Mic,
-    summary: "Picks up every call, day or night.",
-    hint: "Try it · play the call",
-    title: "A good conversation, even after hours.",
-    copy: "Answer routine questions, capture the details, and route sensitive or complex requests to a person.",
-    includes: [
-      "After-hours and overflow calls",
-      "A natural, on-brand voice",
-      "Safety and urgency screening",
-      "Summaries sent to your team",
-    ],
+    name: "AI Voice Agents",
+    when: "Mon · 11:42 PM",
+    tone: "night" as Tone,
+    moment: "Still too hot to sleep. She calls. Someone answers.",
+    copy: "After-hours and overflow calls handled in a natural voice, with urgent issues sent straight to a person.",
+    includes: ["After hours", "Safety screening", "Summary by morning"],
+    preview: [".cx-play"],
     Demo: VoiceDemo,
+  },
+  {
+    slug: "scheduling",
+    name: "Calendar & Scheduling",
+    when: "Tue · 7:15 AM",
+    tone: "day" as Tone,
+    moment: "She books a visit before your office opens.",
+    copy: "Availability, appointments, and reminders connected, so everyone knows what happens next.",
+    includes: ["Online booking", "Team calendar sync", "Text reminders"],
+    preview: [".cx-times button:not([disabled])"],
+    Demo: CalendarDemo,
+  },
+  {
+    slug: "business-apps",
+    name: "Business Applications",
+    when: "Tue · 8:30 AM",
+    tone: "day" as Tone,
+    moment: "Your crew rolls out with the job, the notes, and the address.",
+    copy: "Jobs, customers, scheduling, and billing in one practical system built around how you work.",
+    includes: ["Dispatch", "Job notes and photos", "Invoices and payments"],
+    preview: [".cx-advance"],
+    Demo: OperationsDemo,
+  },
+  {
+    slug: "automation",
+    name: "Workflow Automation",
+    when: "Tue · 4:10 PM",
+    tone: "day" as Tone,
+    moment: "The estimate goes out while the truck is still in her driveway.",
+    copy: "Handoffs between your tools run on rules you can read, with your approval where it counts.",
+    includes: ["Connects your tools", "Approval steps", "Alerts when stalled"],
+    preview: [".cx-play"],
+    Demo: WorkflowDemo,
+  },
+  {
+    slug: "reviews",
+    name: "Reputation & Reviews",
+    when: "Fri · 10:20 AM",
+    tone: "day" as Tone,
+    moment: "She tells the neighbors. You thank her in one tap.",
+    copy: "Ask for honest feedback, answer it with drafts you approve, and see what customers keep saying.",
+    includes: ["Review requests", "Drafted replies", "Monthly summary"],
+    preview: [],
+    Demo: ReviewsDemo,
   },
 ];
 
-const STAGED = "(min-width: 1024px) and (min-height: 700px)";
+const PINNED = "(min-width: 1024px) and (min-height: 700px)";
+const HOLD = 0.55; // scroll the strip rests on each scene, relative to a move
 
 export function Capabilities() {
   const [active, setActive] = useState(0);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pinned, setPinned] = useState(false);
   const section = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const slides = useRef<(HTMLElement | null)[]>([]);
   const fabricRef = useRef<Fabric | null>(null);
   const triggerRef = useRef<{ start: number; end: number } | null>(null);
+  const progressAt = useRef<number[]>([]);
   const activeRef = useRef(0);
-  const selected = capabilities[active];
-  const { Demo } = selected;
+  const previewed = useRef(new Set<number>());
+  const touched = useRef(new Set<number>());
+  const count = scenes.length;
 
-  // In the pinned layout, scroll position is the source of truth: choosing a
-  // tab scrolls to that capability's slot so the two never disagree.
-  const choose = (index: number) => {
-    const st = triggerRef.current;
-    const lenis = fabricRef.current?.lenis;
-    if (st && lenis && matchMedia(STAGED).matches) {
-      const slot = (st.end - st.start) / capabilities.length;
-      lenis.scrollTo(st.start + slot * (index + 0.5), { duration: 1.1 });
+  /** Each slide's distance from the reading position, for depth and fade. */
+  const paint = useCallback((position: number) => {
+    slides.current.forEach((el, i) => {
+      if (!el) return;
+      const d = Math.max(-1, Math.min(1, i - position));
+      el.style.setProperty("--d", d.toFixed(3));
+      el.style.setProperty("--a", Math.abs(d).toFixed(3));
+    });
+    const next = Math.max(0, Math.min(count - 1, Math.round(position)));
+    if (next !== activeRef.current) {
+      activeRef.current = next;
+      setActive(next);
     }
-    setActive(index);
-  };
+  }, [count]);
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step =
-      event.key === "ArrowDown" || event.key === "ArrowRight"
-        ? 1
-        : event.key === "ArrowUp" || event.key === "ArrowLeft"
-          ? -1
-          : 0;
-    if (!step) return;
-    event.preventDefault();
-    const next = (active + step + capabilities.length) % capabilities.length;
-    choose(next);
-    tabs.current[next]?.focus();
-  };
-
-  useEffect(() => {
-    activeRef.current = active;
-    // On phones the tabs are a horizontal row: keep the active one centered.
-    const tab = tabs.current[active];
-    const nav = tab?.parentElement;
-    if (tab && nav && nav.scrollWidth > nav.clientWidth + 4) {
-      nav.scrollTo({
-        left: tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2,
-        behavior: "smooth",
-      });
-    }
-  }, [active]);
-
-  // Deep links such as "#capabilities:websites" open that capability's window.
-  useEffect(() => {
-    const open = (slug: string) => {
-      const index = capabilities.findIndex((c) => c.slug === slug);
-      if (index < 0) return;
-      const el = section.current;
+  const goTo = useCallback(
+    (index: number) => {
+      const i = Math.max(0, Math.min(count - 1, index));
       const st = triggerRef.current;
       const lenis = fabricRef.current?.lenis;
-      if (st && lenis && matchMedia(STAGED).matches) {
-        choose(index);
-      } else {
-        setActive(index);
-        if (lenis && el) lenis.scrollTo(el, { offset: -96, duration: 1.1 });
-        else el?.scrollIntoView({ behavior: "smooth" });
+      if (st && lenis && matchMedia(PINNED).matches) {
+        const p = progressAt.current[i] ?? i / (count - 1);
+        lenis.scrollTo(st.start + (st.end - st.start) * p, { duration: 1.2 });
+        return;
       }
+      const strip = track.current;
+      const slide = slides.current[i];
+      if (strip && slide) {
+        const pad = parseFloat(getComputedStyle(strip).paddingLeft) || 0;
+        strip.scrollTo({ left: slide.offsetLeft - pad, behavior: "smooth" });
+      }
+    },
+    [count],
+  );
+
+  // Swipe/scroll mode: the strip's own scroll position drives the story.
+  useEffect(() => {
+    const strip = track.current;
+    if (!strip || pinned) return;
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      const first = slides.current[0];
+      const second = slides.current[1];
+      if (!first || !second) return;
+      const step = second.offsetLeft - first.offsetLeft || 1;
+      paint(strip.scrollLeft / step);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+    read();
+    strip.addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      strip.removeEventListener("scroll", onScroll);
+      removeEventListener("resize", onScroll);
+    };
+  }, [pinned, paint]);
+
+  // Pinned mode (large screens, motion allowed): vertical scroll moves the
+  // strip sideways, resting on each scene before gliding to the next.
+  useEffect(() => {
+    const el = section.current;
+    if (!el) return;
+    let ctx: { revert: () => void } | undefined;
+    let alive = true;
+    loadFabric().then((f) => {
+      if (!f || !alive) return;
+      fabricRef.current = f;
+      ctx = f.gsap.context(() => {
+        const q = f.gsap.utils.selector(el);
+        revealText(f, q(".jf-heading")[0], { type: "words", start: "top 80%" });
+        const mm = f.gsap.matchMedia();
+        mm.add(PINNED, () => {
+          setPinned(true);
+          const strip = track.current!;
+          const offset = (i: number) => {
+            const s = slides.current[i];
+            const first = slides.current[0];
+            return s && first ? s.offsetLeft - first.offsetLeft : 0;
+          };
+          // Wait a frame so the pinned layout (and real slide widths) apply.
+          let tl: ReturnType<typeof f.gsap.timeline> | undefined;
+          const raf = requestAnimationFrame(() => {
+            strip.scrollLeft = 0;
+            tl = f.gsap.timeline({
+              defaults: { ease: "power2.inOut" },
+              scrollTrigger: {
+                trigger: el,
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 0.5,
+                invalidateOnRefresh: true,
+                onRefresh: (self) => {
+                  triggerRef.current = { start: self.start, end: self.end };
+                },
+              },
+              // Read the strip's real position on every frame of the scrub,
+              // not just on scroll events, so the story never lags the screen.
+              onUpdate: () => {
+                const x = -Number(f.gsap.getProperty(strip, "x"));
+                paint(x / (offset(1) || 1));
+              },
+            });
+            tl.to({}, { duration: HOLD / 2 });
+            const at: number[] = [0];
+            for (let i = 1; i < count; i++) {
+              tl.to(strip, { x: () => -offset(i), duration: 1 });
+              at.push(tl.duration());
+              tl.to({}, { duration: i === count - 1 ? HOLD / 2 : HOLD });
+            }
+            const total = tl.duration();
+            // Land each deep-link on the middle of that scene's rest.
+            progressAt.current = at.map((t, i) =>
+              Math.min(1, (t + (i === 0 ? 0 : HOLD / 4)) / total),
+            );
+            const st = tl.scrollTrigger!;
+            triggerRef.current = { start: st.start, end: st.end };
+          });
+          return () => {
+            cancelAnimationFrame(raf);
+            tl?.scrollTrigger?.kill();
+            tl?.kill();
+            f.gsap.set(strip, { clearProps: "transform" });
+            triggerRef.current = null;
+            setPinned(false);
+          };
+        });
+      }, el);
+    });
+    return () => {
+      alive = false;
+      ctx?.revert();
+    };
+  }, [count, paint]);
+
+  // Auto-preview: the first time a scene settles into view, play a few of
+  // its interactions so no window sits empty. Any touch hands over control.
+  useEffect(() => {
+    const i = active;
+    if (previewed.current.has(i) || touched.current.has(i)) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const steps = scenes[i].preview;
+    const slide = slides.current[i];
+    if (!slide || !steps.length) return;
+    const ids: number[] = [];
+    const settle = window.setTimeout(() => {
+      if (activeRef.current !== i || touched.current.has(i)) return;
+      previewed.current.add(i);
+      steps.forEach((selector, n) => {
+        ids.push(
+          window.setTimeout(() => {
+            if (touched.current.has(i)) return;
+            slide.querySelector<HTMLElement>(selector)?.click();
+          }, n * 1900),
+        );
+      });
+    }, 700);
+    return () => {
+      clearTimeout(settle);
+      ids.forEach(clearTimeout);
+    };
+  }, [active]);
+
+  // Deep links such as "#capabilities:websites" open that scene.
+  useEffect(() => {
+    const open = (slug: string) => {
+      const index = scenes.findIndex((s) => s.slug === slug);
+      if (index < 0) return;
+      const el = section.current;
+      const lenis = fabricRef.current?.lenis;
+      if (triggerRef.current && matchMedia(PINNED).matches) {
+        goTo(index);
+        return;
+      }
+      if (lenis && el) lenis.scrollTo(el, { offset: -96, duration: 1.1 });
+      else el?.scrollIntoView({ behavior: "smooth" });
+      window.setTimeout(() => goTo(index), 500);
     };
     const onClick = (event: MouseEvent) => {
       const link = (event.target as Element | null)?.closest?.(
@@ -243,291 +328,140 @@ export function Capabilities() {
     document.addEventListener("click", onClick, true);
     if (location.hash.startsWith("#capabilities:")) {
       const slug = location.hash.slice("#capabilities:".length);
-      setTimeout(() => open(slug), 600);
+      window.setTimeout(() => open(slug), 600);
     }
     return () => document.removeEventListener("click", onClick, true);
-    // choose() reads refs only, so registering once is intended.
-  }, []);
+  }, [goTo]);
 
-  useEffect(() => {
-    const el = section.current;
-    if (!el) return;
-    let ctx: { revert: () => void } | undefined;
-    let alive = true;
-    loadFabric().then((f) => {
-      if (!f || !alive) return;
-      fabricRef.current = f;
-      ctx = f.gsap.context(() => {
-        const q = f.gsap.utils.selector(el);
-        const mm = f.gsap.matchMedia();
-        revealText(f, q(".cv-heading")[0], { type: "words", start: "top 80%" });
-        f.gsap.from(q(".section-heading > p, .cx-nav button"), {
-          autoAlpha: 0,
-          y: 18,
-          stagger: 0.05,
-          duration: duration.slow,
-          scrollTrigger: { trigger: el, start: "top 65%", once: true },
-        });
-
-        mm.add(STAGED, () => {
-          // A tab chosen before the motion library loaded wins over scroll
-          // position: once pinned, move to that tab's slot instead of resetting.
-          const chosen = activeRef.current;
-          const st = f.ScrollTrigger.create({
-            trigger: el,
-            start: "top top",
-            end: "bottom bottom",
-            onUpdate: (self) => {
-              const next = Math.min(
-                capabilities.length - 1,
-                Math.floor(self.progress * capabilities.length * 1.0001),
-              );
-              if (next !== activeRef.current) setActive(next);
-            },
-            onRefresh: (self) => {
-              triggerRef.current = { start: self.start, end: self.end };
-            },
-          });
-          triggerRef.current = { start: st.start, end: st.end };
-          if (chosen > 0 && st.isActive) {
-            const slot = (st.end - st.start) / capabilities.length;
-            f.lenis?.scrollTo(st.start + slot * (chosen + 0.5), { duration: 0.8 });
-            setActive(chosen);
-          }
-          const tl = f.gsap.timeline({
-            defaults: { ease: "none" },
-            scrollTrigger: {
-              trigger: el,
-              start: "top top",
-              end: "bottom bottom",
-              scrub: 0.6,
-            },
-          });
-          tl.fromTo(
-            q(".cv-rail-fill"),
-            { scaleY: 0 },
-            { scaleY: 1, duration: 1 },
-            0,
-          )
-            .fromTo(
-              q(".cv-fog-a"),
-              { xPercent: -12 },
-              { xPercent: 10, duration: 1 },
-              0,
-            )
-            .fromTo(
-              q(".cv-fog-b"),
-              { xPercent: 10 },
-              { xPercent: -12, duration: 1 },
-              0,
-            )
-            .fromTo(
-              q(".cv-glow"),
-              { yPercent: 12, xPercent: -6 },
-              { yPercent: -14, xPercent: 6, duration: 1 },
-              0,
-            )
-            .fromTo(
-              q(".cx-panel"),
-              { rotateX: 4, y: 24 },
-              { rotateX: 0, y: 0, duration: 0.08, ease: ease.soft },
-              0,
-            )
-            .to(q(".cv-dusk"), { autoAlpha: 1, duration: 0.07 }, 0.93)
-            .to(
-              q(".cv-content"),
-              { autoAlpha: 0.4, yPercent: -3, duration: 0.07 },
-              0.93,
-            );
-          return () => {
-            st.kill();
-            triggerRef.current = null;
-          };
-        });
-      }, el);
-    });
-    return () => {
-      alive = false;
-      ctx?.revert();
-    };
-  }, []);
-
-  // The demo window morphs between capabilities: the screen re-lights from
-  // behind a soft blur while the caption's words rise into place.
-  useEffect(() => {
-    const f = fabricRef.current;
-    const el = section.current;
-    if (!f || !el) return;
-    const q = f.gsap.utils.selector(el);
-    const split = f.SplitText.create(q(".cx-caption h3")[0], {
-      type: "words",
-      mask: "words",
-    });
-    const tl = f.gsap
-      .timeline({ defaults: { ease: ease.out } })
-      .fromTo(
-        q(".cx-stage"),
-        {
-          autoAlpha: 0,
-          scale: 0.965,
-          filter: "blur(8px)",
-          clipPath: "inset(6% 4% 6% 4% round 10px)",
-        },
-        {
-          autoAlpha: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          clipPath: "inset(0% 0% 0% 0% round 0px)",
-          duration: 0.9,
-        },
-      )
-      .from(split.words, { yPercent: 110, stagger: 0.04, duration: 0.8 }, 0.1)
-      .from(
-        q(".cx-caption p, .cx-caption li, .cx-discuss"),
-        { autoAlpha: 0, y: 10, stagger: 0.04, duration: 0.6 },
-        0.2,
-      )
-      .fromTo(
-        q(".cx-path"),
-        { autoAlpha: 0.3 },
-        { autoAlpha: 1, duration: 0.5 },
-        0,
-      );
-    return () => {
-      tl.kill();
-      split.revert();
-      f.gsap.set(q(".cx-stage, .cx-caption p, .cx-caption li, .cx-discuss"), {
-        clearProps: "all",
-      });
-    };
-  }, [active]);
+  const tone = scenes[active].tone;
 
   return (
     <section
       ref={section}
       id="capabilities"
-      className="capabilities-section capabilities-v2"
+      className={`capabilities-section jf${pinned ? " is-pinned" : ""}`}
+      data-tone={tone}
+      aria-roledescription="carousel"
+      aria-label="Capabilities: one customer, start to finish"
     >
-      <div className="cv-stage">
-        <div className="cv-layers" aria-hidden="true">
-          <div className="cv-glow" />
-          <div className="cv-fog-a" />
-          <div className="cv-fog-b" />
-          <div className="cv-dusk" />
+      <div className="jf-stage">
+        <div className="jf-sky" aria-hidden="true">
+          <i className="is-dusk" />
+          <i className="is-night" />
+          <i className="is-day" />
         </div>
-        <div className="page-width cv-content">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Capabilities in motion</p>
-              <h2 className="cv-heading">
-                Try it before
-                <br />
-                <em>we build it.</em>
-              </h2>
-            </div>
-            <p>
-              Interactive samples: what your customers see, and what reaches
-              your team.
-            </p>
+
+        <header className="page-width jf-head">
+          <div>
+            <p className="eyebrow">Capabilities</p>
+            <h2 className="jf-heading">
+              One customer. <em>Start to finish.</em>
+            </h2>
           </div>
-          <div className="cx-atelier">
-            <div
-              className="cx-nav"
-              role="tablist"
-              aria-label="Capabilities"
-              aria-orientation="vertical"
-              onKeyDown={onKeyDown}
-            >
-              <span className="cv-rail" aria-hidden="true">
-                <span className="cv-rail-fill" />
+          <div className="jf-progress">
+            <p className="jf-now" aria-live="polite">
+              <span key={active}>
+                <b>{scenes[active].when}</b> {scenes[active].name}
               </span>
-              {capabilities.map((c, i) => (
-                <button
-                  key={c.slug}
-                  ref={(el) => {
-                    tabs.current[i] = el;
-                  }}
-                  role="tab"
-                  id={`cx-tab-${c.slug}`}
-                  aria-selected={active === i}
-                  aria-controls="cx-panel"
-                  tabIndex={active === i ? 0 : -1}
-                  onClick={() => choose(i)}
-                >
-                  <span className="cx-index">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="cx-nav-name">
-                    {c.name}
-                    <small>{c.summary}</small>
-                  </span>
-                  <c.icon size={16} aria-hidden="true" />
-                </button>
+            </p>
+            <ol className="jf-ticks">
+              {scenes.map((s, i) => (
+                <li key={s.slug}>
+                  <button
+                    aria-label={`${s.when}: ${s.name}`}
+                    aria-current={active === i ? "step" : undefined}
+                    className={i < active ? "is-past" : undefined}
+                    onClick={() => goTo(i)}
+                  />
+                </li>
               ))}
-            </div>
-            <div
-              className="cx-panel"
-              id="cx-panel"
-              role="tabpanel"
-              aria-labelledby={`cx-tab-${selected.slug}`}
-            >
-              <div className="cx-chrome">
-                <span aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className="cx-path">
-                  Sentient <b>/</b> possibilities <b>/</b> {selected.slug}
-                </span>
-                <small>
-                  <i className="cx-live" aria-hidden="true" /> {selected.hint}
-                </small>
-              </div>
-              <div className="cx-stage" key={selected.slug}>
-                <Demo />
-              </div>
-              <div className="cx-caption">
-                <div>
-                  <h3 key={selected.slug}>{selected.title}</h3>
-                  <p>{selected.copy}</p>
-                  <ul aria-label="Included">
-                    {selected.includes.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <button
-                  className="cx-discuss"
-                  onClick={() =>
-                    openContactModal({
-                      source: "Capability showcase",
-                      inquiry: `I'd like to explore ${selected.name.toLowerCase()} for my business.`,
-                    })
-                  }
-                >
-                  <span>Discuss {selected.name}</span>
-                  <i>
-                    <ArrowUpRight size={20} />
-                  </i>
-                </button>
-              </div>
+            </ol>
+            <div className="jf-arrows">
+              <button
+                aria-label="Previous scene"
+                disabled={active === 0}
+                onClick={() => goTo(active - 1)}
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                aria-label="Next scene"
+                disabled={active === count - 1}
+                onClick={() => goTo(active + 1)}
+              >
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
-          <noscript>
-            <p>
-              Our capabilities include AI chat assistants, AI voice agents, business
-              applications, premium websites, search visibility, calendar and
-              scheduling, workflow automation, and reputation and review
-              management.
-            </p>
-          </noscript>
-          <p className="illustration-note">
-            Illustrative experiences with sample data. These windows are not
-            connected to live business systems.
+        </header>
+
+        <div className="jf-viewport">
+          <div className="jf-track" ref={track}>
+            {scenes.map((s, i) => (
+              <article
+                key={s.slug}
+                ref={(el) => {
+                  slides.current[i] = el;
+                }}
+                className={`jf-scene is-${i % 2 ? "flip" : "lead"}${active === i ? " is-active" : ""}`}
+                data-tone={s.tone}
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${count}: ${s.name}`}
+                aria-hidden={pinned && Math.abs(active - i) > 1 ? true : undefined}
+                onPointerDown={() => touched.current.add(i)}
+                onKeyDown={() => touched.current.add(i)}
+              >
+                <div className="jf-scene-inner">
+                  <div className="jf-moment">
+                    <p className="jf-when">
+                      <i aria-hidden="true" />
+                      {s.when}
+                    </p>
+                    <h3>{s.moment}</h3>
+                  </div>
+                  <div className="jf-screen">
+                    <s.Demo />
+                  </div>
+                  <div className="jf-detail">
+                    <p className="jf-cap">{s.name}</p>
+                    <p className="jf-copy">{s.copy}</p>
+                    <ul aria-label="Included">
+                      {s.includes.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                    <button
+                      className="jf-discuss"
+                      onClick={() =>
+                        openContactModal({
+                          source: "Capability journey",
+                          inquiry: `I'd like to explore ${s.name.toLowerCase()} for my business.`,
+                        })
+                      }
+                    >
+                      Discuss {s.name}
+                      <ArrowUpRight size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="page-width">
+          <p className="jf-note">
+            Sample screens with sample data. Try any of them.
           </p>
         </div>
       </div>
+      <noscript>
+        <p>
+          Our capabilities include search visibility, premium websites, AI chat
+          assistants, AI voice agents, calendar and scheduling, business
+          applications, workflow automation, and reputation and review
+          management.
+        </p>
+      </noscript>
     </section>
   );
 }
