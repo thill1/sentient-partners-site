@@ -393,7 +393,6 @@ function WorkSection() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Landing({ page = "home" }: { banner: BannerDisplayState; page?: PageName }) {
   useScrollReveal();
   useWorkMotion();
