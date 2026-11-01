@@ -2,7 +2,7 @@
 title: "Fed holds, diesel climbs: price clearly and patch your remote tools"
 slug: "issue-05-fed-holds-diesel-climbs"
 issue: 5
-date: 2026-11-04
+date: 2026-11-01
 summary: "The Fed held and two voters wanted a hike. Diesel is up $2.63 a gallon from last year. Shoppers plan to spend at small businesses but doubt price hikes. Here is what to do this fortnight."
 reading_minutes: 5
 status: approved
