@@ -12,6 +12,8 @@ export interface CheckResult {
   status: CheckStatus;
   detail: string;
   weight: number;
+  /** "security" checks are listed separately and don't count toward the score. */
+  group?: "basics" | "security";
 }
 
 export interface FetchFacts {
@@ -256,8 +258,140 @@ export function analyzeHtml(html: string, facts: FetchFacts): CheckResult[] {
   return out;
 }
 
-/** Weighted score from 0 to 100: pass = full weight, warn = half. */
+/**
+ * PHP releases that carry the October 21, 2026 PHP2Shell fixes
+ * (CVE-2026-109618 and CVE-2026-109619), by minor branch. Older branches
+ * (8.1 and below) are end of life and get no fix.
+ */
+export const PHP_PATCHED: Record<string, number> = { "8.2": 35, "8.3": 36, "8.4": 27, "8.5": 12 };
+
+type PhpVerdict = "eol" | "unpatched" | "patched" | "unknown";
+
+/** Classifies a PHP version string like "8.3.12" against the PHP2Shell fixes. */
+export function phpVerdict(version: string): PhpVerdict {
+  const m = version.match(/^(\d+)\.(\d+)(?:\.(\d+))?/);
+  if (!m) return "unknown";
+  const [major, minor] = [Number(m[1]), Number(m[2])];
+  if (major < 8 || (major === 8 && minor <= 1)) return "eol";
+  const fixed = PHP_PATCHED[`${major}.${minor}`];
+  if (fixed === undefined) return "unknown"; // A newer branch than this table knows.
+  if (m[3] === undefined) return "unknown";
+  return Number(m[3]) >= fixed ? "patched" : "unpatched";
+}
+
+const CONFIRM_HOST =
+  "Ask your host in writing to confirm they've applied the October 2026 PHP security fixes (CVE-2026-109618 and CVE-2026-109619).";
+
+/**
+ * Passive security signals from the homepage response: only what any browser
+ * already receives. No probing, no extra requests, nothing sent to the site.
+ * These are listed apart from the score, since a header can't prove a server is
+ * patched (hosts often backport fixes without changing the version number).
+ */
+export function analyzeSecurity(headers: Headers, html: string, finalUrl: string): CheckResult[] {
+  const out: CheckResult[] = [];
+  const add = (r: Omit<CheckResult, "group">) => out.push({ ...r, group: "security" });
+  const header = (name: string) => headers.get(name) ?? "";
+
+  const poweredBy = header("x-powered-by");
+  const phpVersion = poweredBy.match(/php\/(\d+\.\d+(?:\.\d+)?)/i)?.[1] ?? "";
+  const generator = metaContent(html, "generator");
+  const wordpress = /wordpress/i.test(generator) || /\/wp-(content|includes)\//i.test(html);
+  const phpHints =
+    !!phpVersion ||
+    /php/i.test(poweredBy) ||
+    /phpsessid/i.test(header("set-cookie")) ||
+    wordpress ||
+    /(joomla|drupal)/i.test(generator) ||
+    /href\s*=\s*["'][^"']*\.php\b/i.test(html);
+
+  if (phpVersion) {
+    const verdict = phpVerdict(phpVersion);
+    add({
+      id: "php",
+      label: "PHP security updates",
+      status: verdict === "patched" ? "warn" : verdict === "unknown" ? "warn" : "fail",
+      detail:
+        verdict === "eol"
+          ? `Your server says it runs PHP ${phpVersion}, which no longer gets security fixes. That includes the critical October 2026 PHP2Shell fixes. Plan an upgrade to a supported version.`
+          : verdict === "unpatched"
+            ? `Your server says it runs PHP ${phpVersion}, older than the October 2026 security release. ${CONFIRM_HOST}`
+            : verdict === "patched"
+              ? `Your server reports PHP ${phpVersion}, which includes the October 2026 fixes. It also announces its version publicly, which helps attackers pick targets; your host can turn that off.`
+              : `Your server reports PHP ${phpVersion}. ${CONFIRM_HOST}`,
+      weight: 3,
+    });
+  } else {
+    add({
+      id: "php",
+      label: "PHP security updates",
+      status: phpHints ? "warn" : "pass",
+      detail: phpHints
+        ? `Your site appears to run on PHP${wordpress ? " (WordPress)" : ""}. Updating WordPress or plugins doesn't fix the October 2026 PHP2Shell flaws; the fix is on the server. ${CONFIRM_HOST}`
+        : "We didn't see signs of PHP on your homepage. If any part of your site uses a PHP form or booking script, check that too.",
+      weight: 3,
+    });
+  }
+
+  const cmsVersion = generator.match(/(wordpress|joomla|drupal)[^\d]*(\d+(?:\.\d+)+)/i);
+  if (cmsVersion) {
+    add({
+      id: "cms-version",
+      label: "Software version shown publicly",
+      status: "warn",
+      detail: `Your page announces ${cmsVersion[1]} ${cmsVersion[2]}. Hiding the version makes it harder for automated attacks to pick out sites to target.`,
+      weight: 1,
+    });
+  }
+
+  const server = header("server");
+  if (/\d+\.\d+/.test(server)) {
+    add({
+      id: "server-version",
+      label: "Server version shown publicly",
+      status: "warn",
+      detail: `Your server announces “${server.slice(0, 60)}”. Your host can turn this off so attackers can't match it to known flaws.`,
+      weight: 1,
+    });
+  }
+
+  const hsts = /max-age\s*=\s*[1-9]/i.test(header("strict-transport-security"));
+  add({
+    id: "hsts",
+    label: "Always-secure connection",
+    status: !finalUrl.startsWith("https://") ? "fail" : hsts ? "pass" : "warn",
+    detail: !finalUrl.startsWith("https://")
+      ? "Your site isn't using HTTPS, so anything visitors type can be read in transit."
+      : hsts
+        ? "Browsers are told to always use a secure connection to your site."
+        : "Your site uses HTTPS but doesn't tell browsers to always insist on it (HSTS).",
+    weight: 1,
+  });
+
+  const csp = header("content-security-policy");
+  const protections = [
+    !!csp,
+    /^nosniff$/i.test(header("x-content-type-options").trim()),
+    !!header("x-frame-options") || /frame-ancestors/i.test(csp),
+    !!header("referrer-policy"),
+  ].filter(Boolean).length;
+  add({
+    id: "headers",
+    label: "Browser protections",
+    status: protections >= 3 ? "pass" : protections >= 1 ? "warn" : "fail",
+    detail:
+      protections >= 3
+        ? "Your site sends the standard instructions that help browsers block common attacks."
+        : `Your site sends ${protections} of 4 standard browser protections (content policy, no-sniff, frame and referrer rules). They're quick for a host or developer to add.`,
+    weight: 1,
+  });
+
+  return out;
+}
+
+/** Weighted score from 0 to 100: pass = full weight, warn = half. Security checks don't count. */
 export function scoreChecks(checks: CheckResult[]): number {
+  checks = checks.filter((c) => c.group !== "security");
   const total = checks.reduce((s, c) => s + c.weight, 0);
   const got = checks.reduce(
     (s, c) => s + (c.status === "pass" ? c.weight : c.status === "warn" ? c.weight / 2 : 0),
@@ -268,7 +402,7 @@ export function scoreChecks(checks: CheckResult[]): number {
 
 /** A plain-language summary used when no AI model is configured. */
 export function fallbackSummary(host: string, checks: CheckResult[], score: number): string {
-  const misses = checks.filter((c) => c.status !== "pass");
+  const misses = checks.filter((c) => c.status !== "pass" && c.group !== "security");
   if (!misses.length) {
     return `${host} covers the basics well. The next gains usually come from faster pages, more reviews and answering after hours.`;
   }

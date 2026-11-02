@@ -23,6 +23,7 @@ export const BRAND = {
 const CAPABILITIES = [
   "Websites: custom, mobile-first sites with clear messaging, plus hosting and care.",
   "Search visibility: business profile care, service pages, and sound technical foundations.",
+  "Website security checks: confirming your site and host are patched, reviewing logins, access, and backups, and keeping watch for new vulnerabilities, with findings explained in plain English. A review, not a guarantee or a certification.",
   "Calendar and scheduling: online booking, team calendar sync, and reminders.",
   "Business applications: practical tools for jobs, customers, estimates, and invoices, built around how a business already works.",
   "Workflow automation: connecting the handoffs between existing tools, with readable rules and human approval steps.",
