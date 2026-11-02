@@ -12,6 +12,7 @@ interface Check {
   label: string;
   status: Status;
   detail: string;
+  group?: "basics" | "security";
 }
 interface Report {
   host: string;
@@ -26,6 +27,7 @@ const STEPS = [
   "Opening your homepage",
   "Checking mobile and search basics",
   "Looking for ways to call and book",
+  "Checking security basics",
   "Writing your summary",
 ];
 
@@ -128,7 +130,22 @@ export default function SiteCheck() {
     setSent(reportSent ? "sent" : leadResult.success ? "queued" : "failed");
   };
 
-  const misses = report?.checks.filter((c) => c.status !== "pass").length ?? 0;
+  const basics = report?.checks.filter((c) => c.group !== "security") ?? [];
+  const security = report?.checks.filter((c) => c.group === "security") ?? [];
+  const misses = basics.filter((c) => c.status !== "pass").length;
+  const securityMisses = security.filter((c) => c.status !== "pass").length;
+  const renderCheck = (c: Check) => (
+    <li key={c.id} className={`is-${c.status}`}>
+      <span className="sc-icon" title={statusText[c.status]}>
+        {icon(c.status)}
+        <span className="sr-only">{statusText[c.status]}: </span>
+      </span>
+      <div>
+        <strong>{c.label}</strong>
+        <p>{c.detail}</p>
+      </div>
+    </li>
+  );
 
   return (
     <section id="website-check" className="site-check section-space" aria-labelledby="site-check-title">
@@ -241,20 +258,24 @@ export default function SiteCheck() {
                   <p className="sc-summary">{report.summary}</p>
                 </div>
               </div>
-              <ul className="sc-checks">
-                {report.checks.map((c) => (
-                  <li key={c.id} className={`is-${c.status}`}>
-                    <span className="sc-icon" title={statusText[c.status]}>
-                      {icon(c.status)}
-                      <span className="sr-only">{statusText[c.status]}: </span>
-                    </span>
-                    <div>
-                      <strong>{c.label}</strong>
-                      <p>{c.detail}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <ul className="sc-checks">{basics.map(renderCheck)}</ul>
+              {security.length > 0 && (
+                <div className="sc-security">
+                  <h3>Security basics</h3>
+                  <p className="sc-security-note">
+                    From what your homepage shares with every visitor. Not part of the score, and not a
+                    full security review: a public check can't confirm your server is patched.
+                  </p>
+                  <ul className="sc-checks">{security.map(renderCheck)}</ul>
+                  {securityMisses > 0 && (
+                    <p className="sc-security-note">
+                      We offer website security checks that confirm your host's patches, review access
+                      and backups, and explain the findings in plain English. Mention it on your intro
+                      call.
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="sc-next">
                 <p>
                   {misses

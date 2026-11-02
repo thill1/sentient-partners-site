@@ -6,6 +6,7 @@
 import { json } from "../lib/http";
 import {
   analyzeHtml,
+  analyzeSecurity,
   fallbackSummary,
   normalizeTarget,
   scoreChecks,
@@ -121,7 +122,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     status: response.status,
     responseMs,
     htmlBytes: html.length,
-  });
+  }).concat(analyzeSecurity(response.headers, html, finalUrl));
   const score = scoreChecks(checks);
   const host = landed.url.hostname.replace(/^www\./, "");
   const summary = fallbackSummary(host, checks, score);
@@ -138,7 +139,7 @@ Never mention prices, guarantees, statistics you weren't given, or Sentient Part
 async function summarize(env: Env, host: string, score: number, checks: CheckResult[]): Promise<string | null> {
   const key = String(env.GROQ_API_KEY || env.API_KEY || env.GEMINI_API_KEY || "").trim();
   if (!key) return null;
-  const facts = checks.map((c) => `- ${c.label}: ${c.status.toUpperCase()}. ${c.detail}`).join("\n");
+  const facts = checks.filter((c) => c.group !== "security").map((c) => `- ${c.label}: ${c.status.toUpperCase()}. ${c.detail}`).join("\n");
   const prompt = `Website: ${host}\nScore: ${score}/100\nChecks:\n${facts}`;
   const signal = AbortSignal.timeout(9000);
 

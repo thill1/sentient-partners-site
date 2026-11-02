@@ -145,6 +145,29 @@
   margin-top: 3px;
 }
 
+/* Security basics (listed apart from the score) */
+.sc-security {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(166, 177, 189, 0.18);
+}
+.sc-security h3 {
+  margin: 0 0 6px;
+  font: 500 13px/1.3 Inter, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--f-gold);
+}
+.sc-security-note {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--f-fog);
+}
+.sc-security .sc-checks + .sc-security-note {
+  margin-top: 14px;
+}
+
 /* Report */
 .sc-head {
   display: grid;

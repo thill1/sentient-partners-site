@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { analyzeHtml, fallbackSummary, normalizeTarget, scoreChecks } from "./siteCheck";
+import {
+  analyzeHtml,
+  analyzeSecurity,
+  fallbackSummary,
+  normalizeTarget,
+  phpVerdict,
+  scoreChecks,
+} from "./siteCheck";
 
 const facts = (over = {}) => ({
   finalUrl: "https://example-hvac.com/",
@@ -73,5 +80,65 @@ describe("analyzeHtml", () => {
     const score = scoreChecks(checks);
     expect(score).toBeLessThan(30);
     expect(fallbackSummary("example.com", checks, score)).toContain("biggest openings");
+  });
+});
+
+describe("phpVerdict", () => {
+  it("knows the PHP2Shell fix releases", () => {
+    expect(phpVerdict("8.3.36")).toBe("patched");
+    expect(phpVerdict("8.4.30")).toBe("patched");
+    expect(phpVerdict("8.3.35")).toBe("unpatched");
+    expect(phpVerdict("8.5.11")).toBe("unpatched");
+    expect(phpVerdict("8.1.31")).toBe("eol");
+    expect(phpVerdict("7.4.33")).toBe("eol");
+    expect(phpVerdict("8.3")).toBe("unknown");
+    expect(phpVerdict("9.0.1")).toBe("unknown");
+  });
+});
+
+describe("analyzeSecurity", () => {
+  const byId = (checks: ReturnType<typeof analyzeSecurity>) =>
+    Object.fromEntries(checks.map((c) => [c.id, c]));
+
+  it("flags an old PHP version and leaky headers", () => {
+    const headers = new Headers({ "x-powered-by": "PHP/7.4.33", server: "Apache/2.4.41 (Ubuntu)" });
+    const html = '<meta name="generator" content="WordPress 6.4.2"><link href="/wp-content/x.css">';
+    const checks = byId(analyzeSecurity(headers, html, "https://example.com/"));
+    expect(checks.php.status).toBe("fail");
+    expect(checks.php.detail).toMatch(/no longer gets security fixes/);
+    expect(checks["cms-version"].status).toBe("warn");
+    expect(checks["server-version"].status).toBe("warn");
+    expect(checks.hsts.status).toBe("warn");
+    expect(checks.headers.status).toBe("fail");
+    expect(Object.values(checks).every((c) => c.group === "security")).toBe(true);
+  });
+
+  it("asks for host confirmation when PHP is likely but the version is hidden", () => {
+    const html = '<link href="/wp-content/themes/x/style.css">';
+    const checks = byId(analyzeSecurity(new Headers(), html, "https://example.com/"));
+    expect(checks.php.status).toBe("warn");
+    expect(checks.php.detail).toMatch(/WordPress/);
+    expect(checks.php.detail).toMatch(/CVE-2026-109618/);
+  });
+
+  it("passes a hardened static site", () => {
+    const headers = new Headers({
+      "strict-transport-security": "max-age=31536000",
+      "content-security-policy": "default-src 'self'; frame-ancestors 'none'",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      server: "cloudflare",
+    });
+    const checks = byId(analyzeSecurity(headers, "<h1>Hi</h1>", "https://example.com/"));
+    expect(checks.php.status).toBe("pass");
+    expect(checks.hsts.status).toBe("pass");
+    expect(checks.headers.status).toBe("pass");
+    expect(checks["server-version"]).toBeUndefined();
+  });
+
+  it("keeps security checks out of the score", () => {
+    const basics = analyzeHtml(good, facts());
+    const security = analyzeSecurity(new Headers({ "x-powered-by": "PHP/7.4.1" }), good, "https://x.com/");
+    expect(scoreChecks([...basics, ...security])).toBe(scoreChecks(basics));
   });
 });
