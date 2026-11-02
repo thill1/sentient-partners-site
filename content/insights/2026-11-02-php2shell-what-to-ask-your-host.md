@@ -6,7 +6,7 @@ date: 2026-11-02
 summary: "Two critical PHP flaws let attackers take over a web server without logging in. Updating WordPress doesn't fix them. Here's how to find out if your site is affected, and the email to send your host this week."
 reading_minutes: 5
 tags: [security, websites, wordpress]
-status: draft
+status: approved
 ---
 
 > If your website runs on WordPress, Joomla, Drupal, or anything built on PHP, this one is worth ten minutes this week.
