@@ -128,11 +128,13 @@ const readLabel = (i) =>
 const external = (i) =>
   `<a class="external" href="${esc(i.external_url)}" rel="noopener" target="_blank">View on ${SOCIAL[i.type]}<span class="sr-only"> (opens in a new tab)</span> <span aria-hidden="true">↗</span></a>`;
 
-const card = (i) => `<li class="card card-${i.type}" data-group="${groupOf(i)}">
+const card = (i) => `<li class="card card-${i.type}${i.image ? " has-thumb" : ""}" data-group="${groupOf(i)}">
   ${i.image ? `<a class="card-thumb" href="/insights/${i.slug}/" tabindex="-1" aria-hidden="true"><img src="${esc(i.image)}" alt="" width="600" height="750" loading="lazy" decoding="async"></a>` : ""}
-  <div class="card-meta"><span class="type">${typeLabel(i)}</span>${draftTag(i)}<span class="date">${metaLine(i)}</span></div>
-  <div class="card-body"><h2><a href="/insights/${i.slug}/">${esc(i.title)}</a></h2><p>${esc(i.summary)}</p>
-    <div class="card-links"><a class="read" href="/insights/${i.slug}/" aria-hidden="true" tabindex="-1">${readLabel(i)}</a>${isSocial(i) ? external(i) : ""}</div></div>
+  <div class="card-content">
+    <div class="card-meta"><span class="type">${typeLabel(i)}</span>${draftTag(i)}<span class="date">${metaLine(i)}</span></div>
+    <div class="card-body"><h2><a href="/insights/${i.slug}/">${esc(i.title)}</a></h2><p>${esc(i.summary)}</p>
+      <div class="card-links"><a class="read" href="/insights/${i.slug}/" aria-hidden="true" tabindex="-1">${readLabel(i)}</a>${isSocial(i) ? external(i) : ""}</div></div>
+  </div>
 </li>`;
 
 const filterNav = (active) => `<nav class="filters" aria-label="Filter insights">
