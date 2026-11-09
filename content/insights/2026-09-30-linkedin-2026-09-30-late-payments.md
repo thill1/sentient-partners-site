@@ -3,8 +3,9 @@ slug: "linkedin-2026-09-30-late-payments"
 type: linkedin
 date: 2026-09-30
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7511092609336057856/"
-excerpt: "Revenue on the books isn't cash you can use: QuickBooks data on overdue invoices, and why late payment is a timing problem."
+excerpt: "QuickBooks’ 2026 late-payments report put a number on something owners already feel."
 status: approved
+image: "/insights/img/linkedin-2026-09-30-late-payments.webp"
 ---
 QuickBooks’ 2026 late-payments report put a number on something owners already feel.
 
@@ -19,3 +20,7 @@ Map when the invoice leaves, who follows up, and what happens before day 30. The
 We don't build client lists. We build partners.
 
 sentientpartners.ai
+
+## Sources
+
+- https://quickbooks.intuit.com/r/small-business-data/small-business-late-payments-report-2026/

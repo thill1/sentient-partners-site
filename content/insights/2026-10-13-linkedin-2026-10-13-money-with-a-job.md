@@ -3,8 +3,9 @@ slug: "linkedin-2026-10-13-money-with-a-job"
 type: linkedin
 date: 2026-10-13
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7515809988154413056/"
-excerpt: "One bank balance makes every dollar look available. Give taxes, payroll and a reserve their own place."
+excerpt: "Payroll, next quarter's taxes, the insurance renewal, the cushion you meant to keep. When it all sits in one pile, a good month looks better than it is and a bad one…"
 status: approved
+image: "/insights/img/linkedin-2026-10-13-money-with-a-job.webp"
 ---
 One bank balance makes every dollar look like it's available.
 
@@ -19,3 +20,7 @@ This is a setup problem more than a discipline problem. Decide what each dollar 
 Then the number in the operating account is the number you can actually spend.
 
 sentientpartners.ai
+
+## Sources
+
+- [Relay, "Cash Flow Compass 2026," published October 2026](https://relayfi.com/cash-flow-compass/)

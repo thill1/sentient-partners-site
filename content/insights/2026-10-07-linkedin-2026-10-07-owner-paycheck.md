@@ -5,6 +5,7 @@ date: 2026-10-07
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7513673942956433409/"
 excerpt: "When costs rise and prices don't, the owner's pay often becomes the cushion, which hides the real margin."
 status: approved
+image: "/insights/img/linkedin-2026-10-07-owner-paycheck.webp"
 ---
 When costs go up and prices don't, someone covers the difference. In a lot of small businesses, it's the owner.
 
@@ -17,3 +18,7 @@ But it hides the real numbers. If the business only works because the owner take
 Try one exercise. Put a fair market salary for your role into the numbers. Then look at which customers, jobs and services still make money. That list tells you where to hold prices, where to raise them, and where the work itself has to change.
 
 sentientpartners.ai
+
+## Sources
+
+- [KeyBank 2026 Small Business Survey via PR Newswire, Sep 30, 2026](https://www.prnewswire.com/news-releases/small-business-owners-arent-losing-their-dream-but-theyre-paying-more-to-achieve-it-302891918.html)

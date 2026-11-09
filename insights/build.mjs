@@ -129,6 +129,7 @@ const external = (i) =>
   `<a class="external" href="${esc(i.external_url)}" rel="noopener" target="_blank">View on ${SOCIAL[i.type]}<span class="sr-only"> (opens in a new tab)</span> <span aria-hidden="true">↗</span></a>`;
 
 const card = (i) => `<li class="card card-${i.type}" data-group="${groupOf(i)}">
+  ${i.image ? `<a class="card-thumb" href="/insights/${i.slug}/" tabindex="-1" aria-hidden="true"><img src="${esc(i.image)}" alt="" width="600" height="750" loading="lazy" decoding="async"></a>` : ""}
   <div class="card-meta"><span class="type">${typeLabel(i)}</span>${draftTag(i)}<span class="date">${metaLine(i)}</span></div>
   <div class="card-body"><h2><a href="/insights/${i.slug}/">${esc(i.title)}</a></h2><p>${esc(i.summary)}</p>
     <div class="card-links"><a class="read" href="/insights/${i.slug}/" aria-hidden="true" tabindex="-1">${readLabel(i)}</a>${isSocial(i) ? external(i) : ""}</div></div>
@@ -194,6 +195,7 @@ for (const i of issues) {
   <h1>${esc(i.title)}</h1>
   ${social ? "" : `<p class="summary">${esc(i.summary)}</p>`}
   <p class="byline"><time datetime="${i.date}">${longDate(i.date)}</time>${i.reading_minutes ? ` · ${i.reading_minutes} min read` : ""}</p>
+  ${i.image ? `<figure class="post-art"><img src="${esc(i.image)}" alt="" width="1200" height="1500" loading="eager" decoding="async"></figure>` : ""}
   <div class="prose">${renderBody(i.body)}</div>
   ${social ? `<p class="original">${external(i)}</p>` : ""}
   <div class="cta"><a href="${BOOKING_URL}">Book a 20-minute introductory call <span aria-hidden="true">↗</span></a></div>

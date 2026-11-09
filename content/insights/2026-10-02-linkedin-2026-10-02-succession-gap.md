@@ -3,8 +3,9 @@ slug: "linkedin-2026-10-02-succession-gap"
 type: linkedin
 date: 2026-10-02
 external_url: "https://www.linkedin.com/feed/update/urn:li:activity:7511866871881777152/"
-excerpt: "Chase found 40% of owners plan to retire within a decade, but only 8% are fully ready to hand off the business."
+excerpt: "Forty percent plan to retire within the next decade. Only eight percent say they are fully prepared to hand the business off. Seventy percent are still early in…"
 status: approved
+image: "/insights/img/linkedin-2026-10-02-succession-gap.webp"
 ---
 Chase surveyed about a thousand small business owners earlier this year.
 
@@ -17,3 +18,7 @@ Those three do not need an exit date on the calendar. They need a clear week and
 We don't build client lists. We build partners.
 
 sentientpartners.ai
+
+## Sources
+
+- https://media.chase.com/news/local-snapshot-succession-survey
