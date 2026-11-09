@@ -3,8 +3,9 @@ slug: "linkedin-2026-10-12-untested-backups"
 type: linkedin
 date: 2026-10-12
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7515494215947300864/"
-excerpt: "88% of small businesses have backups but only 61% have tested them. Run one small restore on purpose."
+excerpt: "This year's small business survey from the National Cybersecurity Alliance and CISA asked 1,000 business leaders about it. Eighty-eight percent have backups. Only 61%…"
 status: approved
+image: "/insights/img/linkedin-2026-10-12-untested-backups.webp"
 ---
 A backup you've never restored from is a guess.
 
@@ -19,3 +20,7 @@ The test doesn't have to be big. Pick one folder of job records and last week's 
 If it takes an afternoon, that's the number to plan around. If it doesn't work, a quiet morning is a much better time to find out.
 
 sentientpartners.ai
+
+## Sources
+
+- https://www.staysafeonline.org/articles/2026-small-business-cybersecurity-awareness-practices-survey

@@ -3,8 +3,9 @@ slug: "linkedin-2026-10-16-lean-team-cost"
 type: linkedin
 date: 2026-10-16
 external_url: "https://www.linkedin.com/feed/update/urn:li:share:7516894198176997376/"
-excerpt: "Bluevine: 65% of owners say running lean hurt the business or their well-being. Growth without a hire still has a cost."
+excerpt: "Bluevine surveyed 729 U.S. small business owners for its Lean Team Economy report. Sixty percent said they are actively trying to grow. Forty percent have paused hiring…"
 status: approved
+image: "/insights/img/linkedin-2026-10-16-lean-team-cost.webp"
 ---
 Growth without a new hire still has a cost.
 
@@ -19,3 +20,7 @@ Automation can carry real work. It does not put a day back on the owner's calend
 Before you decide the next role is a tool instead of a person, write down which week this quarter the owner is actually off. If the answer is none, the lean plan is incomplete.
 
 sentientpartners.ai
+
+## Sources
+
+- https://www.prnewswire.com/news-releases/bluevine-study-finds-more-than-half-of-smbs-use-ai-to-handle-workload-of-at-least-one-employee-302900406.html

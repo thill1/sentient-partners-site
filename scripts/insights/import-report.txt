@@ -1,0 +1,58 @@
+## added (25)
+- 2026-08-21-linkedin-2026-08-21.md
+- 2026-09-07-linkedin-2026-09-07.md
+- 2026-09-14-linkedin-2026-09-14-smb-labor.md
+- 2026-09-14-linkedin-2026-09-14.md
+- 2026-10-01-linkedin-2026-10-01-q4-tech-spend.md
+- 2026-10-05-linkedin-2026-10-05-delayed-investment.md
+- 2026-10-06-linkedin-2026-10-06.md
+- 2026-10-07-linkedin-2026-10-07.md
+- 2026-10-09-linkedin-2026-10-09.md
+- 2026-10-15-linkedin-2026-10-15-expensive-money.md
+- 2026-10-19-linkedin-2026-10-19-findable-before-rush.md
+- 2026-10-20-linkedin-2026-10-20-renewal-letter.md
+- 2026-10-21-linkedin-2026-10-21-slower-yes.md
+- 2026-10-22-linkedin-2026-10-22-new-bank-details.md
+- 2026-10-23-linkedin-2026-10-23-last-day-access.md
+- 2026-10-26-linkedin-2026-10-26-unanswered-reviews.md
+- 2026-10-27-linkedin-2026-10-27-1099-threshold.md
+- 2026-10-28-linkedin-2026-10-28-exempt-salary-line.md
+- 2026-10-29-linkedin-2026-10-29-profit-first-plan.md
+- 2026-11-02-linkedin-2026-11-02-week-without-you.md
+- 2026-11-03-linkedin-2026-11-03-subscription-owner.md
+- 2026-11-04-linkedin-2026-11-04-after-hours-call.md
+- 2026-11-05-linkedin-2026-11-05-last-price-change.md
+- 2026-11-06-linkedin-2026-11-06-holiday-roster.md
+- 2026-11-09-linkedin-2026-11-09-monday-numbers.md
+
+## updated (6)
+- 2026-09-30-linkedin-2026-09-30-late-payments.md
+- 2026-10-02-linkedin-2026-10-02-succession-gap.md
+- 2026-10-12-linkedin-2026-10-12-untested-backups.md
+- 2026-10-13-linkedin-2026-10-13-money-with-a-job.md
+- 2026-10-14-linkedin-2026-10-14-fewer-tools.md
+- 2026-10-16-linkedin-2026-10-16-lean-team-cost.md
+
+## missing_image (0)
+
+## missing_url (0)
+
+## skipped_not_live (15)
+- 2026-08-19: Status: HELD by Troy. Do not publish today at 8:50 or later unless he explicitly says ship.
+- 2026-08-20: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-08-26: Status: CANCELLED by Troy 2026-08-27. Duplicate of the 8/21 company video post (human/systems). Do n
+- 2026-08-27: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-08-28: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-08-31: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-09-01: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-09-02: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-09-03: Status: REWRITE for Troy. Do not publish until he says ship.
+- 2026-09-04: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-09-07-evening: Status: SUPERSEDED. Troy locked this caption for Tuesday 2026-09-08 instead of posting a second Mond
+- 2026-09-08: Status: APPROVED but BLOCKED 2026-09-08 ~9:17am PT. LinkedIn Cloudflare “Verify you are human” chall
+- 2026-09-10-zero-day-1: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-10-30-windows10-year-two: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+- 2026-11-04-domain-keys: Status: DRAFT. Do not publish until Troy or Chief of Staff says ship.
+
+## diffs (1)
+- No ## Caption in 2026-09-28-margin-inside
