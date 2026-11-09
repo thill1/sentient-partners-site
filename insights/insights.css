@@ -46,10 +46,10 @@ a:hover { text-decoration-color: var(--gold); }
 .card-content { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 /* Root cause fix: previously 3 children in a 2-col grid put title/excerpt under the
    thumbnail in the narrow first column. Meta+body now share one content cell. */
-@media (min-width: 900px) {
+@media (min-width: 720px) {
   .card.has-thumb {
-    grid-template-columns: minmax(300px, 42%) minmax(0, 1fr);
-    gap: 28px 40px;
+    grid-template-columns: minmax(260px, 42%) minmax(0, 1fr);
+    gap: 24px 32px;
     align-items: start;
   }
 }
@@ -148,9 +148,9 @@ a:hover { text-decoration-color: var(--gold); }
   max-width: 100%;
   margin: 0 auto;
 }
-@media (max-width: 899px) {
+@media (max-width: 719px) {
   .card-thumb { max-width: 100%; aspect-ratio: 4 / 5; }
 }
-@media (min-width: 900px) {
-  .card.has-thumb .card-thumb { max-height: none; }
+@media (min-width: 720px) {
+  .card.has-thumb .card-thumb { max-height: none; aspect-ratio: 4 / 5; }
 }
