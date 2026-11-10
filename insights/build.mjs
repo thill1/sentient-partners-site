@@ -128,6 +128,17 @@ const readLabel = (i) =>
 const external = (i) =>
   `<a class="external" href="${esc(i.external_url)}" rel="noopener" target="_blank">View on ${SOCIAL[i.type]}<span class="sr-only"> (opens in a new tab)</span> <span aria-hidden="true">↗</span></a>`;
 
+const media = (i) => {
+  if (i.video) {
+    const poster = i.image ? ` poster="${esc(i.image)}"` : "";
+    return `<figure class="post-art post-art-video"><video src="${esc(i.video)}"${poster} width="720" height="900" muted playsinline controls preload="metadata"></video></figure>`;
+  }
+  if (i.image) {
+    return `<figure class="post-art"><img src="${esc(i.image)}" alt="" width="1200" height="1500" loading="eager" decoding="async"></figure>`;
+  }
+  return "";
+};
+
 const card = (i) => `<li class="card card-${i.type}${i.image ? " has-thumb" : ""}" data-group="${groupOf(i)}">
   ${i.image ? `<a class="card-thumb" href="/insights/${i.slug}/" tabindex="-1" aria-hidden="true"><img src="${esc(i.image)}" alt="" width="600" height="750" loading="lazy" decoding="async"></a>` : ""}
   <div class="card-content">
@@ -197,7 +208,7 @@ for (const i of issues) {
   <h1>${esc(i.title)}</h1>
   ${social ? "" : `<p class="summary">${esc(i.summary)}</p>`}
   <p class="byline"><time datetime="${i.date}">${longDate(i.date)}</time>${i.reading_minutes ? ` · ${i.reading_minutes} min read` : ""}</p>
-  ${i.image ? `<figure class="post-art"><img src="${esc(i.image)}" alt="" width="1200" height="1500" loading="eager" decoding="async"></figure>` : ""}
+  ${media(i)}
   <div class="prose">${renderBody(i.body)}</div>
   ${social ? `<p class="original">${external(i)}</p>` : ""}
   <div class="cta"><a href="${BOOKING_URL}">Book a 20-minute introductory call <span aria-hidden="true">↗</span></a></div>

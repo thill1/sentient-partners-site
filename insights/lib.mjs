@@ -86,7 +86,7 @@ export function selectIssues(items, drafts = false) {
         ? i.status === "approved" || i.status === "draft"
         : i.status === "approved" && !i.sample,
     )
-    .sort((a, b) => b.date.localeCompare(a.date) || (b.issue || 0) - (a.issue || 0));
+    .sort((a, b) => b.date.localeCompare(a.date) || (b.issue || 0) - (a.issue || 0) || a.slug.localeCompare(b.slug));
 }
 
 export function loadIssues(dir = "content/insights", drafts = includeDrafts()) {

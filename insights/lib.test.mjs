@@ -8,18 +8,31 @@ describe("insights publishing gate", () => {
     const out = selectIssues([mk(1, "2026-09-10", "approved"), mk(2, "2026-09-15", "draft"), mk(3, "2026-10-01", "approved")]);
     expect(out.map((i) => i.issue)).toEqual([3, 1]);
   });
+  it("same-date items keep a stable slug order when times are unknown", () => {
+    const out = selectIssues([
+      { slug: "x-post", date: "2026-11-10", status: "approved" },
+      { slug: "linkedin-post", date: "2026-11-10", status: "approved" },
+    ]);
+    expect(out.map((i) => i.slug)).toEqual(["linkedin-post", "x-post"]);
+  });
+
   it("the draft flag adds drafts but never other statuses", () => {
     const out = selectIssues([mk(1, "2026-09-10", "draft"), mk(2, "2026-09-15", "archived")], true);
     expect(out.map((i) => i.issue)).toEqual([1]);
     expect(includeDrafts({ INSIGHTS_INCLUDE_DRAFTS: "1" })).toBe(true);
     expect(includeDrafts({})).toBe(false);
   });
-  it("loads the five published issues and thirty-three LinkedIn posts, newest first", () => {
+  it("loads the five published issues, thirty-three LinkedIn posts, and one X post, newest first", () => {
     const pub = loadIssues("content/insights", false);
     expect(pub.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([5, 4, 3, 2, 1]);
     expect(pub.filter((i) => i.type === "linkedin")).toHaveLength(33);
-    expect(pub).toHaveLength(39);
-    expect(pub[0].slug).toBe("linkedin-2026-11-10-customer-words");
+    expect(pub.filter((i) => i.type === "x")).toHaveLength(1);
+    expect(pub).toHaveLength(40);
+    // Same calendar date, times unknown: stable slug tie-break (linkedin before x).
+    expect(pub.slice(0, 2).map((i) => i.slug)).toEqual([
+      "linkedin-2026-11-10-customer-words",
+      "x-2026-11-10-missed-call-text-back",
+    ]);
     expect(pub.some((i) => i.sample || i.slug.startsWith("sample-"))).toBe(false);
     const all = loadIssues("content/insights", true);
     expect(all.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([5, 4, 3, 2, 1]);

@@ -52,9 +52,12 @@ Same as a newsletter but with no `issue` number. Required: `title`, `slug`, `dat
 ## Social post (`type: linkedin | x | facebook | instagram`): LinkedIn Bot and others
 
 Required: `slug`, `date`, `status`, and `external_url` (https link to the original post).
-Optional: `title` (defaults to the post's first line), `excerpt` (defaults to the first paragraph).
+Optional: `title` (defaults to the post's first line), `excerpt` (defaults to the first paragraph),
+`image` (list thumbnail / detail poster), `video` (detail-page file under `/insights/video/`).
 Body: the post text in plain Markdown. No embed code: the page shows the text
 and a "View on LinkedIn" (or X, Facebook, Instagram) link to the original.
+A `video` post uses a WebP `image` on the list and a muted, playsinline, controls
+player with that image as the poster on the detail page.
 
 ```yaml
 ---
