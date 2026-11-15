@@ -66,6 +66,11 @@ try {
   // Tool pages: same shell, their own markup, title and description.
   const PAGES = [
     {
+      path: "/demos/",
+      title: "Interactive demos | Sentient Partners",
+      desc: "Click through Sentient Relay, in pilot, and play a scripted example of the voice assistant on this site. The example does not start a live conversation.",
+    },
+    {
       path: "/tools/",
       title: "Free tools for growing businesses | Sentient Partners",
       desc: "Free tools from Sentient Partners: website check, missed-call calculator, AI readiness check, time-back estimator and reputation snapshot.",

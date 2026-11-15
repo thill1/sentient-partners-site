@@ -373,6 +373,15 @@
   font-size: 11px;
   color: rgba(196, 203, 214, 0.65);
 }
+.jf-note a {
+  color: #e6d6b5;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.jf-note a:hover {
+  color: #f3f0e8;
+}
 
 @keyframes jf-rise {
   from {

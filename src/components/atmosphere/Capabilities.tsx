@@ -470,7 +470,8 @@ export function Capabilities() {
         </div>
         <div className="page-width">
           <p className="jf-note">
-            Sample screens with sample data. Try any of them.
+            Sample screens with sample data. Try any of them.{" "}
+            <a href="/demos/">Open the Relay and voice demos</a>
           </p>
         </div>
       </div>

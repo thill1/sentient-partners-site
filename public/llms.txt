@@ -28,6 +28,7 @@ Growing businesses: service businesses, trades and home services (HVAC, cleaning
 ## Pages
 
 - [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
+- [Demos](https://sentientpartners.ai/demos/): a click-through of Sentient Relay (in pilot, sample data) and a scripted example of this site's voice assistant. The example does not start a live call.
 - [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for owners of growing businesses, every other week
 - [Privacy](https://sentientpartners.ai/privacy)
 - [Terms](https://sentientpartners.ai/terms)
