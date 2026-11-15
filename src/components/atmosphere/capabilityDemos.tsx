@@ -107,7 +107,9 @@ function Backstage({
   note?: ReactNode;
 }) {
   return (
-    <aside className="cx-back" aria-label="Behind the scenes">
+    // A named group, not <aside>: eight complementary landmarks nested in
+    // the carousel made landmark navigation noisy and duplicated names.
+    <div className="cx-back" role="group" aria-label="Behind the scenes">
       <p className="cx-back-label">
         <i aria-hidden="true" /> Behind the scenes
       </p>
@@ -116,7 +118,7 @@ function Backstage({
         <div className="cx-back-body">{children}</div>
         {note ? <p className="cx-back-note">{note}</p> : null}
       </MobileMore>
-    </aside>
+    </div>
   );
 }
 
