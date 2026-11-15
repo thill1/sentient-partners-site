@@ -45,6 +45,8 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${SITE}/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
 <meta name="theme-color" content="#081536">
 <link rel="icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -131,7 +133,7 @@ const external = (i) =>
 const media = (i) => {
   if (i.video) {
     const poster = i.image ? ` poster="${esc(i.image)}"` : "";
-    return `<figure class="post-art post-art-video"><video src="${esc(i.video)}"${poster} width="720" height="900" muted playsinline controls preload="metadata"></video></figure>`;
+    return `<figure class="post-art post-art-video"><video src="${esc(i.video)}"${poster} width="720" height="900" muted playsinline controls preload="metadata" aria-label="${esc(i.title)}"></video></figure>`;
   }
   if (i.image) {
     return `<figure class="post-art"><img src="${esc(i.image)}" alt="" width="1200" height="1500" loading="eager" decoding="async"></figure>`;
