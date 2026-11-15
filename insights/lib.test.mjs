@@ -60,6 +60,12 @@ describe("insights hub types", () => {
     const s = parseIssue(fm(["slug: s", "type: x", "date: 2026-10-01", "status: draft", 'external_url: "https://x.com/p/1"'], "Hello world.\n\nMore."));
     expect(s.title).toBe("Hello world.");
     expect(s.summary).toBe("Hello world.");
+    // A one-line excerpt stays on the card; search gets the post's text.
+    const short = parseIssue(fm(["slug: s", "type: x", "date: 2026-10-01", "status: draft", 'external_url: "https://x.com/p/1"', 'excerpt: "Flip that."'], "Most companies buy the **tool** first.\n\nFlip that."));
+    expect(short.summary).toBe("Flip that.");
+    expect(short.description).toBe("Most companies buy the tool first. Flip that.");
+    const long = parseIssue(fm(['title: "T"', "slug: a", "type: article", "date: 2026-10-01", 'summary: "A full sentence that is long enough for a search snippet."', "status: draft"]));
+    expect(long.description).toBe(long.summary);
     expect(() => parseIssue(fm(["slug: s", "type: tiktok", "date: 2026-10-01", "status: draft"]))).toThrow(/unknown type/);
   });
   it("samples never reach production, even if approved", () => {

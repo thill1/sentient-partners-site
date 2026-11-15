@@ -186,7 +186,7 @@ for (const i of issues) {
     join(OUT, path, "index.html"),
     page({
       title: `${i.title} | Sentient Partners Insights`,
-      description: i.summary,
+      description: i.description,
       path,
       type: "article",
       noindex: i.status !== "approved" || i.sample,
@@ -194,7 +194,7 @@ for (const i of issues) {
         "@context": "https://schema.org",
         "@type": social ? "SocialMediaPosting" : "Article",
         headline: i.title,
-        description: i.summary,
+        description: i.description,
         datePublished: i.date,
         mainEntityOfPage: `${SITE}${path}`,
         image: `${SITE}${i.image || i.hero_image || "/og-image.jpg"}`,
