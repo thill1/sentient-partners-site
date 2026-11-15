@@ -45,6 +45,8 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${SITE}/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
 <meta name="theme-color" content="#081536">
 <link rel="icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -63,10 +65,23 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
     <span>Sentient Partners</span>
   </a>
   <nav class="ins-nav" aria-label="Main navigation">
+    <details class="ins-menu">
+      <summary>
+        <span class="ins-menu-bars" aria-hidden="true"></span>
+        <span class="sr-only">Menu</span>
+      </summary>
+      <div class="ins-menu-panel">
+        <a href="/#capabilities">Capabilities</a>
+        <a href="/#work">Our work</a>
+        <a href="/#founder">Our founder</a>
+        <a href="/insights/"${path === "/insights/" ? ' aria-current="page"' : ""}>Insights</a>
+        <a href="tel:+14155042757">(415) 504-2757</a>
+      </div>
+    </details>
     <a href="/#capabilities">Capabilities</a>
     <a href="/#work">Our work</a>
     <a href="/#founder">Our founder</a>
-    <a href="/insights/">Insights</a>
+    <a href="/insights/"${path === "/insights/" ? ' aria-current="page"' : ""}>Insights</a>
     <a class="ins-book" href="${BOOKING_URL}">Book an intro call <span aria-hidden="true">→</span></a>
   </nav>
 </header>
@@ -152,6 +167,8 @@ const filterNav = (active) => `<nav class="filters" aria-label="Filter insights"
   <ul>${FILTERS.map((f) => `<li><a href="${f.path}" data-filter="${f.key}"${f.key === active ? ' aria-current="page"' : ""}>${f.label}</a></li>`).join("")}</ul>
 </nav>`;
 
+const published = issues.filter((i) => i.status === "approved" && !i.sample);
+
 for (const f of FILTERS) {
   const list = issues.filter((i) => f.key === "all" || groupOf(i) === f.key);
   const out = join(OUT, f.path);
@@ -165,7 +182,28 @@ for (const f of FILTERS) {
       title: f.key === "all" ? "Insights | Sentient Partners" : `${f.label} | Sentient Partners Insights`,
       description: "Newsletters, articles and posts from Sentient Partners for owners of growing businesses.",
       path: f.path,
-      noindex: f.key !== "all" || !issues.some((i) => i.status === "approved"),
+      noindex: f.key !== "all" || !published.length,
+      jsonLd:
+        f.key === "all" && published.length
+          ? {
+              "@context": "https://schema.org",
+              "@type": "CollectionPage",
+              name: "Insights",
+              description: "Newsletters, articles and posts from Sentient Partners for owners of growing businesses.",
+              url: `${SITE}/insights/`,
+              isPartOf: { "@type": "WebSite", name: "Sentient Partners", url: SITE },
+              publisher: { "@type": "Organization", name: "Sentient Partners", url: SITE },
+              mainEntity: {
+                "@type": "ItemList",
+                itemListElement: published.map((i, n) => ({
+                  "@type": "ListItem",
+                  position: n + 1,
+                  name: i.title,
+                  url: `${SITE}/insights/${i.slug}/`,
+                })),
+              },
+            }
+          : undefined,
       body: `<section class="archive">
   <p class="eyebrow">Insights</p>
   <h1>Notes for owners of growing businesses</h1>

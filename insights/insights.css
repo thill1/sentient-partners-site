@@ -20,7 +20,7 @@ a:hover { text-decoration-color: var(--gold); }
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 16px; top: 16px; background: var(--deep); padding: 8px 12px; z-index: 10; }
 
-.ins-header { display: flex; align-items: center; justify-content: space-between; padding: 22px var(--gutter); border-bottom: 1px solid var(--rule); }
+.ins-header { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 22px var(--gutter); border-bottom: 1px solid var(--rule); }
 .ins-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ivory); }
 .ins-brand img { width: 22px; height: 36px; }
 .ins-brand span { font: 400 15px/1 var(--serif); letter-spacing: 0.32em; text-transform: uppercase; }
@@ -29,8 +29,30 @@ a:hover { text-decoration-color: var(--gold); }
 .ins-nav a:hover { color: var(--ivory); }
 .ins-nav .ins-book { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 20px; border-radius: 999px; background: var(--gold); color: #081536; font-weight: 600; }
 .ins-nav .ins-book:hover { background: #d8c9a8; color: #081536; }
-@media (max-width: 860px) { .ins-nav a:not(.ins-book) { display: none; } }
-@media (max-width: 420px) { .ins-brand span { display: none; } }
+.ins-menu { display: none; }
+.ins-menu summary { list-style: none; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; color: var(--ivory); border-radius: 8px; }
+.ins-menu summary::-webkit-details-marker { display: none; }
+.ins-menu-bars { width: 18px; height: 2px; background: currentColor; box-shadow: 0 -6px 0 currentColor, 0 6px 0 currentColor; }
+.ins-menu[open] .ins-menu-bars { background: transparent; box-shadow: none; position: relative; }
+.ins-menu[open] .ins-menu-bars::before,
+.ins-menu[open] .ins-menu-bars::after { content: ""; position: absolute; left: 0; top: 0; width: 18px; height: 2px; background: currentColor; }
+.ins-menu[open] .ins-menu-bars::before { transform: rotate(45deg); }
+.ins-menu[open] .ins-menu-bars::after { transform: rotate(-45deg); }
+.ins-menu-panel { position: absolute; z-index: 30; top: calc(100% + 8px); right: var(--gutter); display: grid; width: min(320px, calc(100vw - 2 * var(--gutter))); padding: 8px; background: #0d1f4e; border: 1px solid var(--rule); border-radius: 12px; box-shadow: 0 24px 60px -28px #000; }
+.ins-menu-panel a { display: flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 8px; color: var(--ivory); text-decoration: none; }
+.ins-menu-panel a:hover { background: rgba(243, 240, 232, 0.06); }
+@media (max-width: 860px) {
+  /* The text links move into the menu. The name keeps its own row so it
+     never collides with the intro-call button. */
+  .ins-nav > a:not(.ins-book) { display: none; }
+  .ins-menu { display: block; }
+  .ins-header { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; row-gap: 12px; }
+  .ins-brand { min-width: 0; }
+  .ins-nav { gap: 8px; justify-content: flex-end; }
+}
+@media (max-width: 520px) {
+  .ins-brand span { letter-spacing: 0.14em; font-size: 13px; }
+}
 
 .eyebrow { display: flex; align-items: center; gap: 14px; margin: 0 0 22px; font: 500 11px/1 var(--sans); letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); }
 .eyebrow::before { content: ""; width: 36px; height: 1px; background: var(--gold); opacity: 0.7; }
