@@ -83,6 +83,18 @@ def title_for(path, page_html):
         t = t[:-1].rsplit(" ", 1)[0].rstrip(",.;:") + "…"
     return t
 
+def raw_meta(page_html, attr, name):
+    """Return an existing meta content value, still escaped for an attribute."""
+    patterns = (
+        rf'<meta\s+{attr}="{re.escape(name)}"\s+content="([^"]*)"',
+        rf'<meta\s+content="([^"]*)"\s+{attr}="{re.escape(name)}"',
+    )
+    for pat in patterns:
+        m = re.search(pat, page_html)
+        if m:
+            return m.group(1)
+    return ""
+
 def set_meta(page_html, prop_attr, prop, value):
     pat = re.compile(rf'(<meta\s+{prop_attr}="{re.escape(prop)}"\s+content=")[^"]*(")')
     if pat.search(page_html):
@@ -115,6 +127,13 @@ for dirpath, _, files in os.walk(DIST):
         page = set_meta(page, "property", "og:image:alt", html.escape(f"{title} | Sentient Partners", quote=True))
         page = set_meta(page, "name", "twitter:card", "summary_large_image")
         page = set_meta(page, "name", "twitter:image", img)
+        # Twitter falls back to Open Graph, but a complete card names both.
+        tw_title = raw_meta(page, "property", "og:title")
+        tw_desc = raw_meta(page, "property", "og:description") or raw_meta(page, "name", "description")
+        if tw_title:
+            page = set_meta(page, "name", "twitter:title", tw_title)
+        if tw_desc:
+            page = set_meta(page, "name", "twitter:description", tw_desc)
         open(file, "w", encoding="utf-8").write(page)
         made.append((path, out_name))
 for p, n in sorted(made):

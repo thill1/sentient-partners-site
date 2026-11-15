@@ -522,8 +522,12 @@
   }
   .jf-moment > *,
   .jf-detail > *,
-  .jf-sky i {
+  .jf-sky i,
+  .jf-ticks button {
     transition: none;
+  }
+  .jf-now span {
+    animation: none;
   }
 }
 
