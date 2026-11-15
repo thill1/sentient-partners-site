@@ -3,10 +3,11 @@ import { onRequestPost } from "./leads";
 
 afterEach(() => vi.restoreAllMocks());
 
-const post = (env: Record<string, string>) =>
+const post = (env: Record<string, string>, origin = "https://sentientpartners.ai") =>
   onRequestPost({
-    request: new Request("https://x/api/leads", {
+    request: new Request("https://sentientpartners.ai/api/leads", {
       method: "POST",
+      headers: origin ? { origin } : {},
       body: JSON.stringify({
         name: "Jane Example",
         email: "jane@example.com",
@@ -19,6 +20,11 @@ const post = (env: Record<string, string>) =>
   } as never);
 
 describe("/api/leads (webhook only)", () => {
+  it("refuses another site", async () => {
+    expect((await post({}, "https://evil.example")).status).toBe(403);
+    expect((await post({}, "")).status).toBe(403);
+  });
+
   it("never calls FormSubmit and returns ok when no webhook is set", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     const res = await post({});

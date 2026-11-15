@@ -30,6 +30,8 @@ export interface Env {
 
 export interface AdminSessionPayload {
   username: string;
+  /** Unix seconds. Sessions without this claim are rejected. */
+  exp: number;
 }
 
 export type PersistedSiteSettings = SiteSettings;
