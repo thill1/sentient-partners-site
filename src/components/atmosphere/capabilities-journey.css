@@ -123,7 +123,8 @@
   position: relative;
   display: block;
   width: 26px;
-  height: 22px;
+  /* 24px tall keeps each tick a WCAG 2.2 (2.5.8) sized target. */
+  height: 24px;
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .jf-ticks button::before {
@@ -488,8 +489,9 @@
   .jf-ticks {
     gap: 4px;
   }
+  /* 20px + 4px gap puts tick centres 24px apart (WCAG 2.5.8 spacing). */
   .jf-ticks button {
-    width: 18px;
+    width: 20px;
   }
   .jf-ticks button[aria-current="step"] {
     width: 36px;
