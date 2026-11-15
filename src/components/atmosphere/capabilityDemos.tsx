@@ -107,7 +107,7 @@ function Backstage({
   note?: ReactNode;
 }) {
   return (
-    <aside className="cx-back" aria-label="Behind the scenes">
+    <div className="cx-back">
       <p className="cx-back-label">
         <i aria-hidden="true" /> Behind the scenes
       </p>
@@ -116,7 +116,7 @@ function Backstage({
         <div className="cx-back-body">{children}</div>
         {note ? <p className="cx-back-note">{note}</p> : null}
       </MobileMore>
-    </aside>
+    </div>
   );
 }
 
