@@ -14,11 +14,18 @@ try {
   const shell = await readFile("dist/index.html", "utf8");
   const app = renderToString(createElement(App));
 
-  // Critical CSS: computed against the first screen only (header + hero),
-  // so the inline block stays small; the full stylesheet loads without
-  // blocking render.
-  const cut = app.search(/<section[^>]*class="[^"]*perspective-v2/);
-  const firstScreen = cut > 0 ? app.slice(0, cut) : app;
+  // Critical CSS: header, hero, and the action dock (visible on first paint).
+  // The old cut looked for a perspective section that is no longer rendered,
+  // so the inline block had grown to the CSS for the whole page.
+  const outcomeAt = app.search(/<section[^>]*class="[^"]*outcomes-v2/);
+  if (outcomeAt < 0) {
+    throw new Error(
+      "prerender: outcomes-v2 section missing; refusing to inline CSS for the whole page",
+    );
+  }
+  const firstScreen =
+    app.slice(0, outcomeAt) +
+    `<div class="action-dock is-shown"><a class="dock-book">Book a call</a><button class="dock-ask" type="button">Ask Sentient</button><a class="dock-call">Call</a></div>`;
   const beasties = new Beasties({
     path: "dist",
     publicPath: "/",
@@ -45,6 +52,16 @@ try {
       `<div id="root">${app}</div>`,
     );
   await writeFile("dist/index.html", html);
+  const styles = html.match(/<style[\s\S]*?<\/style>/g) ?? [];
+  const largestStyle = styles.reduce((n, block) => Math.max(n, block.length), 0);
+  if (largestStyle > 55000) {
+    throw new Error(
+      `prerender: homepage critical CSS is ${largestStyle} bytes; the first-screen cut did not apply`,
+    );
+  }
+  if (!html.includes("cormorant-garamond-normal-500")) {
+    throw new Error("prerender: homepage is missing the headline font");
+  }
 
   // Tool pages: same shell, their own markup, title and description.
   const PAGES = [
