@@ -170,6 +170,15 @@ export function Capabilities() {
     [count],
   );
 
+  // Pinned, the scenes two or more away sit off-screen. Mark them inert as
+  // well as aria-hidden, so Tab never lands on a control nobody can see;
+  // the ticks and arrows still reach every scene.
+  useEffect(() => {
+    slides.current.forEach((el, i) => {
+      if (el) el.inert = pinned && Math.abs(active - i) > 1;
+    });
+  }, [active, pinned]);
+
   // Swipe/scroll mode: the strip's own scroll position drives the story.
   useEffect(() => {
     const strip = track.current;
@@ -410,6 +419,15 @@ export function Capabilities() {
                 aria-hidden={pinned && Math.abs(active - i) > 1 ? true : undefined}
                 onPointerDown={() => touched.current.add(i)}
                 onKeyDown={() => touched.current.add(i)}
+                onFocus={(e) => {
+                  // Tabbing into the next scene glides the strip to it.
+                  if (
+                    pinned &&
+                    i !== activeRef.current &&
+                    (e.target as HTMLElement).matches(":focus-visible")
+                  )
+                    goTo(i);
+                }}
               >
                 <div className="jf-scene-inner">
                   <div className="jf-moment">
