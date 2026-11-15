@@ -803,7 +803,10 @@ export function WebsiteDemo() {
           ))}
         </div>
         <div className={`cx-device is-${device}`}>
-          <div className="cx-site" ref={site} aria-hidden="true">
+          {/* Decorative sample: hidden from assistive tech, so keep the
+              scroller itself out of the tab order too (Chrome makes
+              scrollable boxes focusable on its own). */}
+          <div className="cx-site" ref={site} aria-hidden="true" tabIndex={-1}>
             <nav className="cx-site-nav">
               <strong>Hearth &amp; Home</strong>
               <span>
