@@ -6,7 +6,8 @@ import { BookingModal } from "./components/BookingModal";
 import { ContactModal } from "./components/ContactModal";
 import { Toast } from "./components/Toast";
 import { rememberVisit } from "./lib/visitorMemory";
-import Landing, { type PageName } from "./components/atmosphere/Landing";
+import Landing from "./components/atmosphere/Landing";
+import { resolvePage } from "./content/routes";
 import {
   getAdminSettings,
   loginAdmin,
@@ -21,16 +22,8 @@ function getCurrentRoute(hash: string): AppRoute {
   return hash === "#/admin" ? "admin" : "home";
 }
 
-export function pageFor(path: string): PageName {
-  if (path.startsWith("/tools/missed-call-calculator")) return "missed-call";
-  if (path.startsWith("/tools/ai-readiness")) return "ai-readiness";
-  if (path.startsWith("/tools/time-back")) return "time-back";
-  if (path.startsWith("/tools/reputation")) return "reputation";
-  return path.startsWith("/tools") ? "tools" : "home";
-}
-
 function App({ path }: { path?: string } = {}) {
-  const page = pageFor(path ?? (typeof window === "undefined" ? "/" : window.location.pathname));
+  const pageRoute = resolvePage(path ?? (typeof window === "undefined" ? "/" : window.location.pathname));
   const siteSettings = useSiteSettings();
 
   useEffect(() => {
@@ -189,7 +182,7 @@ function App({ path }: { path?: string } = {}) {
 
   return (
     <div>
-      <Landing banner={siteSettings.bannerState} page={page} />
+      <Landing banner={siteSettings.bannerState} route={pageRoute} />
 
       <ChatInterface showLauncher={false} />
       <BookingModal />

@@ -97,3 +97,9 @@
 .atmosphere-page main .work-section .relay-showcase li { color: #dfe4ea !important; }
 .atmosphere-page main .work-section .relay-showcase .eyebrow { color: #c8b795 !important; }
 .atmosphere-page main .work-section .relay-showcase .rs-note { color: #9fb0c0 !important; }
+
+/* Second link beside "Ask about Sentient Relay" on the homepage. */
+.relay-showcase .rs-overview { margin-left: 28px; }
+@media (max-width: 600px) {
+  .relay-showcase .rs-overview { margin-left: 0; display: flex; width: fit-content; }
+}

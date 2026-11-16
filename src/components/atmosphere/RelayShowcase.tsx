@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { RELAY } from "../../content/siteNav";
 import { openContactModal } from "../../lib/siteActions";
 import "./relay-showcase.css";
 
@@ -16,7 +17,17 @@ const screens = [
   ["relay-more", 640, 1387, "Relay More menu with Needs you, Documents, Help, appearance, map settings and review links"],
 ] as const;
 
-export function RelayShowcase() {
+/** "The service day," + "in one app.": the last clause carries the emphasis. */
+const [headlineLead, headlineEmphasis] = RELAY.headline.split(/,\s*/);
+
+export interface RelayShowcaseProps {
+  /** h3 inside the homepage Work section; h2 on /relay/, under the page title. */
+  headingLevel?: "h2" | "h3";
+  /** Adds a link to the Relay page (used on the homepage). */
+  showOverviewLink?: boolean;
+}
+
+export function RelayShowcase({ headingLevel: Heading = "h3", showOverviewLink = false }: RelayShowcaseProps = {}) {
   const track = useRef<HTMLUListElement>(null);
   const [active, setActive] = useState(0);
 
@@ -51,20 +62,17 @@ export function RelayShowcase() {
   return (
     <div className="relay-showcase" aria-labelledby="relay-title">
       <div className="rs-copy">
-        <p className="eyebrow">Sentient Relay · In pilot</p>
-        <h3 id="relay-title">
-          The service day,
+        <p className="eyebrow">{RELAY.eyebrow}</p>
+        <Heading id="relay-title" className="rs-title">
+          {headlineLead},
           <br />
-          <em>in one app.</em>
-        </h3>
-        <p className="rs-outcome">
-          Schedule the visit, write the estimate, get it signed and record the
-          payment, from the field or the office.
-        </p>
+          <em>{headlineEmphasis}</em>
+        </Heading>
+        <p className="rs-outcome">{RELAY.summary}</p>
         <ul className="rs-points">
-          <li>Today, calendar and jobs in one place</li>
-          <li>Customer records with call, text and directions</li>
-          <li>Estimates and invoices tracked through to paid</li>
+          {RELAY.points.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
         </ul>
         <button
           type="button"
@@ -79,6 +87,11 @@ export function RelayShowcase() {
         >
           Ask about Sentient Relay <ArrowRight size={15} aria-hidden="true" />
         </button>
+        {showOverviewLink && (
+          <a className="text-link rs-overview" href={RELAY.path}>
+            Relay overview <ArrowRight size={15} aria-hidden="true" />
+          </a>
+        )}
       </div>
       <div className="rs-gallery">
         <ul

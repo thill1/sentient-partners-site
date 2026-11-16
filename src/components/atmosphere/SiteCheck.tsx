@@ -46,7 +46,9 @@ const statusText = { pass: "Looks good", warn: "Could be better", fail: "Needs a
  * customers (mobile, search snippet, tap-to-call, booking, local signals,
  * after-hours answers, speed). Runs server-side in /api/site-check.
  */
-export default function SiteCheck() {
+export default function SiteCheck({ standalone = false }: { standalone?: boolean } = {}) {
+  // On /tools/website-check/ this is the whole page, so its title is the h1.
+  const Heading = standalone ? "h1" : "h2";
   const [address, setAddress] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [step, setStep] = useState(0);
@@ -148,15 +150,26 @@ export default function SiteCheck() {
   );
 
   return (
-    <section id="website-check" className="site-check section-space" aria-labelledby="site-check-title">
+    <section
+      id="website-check"
+      className={`site-check section-space${standalone ? " is-standalone" : ""}`}
+      aria-labelledby="site-check-title"
+    >
+      {standalone && (
+        <nav className="tool-backbar" aria-label="Tools">
+          <div className="page-width">
+            <ToolBack />
+          </div>
+        </nav>
+      )}
       <div className="page-width sc-layout">
         <div className="sc-intro">
           <p className="eyebrow">Free website check</p>
-          <h2 id="site-check-title">
+          <Heading id="site-check-title">
             How does your website
             <br />
             <em>hold up?</em>
-          </h2>
+          </Heading>
           <p>
             A plain-English check of phones, search, speed and booking, in
             about 20 seconds.

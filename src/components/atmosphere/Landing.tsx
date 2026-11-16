@@ -26,13 +26,43 @@ import MissedCallCalculator from "./tools/MissedCallCalculator";
 import AiReadiness from "./tools/AiReadiness";
 import TimeBack from "./tools/TimeBack";
 import Reputation from "./tools/Reputation";
+import WebsiteCheckPage from "./tools/WebsiteCheckPage";
 import { RelayShowcase } from "./RelayShowcase";
+import SolutionsGrid from "./solutions/SolutionsGrid";
+import SolutionsHubPage from "./solutions/SolutionsHubPage";
+import SolutionPage from "./solutions/SolutionPage";
+import RelayPage from "./solutions/RelayPage";
+import type { PageRoute } from "../../content/routes";
+import { WEBSITE_CHECK_PATH, findSolution } from "../../content/siteNav";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import "./launch.css";
 import "./polish.css";
 
-/** Which page is showing. Section links are "#x" at home, "/#x" elsewhere. */
-export type PageName = "home" | "tools" | "missed-call" | "ai-readiness" | "time-back" | "reputation";
+/** The page for every route except the homepage, which Landing lays out itself. */
+function SubPage({ route }: { route: PageRoute }) {
+  switch (route.name) {
+    case "website-check":
+      return <WebsiteCheckPage />;
+    case "missed-call":
+      return <MissedCallCalculator />;
+    case "ai-readiness":
+      return <AiReadiness />;
+    case "time-back":
+      return <TimeBack />;
+    case "reputation":
+      return <Reputation />;
+    case "solutions":
+      return <SolutionsHubPage />;
+    case "solution": {
+      const solution = findSolution(route.solutionSlug ?? "");
+      return solution ? <SolutionPage solution={solution} /> : <SolutionsHubPage />;
+    }
+    case "relay":
+      return <RelayPage />;
+    default:
+      return <ToolsPage />;
+  }
+}
 
 /* A quiet dock keeps the next steps in reach: Book a call, Ask Sentient and
    Call, as a bottom bar on phones and a floating group on desktop. It steps
@@ -183,19 +213,21 @@ function WorkSection() {
         <p className="work-disclosure">
           Illustrations of the kinds of systems we build.
         </p>
-        <RelayShowcase />
+        <RelayShowcase showOverviewLink />
       </div>
     </section>
   );
 }
 
-export default function Landing({ page = "home" }: { banner: BannerDisplayState; page?: PageName }) {
+const HOME_ROUTE: PageRoute = { name: "home" };
+
+export default function Landing({ route = HOME_ROUTE }: { banner: BannerDisplayState; route?: PageRoute }) {
   useScrollReveal();
   useWorkMotion();
   useFounderMotion();
   useProcessMotion();
   useAuburnMotion();
-  const home = page === "home";
+  const home = route.name === "home";
   return (
     <div className={`atmosphere-page${home ? "" : " tools-page"}`} id="top">
       <a href="#main-content" className="skip-link">
@@ -205,13 +237,14 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
       <SiteHeader isHome={home} />
       <main id="main-content" tabIndex={-1}>
         {!home ? (
-          page === "missed-call" ? <MissedCallCalculator /> : page === "ai-readiness" ? <AiReadiness /> : page === "time-back" ? <TimeBack /> : page === "reputation" ? <Reputation /> : <ToolsPage />
+          <SubPage route={route} />
         ) : (
         <>
-        {/* Flow: promise (hero) → how we help → what it looks like →
-            proof → who → how we work → the call. */}
+        {/* Flow: promise (hero) → how we help → solutions at a glance →
+            what it looks like → proof → who → how we work → the call. */}
         <GoldenGate />
         <Outcomes />
+        <SolutionsGrid />
         <Capabilities />
         <WorkSection />
         <section id="founder" className="founder-section section-space">
@@ -363,7 +396,7 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
               Free website check: see how your site does on phones, search,
               speed and booking.
             </p>
-            <a className="text-link" href="/tools/">
+            <a className="text-link" href={WEBSITE_CHECK_PATH}>
               Check your website <ArrowRight size={15} aria-hidden="true" />
             </a>
           </div>
