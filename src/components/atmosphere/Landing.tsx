@@ -1,13 +1,9 @@
 import { MobileMore } from "./MobileMore";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { ArrowRight, ArrowUpRight, Menu, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, ArrowUpRight, Phone } from "lucide-react";
 import type { BannerDisplayState } from "../../types";
 import { BOOKING_URL, BRAND } from "../../content/siteContent";
-import {
-  openBookingModal,
-  openSentientChat,
-} from "../../lib/siteActions";
+import { openSentientChat } from "../../lib/siteActions";
 import { GoldenGate } from "./GoldenGate";
 import { Capabilities } from "./Capabilities";
 import "./atmosphere.css";
@@ -21,7 +17,9 @@ import {
   useProcessMotion,
   useWorkMotion,
 } from "./sectionMotion";
-import FooterFinale from "./FooterFinale";
+import SiteHeader from "./SiteHeader";
+import SiteFooter from "./SiteFooter";
+import { bookIntroCall } from "./bookIntroCall";
 import SignupBand from "./SignupBand";
 import ToolsPage from "./ToolsPage";
 import MissedCallCalculator from "./tools/MissedCallCalculator";
@@ -30,213 +28,11 @@ import TimeBack from "./tools/TimeBack";
 import Reputation from "./tools/Reputation";
 import { RelayShowcase } from "./RelayShowcase";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
-import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
 import "./polish.css";
 
-const book = (source: string) =>
-  openBookingModal({ source, ctaLabel: "Book a 20-minute introductory call" });
-function Brand() {
-  return (
-    <a className="brand-lockup" href={useHref()("#top")}>
-      <img
-        className="monogram-light"
-        src="/atmosphere/sp-monogram-white-72.png"
-        alt=""
-        width="44"
-        height="72"
-      />
-      <img
-        className="monogram-ink"
-        src="/atmosphere/sp-monogram-navy-72.png"
-        alt=""
-        width="44"
-        height="72"
-      />
-      <span>Sentient Partners</span>
-    </a>
-  );
-}
-const links = [
-  ["How we help", "#services"],
-  ["Capabilities", "#capabilities"],
-  ["Our work", "#work"],
-  ["Our founder", "#founder"],
-  ["Tools", "/tools/"],
-  // Hidden when the build has no published Insights (see insights/lib.mjs).
-  ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
-];
 /** Which page is showing. Section links are "#x" at home, "/#x" elsewhere. */
 export type PageName = "home" | "tools" | "missed-call" | "ai-readiness" | "time-back" | "reputation";
-const PageContext = createContext<PageName>("home");
-const useHref = () => {
-  const page = useContext(PageContext);
-  return (href: string) => (page !== "home" && href.startsWith("#") ? `/${href}` : href);
-};
-function Navigation() {
-  const href = useHref();
-  const [menu, setMenu] = useState(false),
-    [onLight, setOnLight] = useState(false),
-    [scrolled, setScrolled] = useState(false);
-  const menuButton = useRef<HTMLButtonElement>(null);
-  const header = useRef<HTMLElement>(null);
-  useEffect(() => {
-    // The header has no bar of its own, so its lettering follows whatever
-    // section is behind it: ink over light backgrounds, ivory over dark.
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      // The bar arrives as the descent reaches its second line of copy
-      // (the descent note fades in from 47% of the hero's scroll).
-      const hero = document
-        .querySelector(".golden-gate")
-        ?.getBoundingClientRect();
-      setScrolled(
-        hero
-          ? -hero.top / Math.max(1, hero.height - innerHeight) > 0.47
-          : scrollY > 8,
-      );
-      const under = document
-        .elementsFromPoint(innerWidth / 2, 50)
-        .find((element) => !header.current?.contains(element));
-      // Illustrations (paper mock-ups, demo screens) never flip the header;
-      // only the section's own background counts.
-      let element: Element | null = under?.closest("section") ?? under ?? null;
-      while (element) {
-        const [r, g, b, a = 1] = (
-          getComputedStyle(element).backgroundColor.match(/[\d.]+/g) ?? []
-        ).map(Number);
-        if (a > 0.5) {
-          setOnLight(0.2126 * r + 0.7152 * g + 0.0722 * b > 150);
-          return;
-        }
-        element = element.parentElement;
-      }
-      setOnLight(false);
-    };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    addEventListener("scroll", schedule, { passive: true });
-    addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(frame);
-      removeEventListener("scroll", schedule);
-      removeEventListener("resize", schedule);
-    };
-  }, []);
-  useEffect(() => {
-    if (!menu) return;
-    // Full-height menu: lock the page, trap focus, close on Escape.
-    const root = document.documentElement;
-    root.classList.add("menu-open");
-    let lenis: { stop: () => void; start: () => void } | undefined;
-    loadFabric().then((f) => {
-      lenis = f?.lenis ?? undefined;
-      lenis?.stop();
-    });
-    const focusables = () => [
-      ...document.querySelectorAll<HTMLElement>(
-        ".site-header .menu-toggle, #mobile-navigation a",
-      ),
-    ];
-    focusables()[1]?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenu(false);
-        menuButton.current?.focus();
-        return;
-      }
-      if (e.key !== "Tab") return;
-      // The menu is portaled to <body>, so DOM order doesn't match the visual
-      // order: always move focus explicitly within [toggle, ...menu links].
-      const items = focusables();
-      if (!items.length) return;
-      e.preventDefault();
-      const at = items.indexOf(document.activeElement as HTMLElement);
-      const step = e.shiftKey ? -1 : 1;
-      const next = at < 0 ? 0 : (at + step + items.length) % items.length;
-      items[next]?.focus();
-    };
-    addEventListener("keydown", onKey);
-    return () => {
-      removeEventListener("keydown", onKey);
-      root.classList.remove("menu-open");
-      lenis?.start();
-    };
-  }, [menu]);
-  return (
-    <header
-      ref={header}
-      className={`site-header ${onLight && !menu ? "header-on-light" : ""} ${scrolled ? "header-scrolled" : ""}`}
-    >
-      <div className="header-inner">
-        <nav className="desktop-nav" aria-label="Main navigation">
-          {links.map(([label, to]) => (
-            <a key={to} href={href(to)}>
-              {label}
-            </a>
-          ))}
-        </nav>
-        <Brand />
-        <a
-          className="header-book"
-          href={BOOKING_URL}
-          onClick={(e) => {
-            e.preventDefault();
-            book("Navigation");
-          }}
-        >
-          Book an intro call <ArrowRight size={15} aria-hidden="true" />
-        </a>
-        <button
-          ref={menuButton}
-          className="menu-toggle"
-          aria-label={menu ? "Close navigation" : "Open navigation"}
-          aria-expanded={menu}
-          aria-controls="mobile-navigation"
-          onClick={() => setMenu(!menu)}
-        >
-          {menu ? <X /> : <Menu />}
-        </button>
-      </div>
-      {/* Portaled to <body>: the scrolled header's backdrop-filter makes it the
-          containing block for fixed children, which clipped the panel. */}
-      {menu &&
-        createPortal(
-          <nav
-            id="mobile-navigation"
-            className="mobile-nav"
-            aria-label="Mobile navigation"
-          >
-            {links.map(([label, to]) => (
-              <a key={to} href={href(to)} onClick={() => setMenu(false)}>
-                {label}
-                <ArrowRight size={18} aria-hidden="true" />
-              </a>
-            ))}
-            <a
-              className="mobile-nav-book cta-primary"
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                setMenu(false);
-                book("Mobile menu");
-              }}
-            >
-              Book a 20-minute intro call{" "}
-              <ArrowRight size={18} aria-hidden="true" />
-            </a>
-            <a className="mobile-nav-phone" href={BRAND.phoneHref}>
-              <Phone size={16} aria-hidden="true" /> {BRAND.phone}
-            </a>
-          </nav>,
-          document.body,
-        )}
-    </header>
-  );
-}
 
 /* A quiet dock keeps the next steps in reach: Book a call, Ask Sentient and
    Call, as a bottom bar on phones and a floating group on desktop. It steps
@@ -284,7 +80,7 @@ function ActionDock() {
         tabIndex={shown ? 0 : -1}
         onClick={(e) => {
           e.preventDefault();
-          book("Action dock");
+          bookIntroCall("Action dock");
         }}
       >
         Book a call <ArrowRight size={16} aria-hidden="true" />
@@ -400,15 +196,13 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
   useProcessMotion();
   useAuburnMotion();
   const home = page === "home";
-  const to = (h: string) => (home ? h : `/${h}`);
   return (
-    <PageContext.Provider value={page}>
     <div className={`atmosphere-page${home ? "" : " tools-page"}`} id="top">
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
       <PageAtmosphere />
-      <Navigation />
+      <SiteHeader isHome={home} />
       <main id="main-content" tabIndex={-1}>
         {!home ? (
           page === "missed-call" ? <MissedCallCalculator /> : page === "ai-readiness" ? <AiReadiness /> : page === "time-back" ? <TimeBack /> : page === "reputation" ? <Reputation /> : <ToolsPage />
@@ -488,7 +282,7 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
                   href={BOOKING_URL}
                   onClick={(e) => {
                     e.preventDefault();
-                    book("Founder");
+                    bookIntroCall("Founder");
                   }}
                 >
                   Book a 20-minute intro call{" "}
@@ -574,71 +368,13 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
             </a>
           </div>
         </section>
-        <Contact onBook={() => book("Final invitation")} />
+        <Contact onBook={() => bookIntroCall("Final invitation")} />
         <SignupBand />
         </>
         )}
       </main>
       <ActionDock />
-      <footer className="atmosphere-footer">
-        <FooterFinale />
-        <div className="page-width">
-          <div className="footer-top">
-            <div>
-              <p className="footer-tagline">
-                Business Strategy. Intelligent Systems. Measurable Results.
-              </p>
-              <p className="footer-place">
-                Auburn, California
-                <br />
-                Placer County · Greater Sacramento
-              </p>
-            </div>
-            <div>
-              <span>Explore</span>
-              <a href={to("#services")}>How we help</a>
-              <a href={to("#capabilities")}>Capabilities</a>
-              <a href={to("#work")}>Our work</a>
-              <a href={to("#founder")}>Our founder</a>
-              <a href={to("#process")}>Our approach</a>
-              <a href="/tools/">Tools</a>
-              {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
-            </div>
-            <div>
-              <span>Let's connect</span>
-              <a href={BRAND.phoneHref}>{BRAND.phone}</a>
-              <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
-              <a
-                href={BRAND.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                LinkedIn <ArrowUpRight size={13} aria-hidden="true" />
-              </a>
-              <a
-                href={BOOKING_URL}
-                onClick={(e) => {
-                  e.preventDefault();
-                  book("Footer");
-                }}
-              >
-                Book a 20-minute intro call
-              </a>
-              <button onClick={() => openSentientChat({ source: "Footer" })}>
-                Ask Sentient (chat or voice)
-              </button>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} Sentient Partners.</span>
-            <span className="footer-legal">
-              <a href="/privacy">Privacy</a>
-              <a href="/terms">Terms</a>
-            </span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter isHome={home} />
     </div>
-    </PageContext.Provider>
   );
 }
