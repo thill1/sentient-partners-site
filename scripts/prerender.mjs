@@ -3,6 +3,7 @@ import { renderToString } from "react-dom/server";
 import { createElement } from "react";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import Beasties from "beasties";
+import { PRERENDER_PAGES } from "./prerender-pages.mjs";
 
 // Ship crawlable, usable HTML before JavaScript or WebGL starts.
 const server = await createServer({
@@ -46,42 +47,19 @@ try {
     );
   await writeFile("dist/index.html", html);
 
-  // Tool pages: same shell, their own markup, title and description.
-  const PAGES = [
-    {
-      path: "/tools/",
-      title: "Free tools for growing businesses | Sentient Partners",
-      desc: "Free tools from Sentient Partners: website check, missed-call calculator, AI readiness check, time-back estimator and reputation snapshot.",
-    },
-    {
-      path: "/tools/missed-call-calculator/",
-      title: "Missed-call calculator | Sentient Partners",
-      desc: "Estimate what unanswered calls may cost your business each month and year, using your own call volume, booking rate and average job value.",
-    },
-    {
-      path: "/tools/ai-readiness/",
-      title: "AI readiness check | Sentient Partners",
-      desc: "Nine quick questions on calls, booking, follow-up, invoicing and data. Get a score out of 100 and three practical next steps.",
-    },
-    {
-      path: "/tools/time-back/",
-      title: "Time-back estimator | Sentient Partners",
-      desc: "Estimate the hours a week and a year you could get back from scheduling, invoicing, follow-ups and retyping, using your own numbers.",
-    },
-    {
-      path: "/tools/reputation/",
-      title: "Reputation snapshot | Sentient Partners",
-      desc: "A quick self-check of your rating, review count, recency and replies. Get a score out of 100 and three practical next steps.",
-    },
-  ];
+  // Every other page: same shell, its own markup, title and description.
+  // The list (tools, solutions, Relay) lives in ./prerender-pages.mjs.
+  const escapeHtml = (text) =>
+    text.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const homeTitle = /Sentient Partners \| Business Strategy\. Intelligent Systems\. Measurable Results\./g;
-  for (const page of PAGES) {
+  for (const { path, ...meta } of PRERENDER_PAGES) {
+    const page = { path, title: escapeHtml(meta.title), desc: escapeHtml(meta.desc) };
     const body = renderToString(createElement(App, { path: page.path }));
     const url = `https://sentientpartners.ai${page.path}`;
     const pageHead = await criticalHead(body);
     const out = (pageHead + html.slice(html.indexOf("</head>")))
       .replace(`<div id="root">${app}</div>`, () => `<div id="root">${body}</div>`)
-      .replace(homeTitle, page.title)
+      .replace(homeTitle, () => page.title)
       .replace(/(<meta\s+(?:name="description"|property="og:description"|name="twitter:description")\s+content=")[^"]*"/g, (_, a) => `${a}${page.desc}"`)
       .replace(/(<link rel="canonical" href=")https:\/\/sentientpartners\.ai\/"/, (_, a) => `${a}${url}"`)
       .replace(/(<meta property="og:url" content=")https:\/\/sentientpartners\.ai\/"/, (_, a) => `${a}${url}"`);
