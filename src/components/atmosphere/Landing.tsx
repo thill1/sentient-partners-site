@@ -33,7 +33,7 @@ import SolutionsHubPage from "./solutions/SolutionsHubPage";
 import SolutionPage from "./solutions/SolutionPage";
 import RelayPage from "./solutions/RelayPage";
 import type { PageRoute } from "../../content/routes";
-import { WEBSITE_CHECK_PATH, findSolution } from "../../content/siteNav";
+import { PROCESS, WEBSITE_CHECK_PATH, findSolution } from "../../content/siteNav";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import "./launch.css";
 import "./polish.css";
@@ -364,27 +364,11 @@ export default function Landing({ route = HOME_ROUTE }: { banner: BannerDisplayS
                 />
               </svg>
               <span className="ps-vline" aria-hidden="true" />
-              {[
-                [
-                  "01",
-                  "Discover",
-                  "We learn your business, where it sticks, and what's worth fixing first.",
-                ],
-                [
-                  "02",
-                  "Design",
-                  "A practical strategy, clear priorities, and a roadmap we agree on.",
-                ],
-                [
-                  "03",
-                  "Deliver",
-                  "We build, test and launch with your team, then refine as you grow.",
-                ],
-              ].map(([n, title, copy]) => (
-                <article key={title}>
-                  <span>{n}</span>
-                  <h3>{title}</h3>
-                  <p>{copy}</p>
+              {PROCESS.steps.map((step, index) => (
+                <article key={step.title}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.copy}</p>
                 </article>
               ))}
             </div>
