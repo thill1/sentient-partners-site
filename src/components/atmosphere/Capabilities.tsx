@@ -42,6 +42,11 @@ function sceneCopy(slug: string) {
 /**
  * One customer, one broken AC, start to finish. Each scene is a capability,
  * told as the moment it matters to her. Order follows the story, not the menu.
+ *
+ * `name` is the journey's own Title Case label ("Premium Websites"). It is
+ * kept here on purpose: the shared data uses sentence case ("Premium
+ * websites") for menus and page titles, so deriving it would change the
+ * visible copy. Capabilities.test.tsx pins each label to its solution.
  */
 const scenes = [
   {
@@ -113,6 +118,9 @@ const scenes = [
     Demo: ReviewsDemo,
   },
 ];
+
+/** Each journey label with the solution slug it belongs to, in story order. */
+export const JOURNEY_LABELS: { slug: string; name: string }[] = scenes.map(({ slug, name }) => ({ slug, name }));
 
 const PINNED = "(min-width: 1024px) and (min-height: 700px)";
 const HOLD = 0.55; // scroll the strip rests on each scene, relative to a move
