@@ -82,6 +82,21 @@ try {
     await section.getByRole("button", { name: "Next screen", exact: true }).click();
     await section.getByRole("button", { name: "Start again", exact: true }).click();
     await section.getByText("Screen 1 of 9", { exact: true }).waitFor();
+    // Arrow keys step through screens: Left stops on the first, Right stops on the last.
+    await screens.nth(0).focus();
+    await page.keyboard.press("ArrowLeft");
+    await section.getByText("Screen 1 of 9", { exact: true }).waitFor();
+    await page.keyboard.press("ArrowRight");
+    await section.getByText("Screen 2 of 9", { exact: true }).waitFor();
+    await page.keyboard.press("End");
+    await section.getByText("Screen 9 of 9", { exact: true }).waitFor();
+    await page.keyboard.press("ArrowRight");
+    await section.getByText("Screen 9 of 9", { exact: true }).waitFor();
+    assert.match(await section.locator(".demo-phone img").getAttribute("src"), /relay-sign/, "ArrowRight does not wrap");
+    await page.keyboard.press("ArrowLeft");
+    await section.getByText("Screen 8 of 9", { exact: true }).waitFor();
+    await page.keyboard.press("Home");
+    await section.getByText("Screen 1 of 9", { exact: true }).waitFor();
     // Direct screen selection works from the keyboard, too.
     await screens.nth(7).focus();
     await page.keyboard.press("Space");

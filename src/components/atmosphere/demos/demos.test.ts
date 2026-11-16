@@ -30,6 +30,32 @@ describe("Relay walkthrough", () => {
     }
   });
 
+  it("steps with the left and right arrow keys without wrapping past the last screen", () => {
+    const source = read("src/components/atmosphere/demos/RelayWalkthrough.tsx");
+    expect(source).toMatch(/ArrowLeft: \(current\) => Math\.max\(0, current - 1\)/);
+    expect(source).toMatch(/ArrowRight: \(current\) => Math\.min\(last, current \+ 1\)/);
+    expect(source).toMatch(/event\.preventDefault\(\)/);
+    expect(source).toMatch(/input, textarea, select, \[contenteditable\]/);
+    expect(source).toMatch(/document\.addEventListener\("keydown"/);
+    expect(source).toMatch(/document\.removeEventListener\("keydown"/);
+  });
+
+  it("prefetches only the next screen after the current one loads", () => {
+    const source = read("src/components/atmosphere/demos/RelayWalkthrough.tsx");
+    expect(source).toMatch(/onLoad=\{prefetchNext\}/);
+    expect(source).toMatch(/relayScreens\[step \+ 1\]/);
+    expect(source).toMatch(/new Image\(\)/);
+    expect(source).not.toMatch(/\bfetch\(/);
+  });
+
+  it("links the homepage showcase to the inline walkthrough", () => {
+    const showcase = read("src/components/atmosphere/RelayShowcase.tsx");
+    const link = showcase.match(/<a className="text-link" href="([^"]+)">\s*Walk through the screens/);
+    expect(link?.[1]).toBe("#interactive-demos");
+    expect(showcase).not.toMatch(/\/demos\/#relay/);
+    expect(showcase).toMatch(/Ask about Sentient Relay/);
+  });
+
   it("labels Relay as in pilot", () => {
     expect(read("src/components/atmosphere/demos/RelayWalkthrough.tsx")).toMatch(/In pilot/);
     expect(read("src/components/atmosphere/InteractiveDemos.tsx")).toMatch(/In pilot/);

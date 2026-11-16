@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { relayScreens } from "./relayScreens";
 
@@ -6,13 +6,50 @@ export default function RelayWalkthrough() {
   const [step, setStep] = useState(0);
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const screen = relayScreens[step];
+  const root = useRef<HTMLDivElement>(null);
+  const last = relayScreens.length - 1;
+
+  // Left and Right step through the screens while the walkthrough is open and
+  // focus is in the demos section (or nowhere in particular). Right stops on the
+  // last screen; "Start again" stays an explicit click.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return;
+      const scope = root.current?.closest(".interactive-demos") ?? root.current;
+      const inScope = !target || target === document.body || target === document.documentElement || !!scope?.contains(target);
+      if (!inScope) return;
+      const move: Record<string, (current: number) => number> = {
+        ArrowLeft: (current) => Math.max(0, current - 1),
+        ArrowRight: (current) => Math.min(last, current + 1),
+        Home: () => 0,
+        End: () => last,
+      };
+      const next = move[event.key];
+      if (!next) return;
+      event.preventDefault();
+      setStep(next);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [last]);
+
+  // Once the current screen has loaded, warm the cache for the next one only.
+  const prefetchNext = () => {
+    const next = relayScreens[step + 1];
+    if (!next) return;
+    const image = new Image();
+    image.decoding = "async";
+    image.src = `/showcase/relay/${next.file}.webp?v=9`;
+  };
 
   return (
-    <div className="demo-relay">
+    <div className="demo-relay" ref={root}>
       <div className="demo-relay-copy">
         <h3>Sentient Relay <span className="demo-status">In pilot</span></h3>
         <p className="demo-summary">A service day, from the next visit to the customer's signature.</p>
-        <p className="demo-disclosure">Real app screens with sample data. Use the screen list or the next and previous buttons to explore.</p>
+        <p className="demo-disclosure">Real app screens with sample data. Use the screen list, the next and previous buttons, or the left and right arrow keys to explore.</p>
         <ol className="demo-screen-list" aria-label="Relay walkthrough screens">
           {relayScreens.map((item, index) => (
             <li key={item.file}>
@@ -37,7 +74,7 @@ export default function RelayWalkthrough() {
               <a href={`/showcase/relay/${screen.file}.webp`}>Open {screen.title} image</a>
             </div>
           ) : (
-            <img key={screen.file} src={`/showcase/relay/${screen.file}.webp?v=9`} width={640} height={screen.height} alt={screen.alt} loading="lazy" decoding="async" onError={() => setFailedImage(screen.file)} />
+            <img key={screen.file} src={`/showcase/relay/${screen.file}.webp?v=9`} width={640} height={screen.height} alt={screen.alt} loading="lazy" decoding="async" onLoad={prefetchNext} onError={() => setFailedImage(screen.file)} />
           )}
           <figcaption>Screen preview · sample data</figcaption>
         </figure>
