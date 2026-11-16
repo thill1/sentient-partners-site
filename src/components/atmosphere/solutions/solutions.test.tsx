@@ -14,6 +14,7 @@ import {
   relatedSolutions,
   solutionPath,
 } from "../../../content/siteNav";
+import { linksIn, textOf } from "../markupLinks";
 import ToolsPage from "../ToolsPage";
 import WebsiteCheckPage from "../tools/WebsiteCheckPage";
 import RelayPage from "./RelayPage";
@@ -24,15 +25,9 @@ import { SOLUTION_DEMOS } from "./solutionDemos";
 
 const render = (element: ReactElement) => renderToStaticMarkup(element);
 const count = (html: string, pattern: RegExp) => (html.match(pattern) ?? []).length;
-const hrefs = (html: string) => [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
-/** Visible words only: tags dropped, entities decoded. */
-const text = (html: string) =>
-  html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#x27;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, " ");
+const hrefs = (html: string) => linksIn(html).map((link) => link.href);
+/** Visible words only (see ../markupLinks). */
+const text = textOf;
 
 const BOOK_LABEL = "Book a 20-minute intro call";
 
