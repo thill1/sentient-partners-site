@@ -62,7 +62,7 @@
 .atmosphere-page main .relay-page .tool-intro h1 {
   font-size: clamp(42px, 6vw, 80px);
 }
-.atmosphere-page .tool-intro .solution-headline {
+.atmosphere-page main .tool-intro p.solution-headline {
   font-family: var(--a-serif);
   font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.25;
