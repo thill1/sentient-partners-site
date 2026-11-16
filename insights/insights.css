@@ -153,21 +153,29 @@ html.ins-menu-open .ins-book { visibility: hidden; }
 
 /* Site footer: tagline block plus the same four link columns as the main site. */
 .ins-footer { padding: clamp(40px, 6vw, 64px) var(--gutter) 44px; border-top: 1px solid var(--rule); background: var(--deep); font: 400 15px/1.5 var(--sans); color: var(--fog); }
-.ins-footer-top { display: grid; grid-template-columns: 1.3fr repeat(4, minmax(0, 1fr)); gap: 36px; max-width: 1280px; margin: 0 auto; }
+/* The contact column is never narrower than its longest line, so the email address fits on one line. */
+.ins-footer-top { display: grid; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)) minmax(max-content, 1fr); gap: 36px; max-width: 1280px; margin: 0 auto; }
 .ins-footer-tagline { margin: 0; max-width: 16ch; font: 400 clamp(1.5rem, 1.2rem + 1vw, 2rem)/1.2 var(--serif); color: var(--ivory); }
 .ins-footer-place { margin: 18px 0 0; font-size: 14px; line-height: 1.7; }
 .ins-footer-column h2 { margin: 0 0 18px; font: 500 12px/1.4 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ivory); }
 .ins-footer-column ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .ins-footer a { color: var(--body); text-decoration: none; overflow-wrap: anywhere; }
 .ins-footer a:hover { color: var(--ivory); }
+/* An email address is one word: never break it across lines. */
+.ins-footer a[href^="mailto:"] { white-space: nowrap; overflow-wrap: normal; }
 .ins-footer-bottom { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; max-width: 1280px; margin: clamp(36px, 5vw, 58px) auto 0; padding-top: 23px; border-top: 1px solid var(--rule); font-size: 13px; }
 .ins-footer-legal { display: inline-flex; gap: 18px; }
 .ins-footer-legal a { text-decoration: underline; }
 @media (max-width: 1100px) {
-  .ins-footer-top { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px 28px; }
+  .ins-footer-top { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(max-content, 1fr); gap: 36px 28px; }
   .ins-footer-brand { grid-column: 1 / -1; }
 }
-@media (max-width: 760px) { .ins-footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Two columns: Solutions beside Company and Free tools, then contact across the full width. */
+@media (max-width: 760px) {
+  .ins-footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ins-footer-column-solutions { grid-row: span 2; }
+  .ins-footer-column-contact { grid-column: 1 / -1; }
+}
 .card-meta .draft-tag { display: inline-block; margin-left: 10px; padding: 3px 8px; color: var(--gold); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; }
 
 /* Smooth cross-page transitions (home <-> Insights) where supported. */
