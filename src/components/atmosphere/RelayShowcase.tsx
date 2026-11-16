@@ -11,9 +11,9 @@ const screens = [
   ["relay-calendar", 640, 1387, "Relay calendar day view with a week strip, scheduled visits with their status and open time slots"],
   ["relay-customers", 640, 1387, "Relay customers list with search, A to Z and recent sorting, and each customer's location and phone number"],
   ["relay-customer", 640, 1387, "Relay customer profile with call and text buttons, documents, create estimate and create invoice, and a Schedule job button"],
+  ["relay-more", 640, 1387, "Relay More menu with Needs you, Documents, Help, appearance, map settings and review links"],
   ["relay-documents", 640, 1387, "Relay documents screen listing estimates and invoices with amounts and statuses such as waiting, paid and approved"],
   ["relay-sign", 640, 1432, "Relay estimate approval screen where the customer types their name, signs with a finger on the phone and agrees to the terms"],
-  ["relay-more", 640, 1387, "Relay More menu with Needs you, Documents, Help, appearance, map settings and review links"],
 ] as const;
 
 export function RelayShowcase() {

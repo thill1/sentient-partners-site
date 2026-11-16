@@ -1,0 +1,30 @@
+[
+  {
+    "width": 375,
+    "relayScreens": 9,
+    "signatureScreen": 9,
+    "voiceLines": 7,
+    "lazyChunks": true,
+    "microphoneRequests": 0,
+    "paidApiRequests": 0,
+    "browserErrors": [],
+    "accessibility": "WCAG 2.1 AA: zero violations in both demos",
+    "pdf": "HTTP 200; identical SHA-256"
+  },
+  {
+    "width": 1280,
+    "relayScreens": 9,
+    "signatureScreen": 9,
+    "voiceLines": 7,
+    "lazyChunks": true,
+    "microphoneRequests": 0,
+    "paidApiRequests": 0,
+    "browserErrors": [],
+    "accessibility": "WCAG 2.1 AA: zero violations in both demos",
+    "pdf": "HTTP 200; identical SHA-256"
+  },
+  {
+    "recovery": "Image failure offers fallback; next screen works. Chunk failure offers reload; other demo works.",
+    "motion": "Relay navigation passed with ordinary motion enabled."
+  }
+]
