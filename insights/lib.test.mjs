@@ -22,17 +22,18 @@ describe("insights publishing gate", () => {
     expect(includeDrafts({ INSIGHTS_INCLUDE_DRAFTS: "1" })).toBe(true);
     expect(includeDrafts({})).toBe(false);
   });
-  it("loads the five published issues, thirty-four LinkedIn posts, and three X posts, newest first", () => {
+  it("loads the five published issues, thirty-five LinkedIn posts, and three X posts, newest first", () => {
     const pub = loadIssues("content/insights", false);
     expect(pub.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([5, 4, 3, 2, 1]);
-    expect(pub.filter((i) => i.type === "linkedin")).toHaveLength(34);
+    expect(pub.filter((i) => i.type === "linkedin")).toHaveLength(35);
     expect(pub.filter((i) => i.type === "x")).toHaveLength(3);
-    expect(pub).toHaveLength(43);
-    expect(pub[0].slug).toBe("x-2026-11-13-thanksgiving-hours");
-    expect(pub[1].slug).toBe("x-2026-11-12-review-you-never-answered");
-    expect(pub[2].slug).toBe("linkedin-2026-11-11-policy-check");
+    expect(pub).toHaveLength(44);
+    expect(pub[0].slug).toBe("linkedin-2026-11-16-export-test");
+    expect(pub[1].slug).toBe("x-2026-11-13-thanksgiving-hours");
+    expect(pub[2].slug).toBe("x-2026-11-12-review-you-never-answered");
+    expect(pub[3].slug).toBe("linkedin-2026-11-11-policy-check");
     // Same calendar date, times unknown: stable slug tie-break (linkedin before x).
-    expect(pub.slice(3, 5).map((i) => i.slug)).toEqual([
+    expect(pub.slice(4, 6).map((i) => i.slug)).toEqual([
       "linkedin-2026-11-10-customer-words",
       "x-2026-11-10-missed-call-text-back",
     ]);
