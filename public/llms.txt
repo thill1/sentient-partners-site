@@ -28,7 +28,7 @@ Growing businesses: service businesses, trades and home services (HVAC, cleaning
 ## Pages
 
 - [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
-- [Solutions](https://sentientpartners.ai/solutions/): every solution on one page, each with its own page
+- [Solutions](https://sentientpartners.ai/solutions/)
 - [Business strategy](https://sentientpartners.ai/solutions/advisory/): a clear view of your business, a sensible roadmap and priorities, and hands-on implementation
 - [Premium websites](https://sentientpartners.ai/solutions/websites/)
 - [Search visibility](https://sentientpartners.ai/solutions/search/)

@@ -23,7 +23,7 @@ const [headlineLead, headlineEmphasis] = RELAY.headline.split(/,\s*/);
 export interface RelayShowcaseProps {
   /** h3 inside the homepage Work section; h2 on /relay/, under the page title. */
   headingLevel?: "h2" | "h3";
-  /** Adds a link to the Relay page (used on the homepage). */
+  /** Adds a link to the Relay page, labelled with its in-pilot nav label (used on the homepage). */
   showOverviewLink?: boolean;
 }
 
@@ -89,7 +89,7 @@ export function RelayShowcase({ headingLevel: Heading = "h3", showOverviewLink =
         </button>
         {showOverviewLink && (
           <a className="text-link rs-overview" href={RELAY.path}>
-            Relay overview <ArrowRight size={15} aria-hidden="true" />
+            {RELAY.navLabel} <ArrowRight size={15} aria-hidden="true" />
           </a>
         )}
       </div>
