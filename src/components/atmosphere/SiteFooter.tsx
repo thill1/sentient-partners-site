@@ -1,17 +1,63 @@
 import { ArrowUpRight } from "lucide-react";
-import { BOOKING_URL, BRAND } from "../../content/siteContent";
+import {
+  FOOTER_COLUMNS,
+  FOOTER_LEGAL_LINKS,
+  hrefOnPage,
+  type NavLink,
+} from "../../content/siteNav";
 import { openSentientChat } from "../../lib/siteActions";
 import FooterFinale from "./FooterFinale";
 import { bookIntroCall } from "./bookIntroCall";
+import "./site-nav.css";
 
 export interface SiteFooterProps {
   /** True on the homepage, where section links stay in-page ("#work" rather than "/#work"). */
   isHome: boolean;
+  /** False when the build has no published Insights (see insights/lib.mjs); hides the Insights link. */
+  insightsLive?: boolean;
 }
 
-/** The site footer: wordmark finale, tagline and place, link columns and legal links. */
-export default function SiteFooter({ isHome }: SiteFooterProps) {
-  const to = (hash: string) => (isHome ? hash : `/${hash}`);
+/** One footer entry. The link's `kind` decides whether it is a link, a new-tab link or an in-app action. */
+function FooterLink({ link, isHome }: { link: NavLink; isHome: boolean }) {
+  if (link.kind === "chat" || !link.href) {
+    return (
+      <button type="button" onClick={() => openSentientChat({ source: "Footer" })}>
+        {link.label}
+      </button>
+    );
+  }
+  if (link.kind === "book") {
+    return (
+      <a
+        href={link.href}
+        onClick={(event) => {
+          event.preventDefault();
+          bookIntroCall("Footer");
+        }}
+      >
+        {link.label}
+      </a>
+    );
+  }
+  if (link.kind === "external") {
+    return (
+      <a href={link.href} target="_blank" rel="noopener noreferrer">
+        {link.label} <ArrowUpRight size={13} aria-hidden="true" />
+      </a>
+    );
+  }
+  return <a href={hrefOnPage(link.href, isHome)}>{link.label}</a>;
+}
+
+/**
+ * The site footer: wordmark finale, tagline and place, then the link columns
+ * and legal links from the shared nav data (src/content/siteNav), which the
+ * Insights build reads too.
+ */
+export default function SiteFooter({
+  isHome,
+  insightsLive = __INSIGHTS_LIVE__,
+}: SiteFooterProps) {
   return (
     <footer className="atmosphere-footer">
       <FooterFinale />
@@ -27,42 +73,25 @@ export default function SiteFooter({ isHome }: SiteFooterProps) {
               Placer County · Greater Sacramento
             </p>
           </div>
-          <div>
-            <span>Explore</span>
-            <a href={to("#services")}>How we help</a>
-            <a href={to("#capabilities")}>Capabilities</a>
-            <a href={to("#work")}>Our work</a>
-            <a href={to("#founder")}>Our founder</a>
-            <a href={to("#process")}>Our approach</a>
-            <a href="/tools/">Tools</a>
-            {__INSIGHTS_LIVE__ && <a href="/insights/">Insights</a>}
-          </div>
-          <div>
-            <span>Let's connect</span>
-            <a href={BRAND.phoneHref}>{BRAND.phone}</a>
-            <a href={`mailto:${BRAND.email}`}>{BRAND.email}</a>
-            <a href={BRAND.linkedin} target="_blank" rel="noopener noreferrer">
-              LinkedIn <ArrowUpRight size={13} aria-hidden="true" />
-            </a>
-            <a
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                bookIntroCall("Footer");
-              }}
-            >
-              Book a 20-minute intro call
-            </a>
-            <button onClick={() => openSentientChat({ source: "Footer" })}>
-              Ask Sentient (chat or voice)
-            </button>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.id} className={`footer-column footer-column-${column.id}`}>
+              <span>{column.heading}</span>
+              {column.links
+                .filter((link) => insightsLive || !link.requiresInsights)
+                .map((link) => (
+                  <FooterLink key={link.id} link={link} isHome={isHome} />
+                ))}
+            </div>
+          ))}
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} Sentient Partners.</span>
           <span className="footer-legal">
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
+            {FOOTER_LEGAL_LINKS.map((link) => (
+              <a key={link.id} href={link.href}>
+                {link.label}
+              </a>
+            ))}
           </span>
         </div>
       </div>

@@ -1,29 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, Menu, Phone, X } from "lucide-react";
-import { BOOKING_URL, BRAND } from "../../content/siteContent";
+import { ArrowRight, Menu, X } from "lucide-react";
+import { HEADER_CTA, HEADER_ITEMS, hrefOnPage } from "../../content/siteNav";
 import { loadFabric } from "../../fabric/motion";
 import { bookIntroCall } from "./bookIntroCall";
-
-const links = [
-  ["How we help", "#services"],
-  ["Capabilities", "#capabilities"],
-  ["Our work", "#work"],
-  ["Our founder", "#founder"],
-  ["Tools", "/tools/"],
-  // Hidden when the build has no published Insights (see insights/lib.mjs).
-  ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
-];
+import MobileMenu, { MOBILE_NAVIGATION_ID } from "./MobileMenu";
+import SolutionsMenu from "./SolutionsMenu";
+import "./site-nav.css";
 
 export interface SiteHeaderProps {
   /** True on the homepage, where section links stay in-page ("#work" rather than "/#work"). */
   isHome: boolean;
+  /** False when the build has no published Insights (see insights/lib.mjs); hides the Insights link. */
+  insightsLive?: boolean;
 }
 
-/** The site header: desktop navigation, brand, booking CTA and the full-height mobile menu. */
-export default function SiteHeader({ isHome }: SiteHeaderProps) {
-  const href = (target: string) =>
-    !isHome && target.startsWith("#") ? `/${target}` : target;
+/**
+ * The site header: desktop navigation with the flat Solutions panel, brand,
+ * booking call to action and the full-height mobile menu. Every item comes
+ * from the shared nav data (src/content/siteNav), which the Insights build
+ * reads too, so the two cannot drift.
+ */
+export default function SiteHeader({
+  isHome,
+  insightsLive = __INSIGHTS_LIVE__,
+}: SiteHeaderProps) {
+  const items = HEADER_ITEMS.filter(
+    (item) => insightsLive || !item.requiresInsights,
+  );
   const [menu, setMenu] = useState(false),
     [onLight, setOnLight] = useState(false),
     [scrolled, setScrolled] = useState(false);
@@ -87,7 +91,7 @@ export default function SiteHeader({ isHome }: SiteHeaderProps) {
     });
     const focusables = () => [
       ...document.querySelectorAll<HTMLElement>(
-        ".site-header .menu-toggle, #mobile-navigation a",
+        `.site-header .menu-toggle, #${MOBILE_NAVIGATION_ID} a`,
       ),
     ];
     focusables()[1]?.focus();
@@ -122,13 +126,17 @@ export default function SiteHeader({ isHome }: SiteHeaderProps) {
     >
       <div className="header-inner">
         <nav className="desktop-nav" aria-label="Main navigation">
-          {links.map(([label, to]) => (
-            <a key={to} href={href(to)}>
-              {label}
-            </a>
-          ))}
+          {items.map((item) =>
+            item.panel === "solutions" ? (
+              <SolutionsMenu key={item.id} item={item} isHome={isHome} />
+            ) : (
+              <a key={item.id} href={hrefOnPage(item.href, isHome)}>
+                {item.label}
+              </a>
+            ),
+          )}
         </nav>
-        <a className="brand-lockup" href={href("#top")}>
+        <a className="brand-lockup" href={hrefOnPage("/#top", isHome)}>
           <img
             className="monogram-light"
             src="/atmosphere/sp-monogram-white-72.png"
@@ -147,20 +155,20 @@ export default function SiteHeader({ isHome }: SiteHeaderProps) {
         </a>
         <a
           className="header-book"
-          href={BOOKING_URL}
+          href={HEADER_CTA.href}
           onClick={(e) => {
             e.preventDefault();
             bookIntroCall("Navigation");
           }}
         >
-          Book an intro call <ArrowRight size={15} aria-hidden="true" />
+          {HEADER_CTA.label} <ArrowRight size={15} aria-hidden="true" />
         </a>
         <button
           ref={menuButton}
           className="menu-toggle"
           aria-label={menu ? "Close navigation" : "Open navigation"}
           aria-expanded={menu}
-          aria-controls="mobile-navigation"
+          aria-controls={MOBILE_NAVIGATION_ID}
           onClick={() => setMenu(!menu)}
         >
           {menu ? <X /> : <Menu />}
@@ -170,33 +178,15 @@ export default function SiteHeader({ isHome }: SiteHeaderProps) {
           containing block for fixed children, which clipped the panel. */}
       {menu &&
         createPortal(
-          <nav
-            id="mobile-navigation"
-            className="mobile-nav"
-            aria-label="Mobile navigation"
-          >
-            {links.map(([label, to]) => (
-              <a key={to} href={href(to)} onClick={() => setMenu(false)}>
-                {label}
-                <ArrowRight size={18} aria-hidden="true" />
-              </a>
-            ))}
-            <a
-              className="mobile-nav-book cta-primary"
-              href={BOOKING_URL}
-              onClick={(e) => {
-                e.preventDefault();
-                setMenu(false);
-                bookIntroCall("Mobile menu");
-              }}
-            >
-              Book a 20-minute intro call{" "}
-              <ArrowRight size={18} aria-hidden="true" />
-            </a>
-            <a className="mobile-nav-phone" href={BRAND.phoneHref}>
-              <Phone size={16} aria-hidden="true" /> {BRAND.phone}
-            </a>
-          </nav>,
+          <MobileMenu
+            isHome={isHome}
+            insightsLive={insightsLive}
+            onNavigate={() => setMenu(false)}
+            onBook={() => {
+              setMenu(false);
+              bookIntroCall("Mobile menu");
+            }}
+          />,
           document.body,
         )}
     </header>
