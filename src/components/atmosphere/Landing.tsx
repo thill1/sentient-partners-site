@@ -10,6 +10,7 @@ import {
 } from "../../lib/siteActions";
 import { GoldenGate } from "./GoldenGate";
 import { Capabilities } from "./Capabilities";
+import InteractiveDemos from "./InteractiveDemos";
 import "./atmosphere.css";
 import "./cohesion.css";
 import { useScrollReveal } from "./useScrollReveal";
@@ -419,6 +420,7 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
         <GoldenGate />
         <Outcomes />
         <Capabilities />
+        <InteractiveDemos />
         <WorkSection />
         <section id="founder" className="founder-section section-space">
           <div className="page-width founder-layout">

@@ -1,0 +1,12 @@
+/** Existing app captures with sample data. Documents leads directly to signing. */
+export const relayScreens = [
+  { file: "relay-today", title: "Today", description: "Start with the next visit, the items that need attention, and the day's timeline.", alt: "Relay Today: next visit, Needs you list and daily timeline", height: 1387 },
+  { file: "relay-jobs", title: "Jobs", description: "Browse open and completed jobs, including work that still needs a payment recorded.", alt: "Relay jobs list with open and completed tabs and a Record payment button", height: 1387 },
+  { file: "relay-job", title: "Job details", description: "Keep the address, appointment details and next step together, with call, text and map shortcuts.", alt: "Relay job details with customer address, contact shortcuts and appointment details", height: 1387 },
+  { file: "relay-calendar", title: "Calendar", description: "See scheduled visits and open time in the day view.", alt: "Relay calendar with a week strip, scheduled visits and open time slots", height: 1387 },
+  { file: "relay-customers", title: "Customers", description: "Find a customer using search, alphabetical order or recent activity.", alt: "Relay customer directory with search, sorting and contact details", height: 1387 },
+  { file: "relay-customer", title: "Customer details", description: "Open the customer record for contact details, documents, estimates, invoices and scheduling.", alt: "Relay customer profile with documents, estimate, invoice and Schedule job actions", height: 1387 },
+  { file: "relay-more", title: "More", description: "Find documents, help and device preferences from the More menu.", alt: "Relay More menu with Needs you, Documents, Help, appearance and map settings", height: 1387 },
+  { file: "relay-documents", title: "Documents", description: "Review estimates and invoices with their amounts and statuses. Next, see the customer signature screen.", alt: "Relay Documents listing sample estimates and invoices, including estimate EST-1847 waiting on the customer", height: 1387 },
+  { file: "relay-sign", title: "Signature capture", description: "The customer reviews the estimate, enters their name, adds a signature and reviews the consent terms. This is a screen preview; nothing is signed or sent here.", alt: "Relay signature capture for estimate EST-1847 with sample name, drawn signature, signing controls and consent terms", height: 1432 },
+] as const;
