@@ -22,24 +22,25 @@ describe("insights publishing gate", () => {
     expect(includeDrafts({ INSIGHTS_INCLUDE_DRAFTS: "1" })).toBe(true);
     expect(includeDrafts({})).toBe(false);
   });
-  it("loads the five published issues, thirty-five LinkedIn posts, and three X posts, newest first", () => {
+  it("loads the six published issues, thirty-five LinkedIn posts, and three X posts, newest first", () => {
     const pub = loadIssues("content/insights", false);
-    expect(pub.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([5, 4, 3, 2, 1]);
+    expect(pub.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([6, 5, 4, 3, 2, 1]);
     expect(pub.filter((i) => i.type === "linkedin")).toHaveLength(35);
     expect(pub.filter((i) => i.type === "x")).toHaveLength(3);
-    expect(pub).toHaveLength(44);
-    expect(pub[0].slug).toBe("linkedin-2026-11-16-export-test");
-    expect(pub[1].slug).toBe("x-2026-11-13-thanksgiving-hours");
-    expect(pub[2].slug).toBe("x-2026-11-12-review-you-never-answered");
-    expect(pub[3].slug).toBe("linkedin-2026-11-11-policy-check");
+    expect(pub).toHaveLength(45);
+    expect(pub[0].slug).toBe("issue-06-agents-inside-tools");
+    expect(pub[1].slug).toBe("linkedin-2026-11-16-export-test");
+    expect(pub[2].slug).toBe("x-2026-11-13-thanksgiving-hours");
+    expect(pub[3].slug).toBe("x-2026-11-12-review-you-never-answered");
+    expect(pub[4].slug).toBe("linkedin-2026-11-11-policy-check");
     // Same calendar date, times unknown: stable slug tie-break (linkedin before x).
-    expect(pub.slice(4, 6).map((i) => i.slug)).toEqual([
+    expect(pub.slice(5, 7).map((i) => i.slug)).toEqual([
       "linkedin-2026-11-10-customer-words",
       "x-2026-11-10-missed-call-text-back",
     ]);
     expect(pub.some((i) => i.sample || i.slug.startsWith("sample-"))).toBe(false);
     const all = loadIssues("content/insights", true);
-    expect(all.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([5, 4, 3, 2, 1]);
+    expect(all.filter((i) => i.type === "newsletter").map((i) => i.issue)).toEqual([6, 5, 4, 3, 2, 1]);
     expect(all.every((i) => i.date.length === 10 && i.summary)).toBe(true);
   });
   it("rejects files without required front matter", () => {
