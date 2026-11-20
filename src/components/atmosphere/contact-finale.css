@@ -345,3 +345,9 @@ body .concierge-panel input:focus-visible {
     background-image: url("/atmosphere/bridge-960.webp");
   }
 }
+/* With scripts running (the head script sets motion-ok / motion-reduce),
+   the photo waits until Contact marks the section as near. Without
+   scripts, it loads as before. */
+:root:is(.motion-ok, .motion-reduce) .contact-v2:not([data-photo]) .cf-photo {
+  background-image: none;
+}

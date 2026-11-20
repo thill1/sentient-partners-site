@@ -41,6 +41,17 @@ const firstLine = (body) =>
 
 const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
+const plainText = (body) =>
+  body
+    .replace(/^>.*$/gm, "")
+    .replace(/[#*_`>[\]()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Search snippets need a sentence or two; a punchy one-line excerpt such as
+// "Flip that." stays on the card, and the meta description uses the text.
+const MIN_DESCRIPTION = 50;
+
 export function parseIssue(raw, file = "") {
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!m) throw new Error(`Missing front matter: ${file}`);
@@ -67,6 +78,8 @@ export function parseIssue(raw, file = "") {
     type,
     title: meta.title || clip(firstLine(body), 90),
     summary,
+    description:
+      summary.length >= MIN_DESCRIPTION ? summary : clip(plainText(body), 160) || summary,
     tags: Array.isArray(meta.tags) ? meta.tags : [],
     sample: meta.sample === true || String(meta.slug).startsWith("sample-"),
     date: String(meta.date).slice(0, 10),

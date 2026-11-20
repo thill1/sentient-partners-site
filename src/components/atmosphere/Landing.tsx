@@ -273,8 +273,9 @@ function ActionDock() {
     };
   }, []);
   return (
-    <div
+    <aside
       className={`action-dock ${shown ? "is-shown" : ""}`}
+      aria-label="Quick actions"
       aria-hidden={!shown}
     >
       <a
@@ -311,7 +312,7 @@ function ActionDock() {
       >
         <Phone size={18} aria-hidden="true" />
       </a>
-    </div>
+    </aside>
   );
 }
 function WorkSection() {

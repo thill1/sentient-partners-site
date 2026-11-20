@@ -11,6 +11,27 @@ const STAGED = "(min-width: 900px) and (min-height: 640px)";
 export default function Contact({ onBook }: { onBook: () => void }) {
   const root = useRef<HTMLElement>(null);
 
+  // The finale photo sits ~10,000px down the page; fetch it only as the
+  // reader approaches instead of competing with the hero on first load.
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const show = () => {
+      el.dataset.photo = "ready";
+    };
+    if (typeof IntersectionObserver === "undefined") return show();
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        show();
+        near.disconnect();
+      },
+      { rootMargin: "1500px 0px" },
+    );
+    near.observe(el);
+    return () => near.disconnect();
+  }, []);
+
   useEffect(() => {
     const el = root.current;
     if (!el) return;

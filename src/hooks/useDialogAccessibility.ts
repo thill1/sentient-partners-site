@@ -19,6 +19,25 @@ export function useDialogAccessibility(open: boolean, close: () => void) {
         (element) =>
           !element.hasAttribute("disabled") && element.getClientRects().length,
       );
+    // Make everything outside the dialog inert, so focus cannot leave it even
+    // from inside an embedded frame (the cal.com booking iframe swallows the
+    // Tab key events the trap below relies on). Toasts stay live.
+    const inerted: HTMLElement[] = [];
+    for (let node: HTMLElement | null = ref.current; node?.parentElement; node = node.parentElement) {
+      if (node === document.body) break;
+      for (const sibling of Array.from(node.parentElement.children)) {
+        if (
+          sibling === node ||
+          !(sibling instanceof HTMLElement) ||
+          sibling.inert ||
+          sibling.matches("script, style, [role='status'], [role='alert']") ||
+          sibling.querySelector(":scope > [role='status'], :scope > [role='alert']")
+        )
+          continue;
+        sibling.inert = true;
+        inerted.push(sibling);
+      }
+    }
     const timer = window.setTimeout(() => focusable()[0]?.focus(), 0);
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -42,6 +61,10 @@ export function useDialogAccessibility(open: boolean, close: () => void) {
       clearTimeout(timer);
       document.removeEventListener("keydown", keyboard);
       document.body.style.overflow = previousOverflow;
+      // Restore the page before returning focus: an inert trigger can't take it.
+      inerted.forEach((element) => {
+        element.inert = false;
+      });
       if (trigger instanceof HTMLElement) trigger.focus();
     };
   }, [open]);
