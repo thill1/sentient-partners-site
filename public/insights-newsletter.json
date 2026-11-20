@@ -1,0 +1,4 @@
+{
+  "provider": "ghl-webhook",
+  "ghlWebhookUrl": "https://services.leadconnectorhq.com/hooks/REPLACE_WITH_GHL_INBOUND_WEBHOOK"
+}
