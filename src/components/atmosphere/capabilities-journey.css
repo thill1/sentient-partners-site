@@ -123,7 +123,8 @@
   position: relative;
   display: block;
   width: 26px;
-  height: 22px;
+  /* 24px tall so the control meets the minimum target without growing the 2px tick. */
+  height: 24px;
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .jf-ticks button::before {
@@ -372,6 +373,15 @@
   font-size: 11px;
   color: rgba(196, 203, 214, 0.65);
 }
+.jf-note a {
+  color: #e6d6b5;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.jf-note a:hover {
+  color: #f3f0e8;
+}
 
 @keyframes jf-rise {
   from {
@@ -489,10 +499,14 @@
     gap: 4px;
   }
   .jf-ticks button {
-    width: 18px;
+    width: 24px;
+  }
+  .jf-ticks button::before {
+    left: 3px;
+    right: 3px;
   }
   .jf-ticks button[aria-current="step"] {
-    width: 36px;
+    width: 42px;
   }
   .atmosphere-page .jf-moment h3 {
     font-size: 27px;
@@ -517,8 +531,12 @@
   }
   .jf-moment > *,
   .jf-detail > *,
-  .jf-sky i {
+  .jf-sky i,
+  .jf-ticks button {
     transition: none;
+  }
+  .jf-now span {
+    animation: none;
   }
 }
 

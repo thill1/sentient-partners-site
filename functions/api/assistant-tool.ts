@@ -14,7 +14,7 @@ const json = (body: unknown, status = 200) =>
 
 const sameOrigin = (request: Request): boolean => {
   const origin = request.headers.get("origin");
-  if (!origin) return true;
+  if (!origin) return false;
   try {
     return new URL(origin).host === new URL(request.url).host;
   } catch {

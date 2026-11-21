@@ -21,6 +21,7 @@
 }
 .relay-showcase h3 em { color: #e6d6b5; }
 .rs-outcome { font-size: 17px; line-height: 1.6; color: #dfe4ea; max-width: 30em; }
+.rs-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .rs-points { list-style: none; margin: 20px 0 26px; padding: 0; display: grid; gap: 10px; }
 .rs-points li { position: relative; padding-left: 22px; font-size: 15px; color: #c9d1da; }
 .rs-points li::before {

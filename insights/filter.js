@@ -1,4 +1,19 @@
 /* global document, history, location, window */
+// The phone menu is a native disclosure. Escape and a click outside close it.
+(function () {
+  var menu = document.querySelector(".ins-menu");
+  if (!menu) return;
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || !menu.open) return;
+    menu.open = false;
+    var summary = menu.querySelector("summary");
+    if (summary) summary.focus();
+  });
+  document.addEventListener("click", function (e) {
+    if (menu.open && !menu.contains(e.target)) menu.open = false;
+  });
+})();
+
 // Progressive enhancement: filter the archive in place. Without JS, the filter
 // links go to the static /insights/<filter>/ pages, which show the same list.
 (function () {

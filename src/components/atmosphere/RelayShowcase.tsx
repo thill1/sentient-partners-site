@@ -66,19 +66,24 @@ export function RelayShowcase() {
           <li>Customer records with call, text and directions</li>
           <li>Estimates and invoices tracked through to paid</li>
         </ul>
-        <button
-          type="button"
-          className="text-link"
-          onClick={() =>
-            openContactModal({
-              source: "Sentient Relay interest",
-              inquiry:
-                "I would like to learn about Sentient Relay, currently in pilot.",
-            })
-          }
-        >
-          Ask about Sentient Relay <ArrowRight size={15} aria-hidden="true" />
-        </button>
+        <div className="rs-actions">
+          <button
+            type="button"
+            className="text-link"
+            onClick={() =>
+              openContactModal({
+                source: "Sentient Relay interest",
+                inquiry:
+                  "I would like to learn about Sentient Relay, currently in pilot.",
+              })
+            }
+          >
+            Ask about Sentient Relay <ArrowRight size={15} aria-hidden="true" />
+          </button>
+          <a className="text-link" href="/demos/#relay">
+            Walk through the screens <ArrowRight size={15} aria-hidden="true" />
+          </a>
+        </div>
       </div>
       <div className="rs-gallery">
         <ul

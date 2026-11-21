@@ -1,3 +1,5 @@
+import { allowedOrigin } from "../lib/visitorConfirm";
+
 interface Env {
   LEADS_WEBHOOK_URL?: string;
 }
@@ -90,6 +92,7 @@ export const onRequestGet = async () => {
 
 export const onRequestPost = async (context: PagesFunctionContext) => {
   const { request, env } = context;
+  if (!allowedOrigin(request)) return json({ error: "Not allowed." }, { status: 403 });
 
   let body: Record<string, unknown> = {};
   try {

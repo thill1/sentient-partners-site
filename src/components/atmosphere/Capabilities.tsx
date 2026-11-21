@@ -301,6 +301,22 @@ export function Capabilities() {
     };
   }, [active]);
 
+  // Inactive scenes stay on the strip so a swipe can reveal them, but they are
+  // not the current slide. Hide them from assistive tech and mark their
+  // controls inert so Tab never lands on an off-screen demo. The scene box
+  // itself stays hittable, so the swipe still scrolls the strip.
+  useEffect(() => {
+    slides.current.forEach((el, i) => {
+      if (!el) return;
+      const hidden = i !== active;
+      el.querySelectorAll<HTMLElement>(
+        "a, button, input, textarea, select, summary, [tabindex]",
+      ).forEach((node) => {
+        node.inert = hidden;
+      });
+    });
+  }, [active]);
+
   // Deep links such as "#capabilities:websites" open that scene.
   useEffect(() => {
     const open = (slug: string) => {
@@ -368,6 +384,7 @@ export function Capabilities() {
               {scenes.map((s, i) => (
                 <li key={s.slug}>
                   <button
+                    type="button"
                     aria-label={`${s.when}: ${s.name}`}
                     aria-current={active === i ? "step" : undefined}
                     className={i < active ? "is-past" : undefined}
@@ -378,6 +395,7 @@ export function Capabilities() {
             </ol>
             <div className="jf-arrows">
               <button
+                type="button"
                 aria-label="Previous scene"
                 disabled={active === 0}
                 onClick={() => goTo(active - 1)}
@@ -385,6 +403,7 @@ export function Capabilities() {
                 <ArrowLeft size={16} />
               </button>
               <button
+                type="button"
                 aria-label="Next scene"
                 disabled={active === count - 1}
                 onClick={() => goTo(active + 1)}
@@ -407,7 +426,7 @@ export function Capabilities() {
                 data-tone={s.tone}
                 aria-roledescription="slide"
                 aria-label={`${i + 1} of ${count}: ${s.name}`}
-                aria-hidden={pinned && Math.abs(active - i) > 1 ? true : undefined}
+                aria-hidden={active !== i ? true : undefined}
                 onPointerDown={() => touched.current.add(i)}
                 onKeyDown={() => touched.current.add(i)}
               >
@@ -431,6 +450,7 @@ export function Capabilities() {
                       ))}
                     </ul>
                     <button
+                      type="button"
                       className="jf-discuss"
                       onClick={() =>
                         openContactModal({
@@ -450,7 +470,8 @@ export function Capabilities() {
         </div>
         <div className="page-width">
           <p className="jf-note">
-            Sample screens with sample data. Try any of them.
+            Sample screens with sample data. Try any of them.{" "}
+            <a href="/demos/">Open the Relay and voice demos</a>
           </p>
         </div>
       </div>

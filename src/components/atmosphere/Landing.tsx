@@ -29,6 +29,7 @@ import AiReadiness from "./tools/AiReadiness";
 import TimeBack from "./tools/TimeBack";
 import Reputation from "./tools/Reputation";
 import { RelayShowcase } from "./RelayShowcase";
+import { DemosPage } from "./demos/DemosPage";
 import PageAtmosphere from "../../fabric/PageAtmosphere";
 import { loadFabric } from "../../fabric/motion";
 import "./launch.css";
@@ -67,7 +68,7 @@ const links = [
   ...(__INSIGHTS_LIVE__ ? [["Insights", "/insights/"]] : []),
 ];
 /** Which page is showing. Section links are "#x" at home, "/#x" elsewhere. */
-export type PageName = "home" | "tools" | "missed-call" | "ai-readiness" | "time-back" | "reputation";
+export type PageName = "home" | "tools" | "missed-call" | "ai-readiness" | "time-back" | "reputation" | "demos";
 const PageContext = createContext<PageName>("home");
 const useHref = () => {
   const page = useContext(PageContext);
@@ -273,8 +274,9 @@ function ActionDock() {
     };
   }, []);
   return (
-    <div
+    <nav
       className={`action-dock ${shown ? "is-shown" : ""}`}
+      aria-label="Contact"
       aria-hidden={!shown}
     >
       <a
@@ -311,7 +313,7 @@ function ActionDock() {
       >
         <Phone size={18} aria-hidden="true" />
       </a>
-    </div>
+    </nav>
   );
 }
 function WorkSection() {
@@ -411,7 +413,7 @@ export default function Landing({ page = "home" }: { banner: BannerDisplayState;
       <Navigation />
       <main id="main-content" tabIndex={-1}>
         {!home ? (
-          page === "missed-call" ? <MissedCallCalculator /> : page === "ai-readiness" ? <AiReadiness /> : page === "time-back" ? <TimeBack /> : page === "reputation" ? <Reputation /> : <ToolsPage />
+          page === "demos" ? <DemosPage /> : page === "missed-call" ? <MissedCallCalculator /> : page === "ai-readiness" ? <AiReadiness /> : page === "time-back" ? <TimeBack /> : page === "reputation" ? <Reputation /> : <ToolsPage />
         ) : (
         <>
         {/* Flow: promise (hero) → how we help → what it looks like →
