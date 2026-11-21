@@ -368,6 +368,7 @@ export function Capabilities() {
               {scenes.map((s, i) => (
                 <li key={s.slug}>
                   <button
+                    type="button"
                     aria-label={`${s.when}: ${s.name}`}
                     aria-current={active === i ? "step" : undefined}
                     className={i < active ? "is-past" : undefined}
@@ -378,6 +379,7 @@ export function Capabilities() {
             </ol>
             <div className="jf-arrows">
               <button
+                type="button"
                 aria-label="Previous scene"
                 disabled={active === 0}
                 onClick={() => goTo(active - 1)}
@@ -385,6 +387,7 @@ export function Capabilities() {
                 <ArrowLeft size={16} />
               </button>
               <button
+                type="button"
                 aria-label="Next scene"
                 disabled={active === count - 1}
                 onClick={() => goTo(active + 1)}
@@ -431,6 +434,7 @@ export function Capabilities() {
                       ))}
                     </ul>
                     <button
+                      type="button"
                       className="jf-discuss"
                       onClick={() =>
                         openContactModal({

@@ -63,10 +63,12 @@
     <!-- Navy from the very first paint, before any stylesheet loads, so no white flash or white overscroll band. -->
     <style>html,body{background-color:#081536}</style>
 
-    <link rel="preload" as="font" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" type="font/woff2" crossorigin />
-    <link rel="preload" as="font" href="/fonts/inter-normal-400.woff2" type="font/woff2" crossorigin />
+    <!-- First screen: headline (Cormorant 500), the italic line under it (italic 500),
+         the tagline (italic 400), and UI text (Inter 400). -->
+    <link rel="preload" as="font" href="/fonts/cormorant-garamond-normal-500.woff2?v=2" type="font/woff2" crossorigin fetchpriority="high" />
+    <link rel="preload" as="font" href="/fonts/cormorant-garamond-italic-500.woff2?v=2" type="font/woff2" crossorigin />
     <link rel="preload" as="font" href="/fonts/cormorant-garamond-italic-400.woff2?v=2" type="font/woff2" crossorigin />
-    <link rel="preload" as="font" href="/fonts/inter-normal-500.woff2" type="font/woff2" crossorigin />
+    <link rel="preload" as="font" href="/fonts/inter-normal-400.woff2" type="font/woff2" crossorigin />
     <link rel="preload" as="image" href="/atmosphere/golden-gate-poster-v2.webp" imagesrcset="/atmosphere/golden-gate-poster-v2-768.webp 768w, /atmosphere/golden-gate-poster-v2.webp 1536w" imagesizes="(max-width: 850px) 160vw, 100vw" fetchpriority="high" />
     <link rel="canonical" href="https://sentientpartners.ai/" />
 
@@ -90,8 +92,13 @@
     <meta name="twitter:image" content="https://sentientpartners.ai/og-image.jpg" />
 
 <style>
+      /* Faces for the first screen. The full family stays in fonts.css, loaded with the stylesheet. */
+      @font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/cormorant-garamond-normal-500.woff2?v=2") format("woff2")}
+      @font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:500;font-display:swap;src:url("/fonts/cormorant-garamond-italic-500.woff2?v=2") format("woff2")}
+      @font-face{font-family:"Cormorant Garamond";font-style:italic;font-weight:400;font-display:swap;src:url("/fonts/cormorant-garamond-italic-400.woff2?v=2") format("woff2")}
+      @font-face{font-family:Inter;font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/inter-normal-400.woff2") format("woff2")}
       :root {
-        --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+        --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
         --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
           "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
       }
