@@ -273,8 +273,9 @@ function ActionDock() {
     };
   }, []);
   return (
-    <div
+    <nav
       className={`action-dock ${shown ? "is-shown" : ""}`}
+      aria-label="Contact"
       aria-hidden={!shown}
     >
       <a
@@ -311,7 +312,7 @@ function ActionDock() {
       >
         <Phone size={18} aria-hidden="true" />
       </a>
-    </div>
+    </nav>
   );
 }
 function WorkSection() {
