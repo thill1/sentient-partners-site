@@ -122,8 +122,9 @@
 .jf-ticks button {
   position: relative;
   display: block;
-  width: 26px;
-  height: 22px;
+  /* 24px is the WCAG 2.2 minimum target. The mark itself stays a 2px rule. */
+  width: 28px;
+  height: 24px;
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .jf-ticks button::before {
@@ -486,10 +487,11 @@
     padding-bottom: 96px;
   }
   .jf-ticks {
-    gap: 4px;
+    gap: 8px;
   }
   .jf-ticks button {
-    width: 18px;
+    width: 24px;
+    height: 24px;
   }
   .jf-ticks button[aria-current="step"] {
     width: 36px;
@@ -517,8 +519,12 @@
   }
   .jf-moment > *,
   .jf-detail > *,
-  .jf-sky i {
+  .jf-sky i,
+  .jf-ticks button {
     transition: none;
+  }
+  .jf-now span {
+    animation: none;
   }
 }
 
