@@ -40,5 +40,13 @@
     "vite": "^5.4.1",
     "vitest": "^4.0.18",
     "wrangler": "^4.71.0"
+  },
+  "overrides": {
+    "protobufjs": "7.6.6",
+    "@protobufjs/utf8": "1.1.2",
+    "ws": "8.23.0",
+    "glob": {
+      "brace-expansion": "2.1.8"
+    }
   }
 }
