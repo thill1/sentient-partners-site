@@ -1,43 +1,7 @@
 import { ArrowRight, Download } from "lucide-react";
+import { FREE_TOOLS } from "../../content/siteNav";
 import SiteCheck from "./SiteCheck";
 import "./tools.css";
-
-/**
- * Free tools for business owners. One card per live tool; add a card here
- * when a new tool ships (no placeholders).
- */
-const tools = [
-  {
-    href: "#website-check",
-    eyebrow: "Website",
-    title: "Website check",
-    copy: "A plain-English check of phones, search, speed and booking, in about 20 seconds.",
-  },
-  {
-    href: "/tools/missed-call-calculator/",
-    eyebrow: "Calls",
-    title: "Missed-call calculator",
-    copy: "What unanswered calls may cost you a month, from your own numbers.",
-  },
-  {
-    href: "/tools/ai-readiness/",
-    eyebrow: "Operations",
-    title: "AI readiness check",
-    copy: "Nine quick questions, a score out of 100 and three next steps.",
-  },
-  {
-    href: "/tools/time-back/",
-    eyebrow: "Time",
-    title: "Time-back estimator",
-    copy: "Hours a week you might get back from admin, from your own numbers.",
-  },
-  {
-    href: "/tools/reputation/",
-    eyebrow: "Reviews",
-    title: "Reputation snapshot",
-    copy: "A quick self-check of your reviews, with three next steps.",
-  },
-];
 
 /** Free downloads. Files are built by scripts/templates/build.py. */
 export const templates = [
@@ -83,6 +47,7 @@ export const templates = [
   },
 ];
 
+/** /tools/: one card per live tool (the list lives in siteNav.data.mjs), then the templates. */
 export default function ToolsPage() {
   return (
     <>
@@ -98,7 +63,7 @@ export default function ToolsPage() {
             Free, quick, and yours to keep.
           </p>
           <ul className="tools-grid">
-            {tools.map((tool) => (
+            {FREE_TOOLS.map((tool) => (
               <li key={tool.href}>
                 <a className="tool-card" href={tool.href}>
                   <span className="tool-eyebrow">{tool.eyebrow}</span>

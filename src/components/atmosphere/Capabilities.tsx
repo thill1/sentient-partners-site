@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { findSolution } from "../../content/siteNav";
 import { openContactModal } from "../../lib/siteActions";
 import { loadFabric, revealText, type Fabric } from "../../fabric/motion";
 import {
@@ -20,18 +21,39 @@ import "./capabilities-journey.css";
 type Tone = "dusk" | "night" | "day";
 
 /**
+ * A scene's words come from the shared solutions data, so the journey and the
+ * /solutions/<slug>/ page for the same capability always say the same thing.
+ */
+function sceneCopy(slug: string) {
+  const solution = findSolution(slug);
+  if (!solution) {
+    throw new Error(
+      `Capabilities: no solution with slug "${slug}". Add it to SOLUTIONS in src/content/siteNav.data.mjs.`,
+    );
+  }
+  return {
+    slug,
+    moment: solution.page.headline,
+    copy: solution.page.lede,
+    includes: solution.page.includes,
+  };
+}
+
+/**
  * One customer, one broken AC, start to finish. Each scene is a capability,
  * told as the moment it matters to her. Order follows the story, not the menu.
+ *
+ * `name` is the journey's own Title Case label ("Premium Websites"). It is
+ * kept here on purpose: the shared data uses sentence case ("Premium
+ * websites") for menus and page titles, so deriving it would change the
+ * visible copy. Capabilities.test.tsx pins each label to its solution.
  */
 const scenes = [
   {
-    slug: "search",
+    ...sceneCopy("search"),
     name: "Search Visibility",
     when: "Mon · 6:58 PM",
     tone: "dusk" as Tone,
-    moment: "Her AC quits on the hottest night of the year. She searches.",
-    copy: "Business profile care, local service pages, and sound technical foundations so you're the name she finds.",
-    includes: ["Business profile", "Service pages", "Plain-language reporting"],
     // Auto-preview: switch on two foundations so the ranking visibly moves.
     preview: [
       '.cx-checks button[aria-checked="false"]',
@@ -40,83 +62,65 @@ const scenes = [
     Demo: SearchDemo,
   },
   {
-    slug: "websites",
+    ...sceneCopy("websites"),
     name: "Premium Websites",
     when: "Mon · 7:01 PM",
     tone: "dusk" as Tone,
-    moment: "Yours is the first site that looks like someone will pick up.",
-    copy: "Thoughtful design, clear messaging, and fast pages that turn a first look into an inquiry.",
-    includes: ["Custom design", "Mobile-first", "Analytics tied to inquiries"],
     preview: [],
     Demo: WebsiteDemo,
   },
   {
-    slug: "ai-chatbots",
+    ...sceneCopy("ai-chatbots"),
     name: "AI Chat Assistants",
     when: "Mon · 7:03 PM",
     tone: "dusk" as Tone,
-    moment: "She asks a question instead of filling out a form.",
-    copy: "Trained on your services and pricing. Qualifies the inquiry and hands your team the whole story.",
-    includes: ["Website, text, social", "Lead qualification", "Human handoff"],
     preview: [".cx-replies button", ".cx-replies button"],
     Demo: ChatDemo,
   },
   {
-    slug: "voice-agents",
+    ...sceneCopy("voice-agents"),
     name: "AI Voice Agents",
     when: "Mon · 11:42 PM",
     tone: "night" as Tone,
-    moment: "Still too hot to sleep. She calls. Someone answers.",
-    copy: "After-hours and overflow calls handled in a natural voice, with urgent issues sent straight to a person.",
-    includes: ["After hours", "Safety screening", "Summary by morning"],
     preview: [".cx-play"],
     Demo: VoiceDemo,
   },
   {
-    slug: "scheduling",
+    ...sceneCopy("scheduling"),
     name: "Calendar & Scheduling",
     when: "Tue · 7:15 AM",
     tone: "day" as Tone,
-    moment: "She books a visit before your office opens.",
-    copy: "Availability, appointments, and reminders connected, so everyone knows what happens next.",
-    includes: ["Online booking", "Team calendar sync", "Text reminders"],
     preview: [".cx-times button:not([disabled])"],
     Demo: CalendarDemo,
   },
   {
-    slug: "business-apps",
+    ...sceneCopy("business-apps"),
     name: "Business Applications",
     when: "Tue · 8:30 AM",
     tone: "day" as Tone,
-    moment: "Your crew rolls out with the job, the notes, and the address.",
-    copy: "Jobs, customers, scheduling, and billing in one practical system built around how you work.",
-    includes: ["Dispatch", "Job notes and photos", "Invoices and payments"],
     preview: [".cx-advance"],
     Demo: OperationsDemo,
   },
   {
-    slug: "automation",
+    ...sceneCopy("automation"),
     name: "Workflow Automation",
     when: "Tue · 4:10 PM",
     tone: "day" as Tone,
-    moment: "The estimate goes out while the truck is still in her driveway.",
-    copy: "Handoffs between your tools run on rules you can read, with your approval where it counts.",
-    includes: ["Connects your tools", "Approval steps", "Alerts when stalled"],
     preview: [".cx-play"],
     Demo: WorkflowDemo,
   },
   {
-    slug: "reviews",
+    ...sceneCopy("reviews"),
     name: "Reputation & Reviews",
     when: "Fri · 10:20 AM",
     tone: "day" as Tone,
-    moment: "She tells the neighbors. You thank her in one tap.",
-    copy: "Ask for honest feedback, answer it with drafts you approve, and see what customers keep saying.",
-    includes: ["Review requests", "Drafted replies", "Monthly summary"],
     preview: [],
     Demo: ReviewsDemo,
   },
 ];
+
+/** Each journey label with the solution slug it belongs to, in story order. */
+export const JOURNEY_LABELS: { slug: string; name: string }[] = scenes.map(({ slug, name }) => ({ slug, name }));
 
 const PINNED = "(min-width: 1024px) and (min-height: 700px)";
 const HOLD = 0.55; // scroll the strip rests on each scene, relative to a move

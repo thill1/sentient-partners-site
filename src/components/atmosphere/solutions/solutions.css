@@ -1,0 +1,217 @@
+/* Solutions: the homepage grid, the /solutions/ hub, solution pages, /relay/.
+   Built on the navy tool-page styles in ../tools.css. */
+
+/* Homepage "Solutions at a glance". */
+.atmosphere-page .solutions-glance {
+  background: #0d1f4e;
+  color: var(--f-ivory, #f3f0e8);
+}
+.atmosphere-page .solutions-glance h2 {
+  margin: 18px 0 0;
+}
+
+/* Shared: the PDF and hub links under a set of cards. */
+.atmosphere-page .solution-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 36px;
+  margin: 36px 0 0;
+}
+.atmosphere-page main .solution-links .text-link {
+  gap: 10px;
+  font-size: 14px;
+  color: var(--f-ivory, #f3f0e8);
+  border-bottom-color: var(--f-gold, #c8b795);
+}
+
+/* /solutions/ hub. */
+.atmosphere-page .solutions-hub {
+  min-height: 100svh;
+  padding-bottom: 110px;
+}
+.atmosphere-page main .solutions-hub h1 {
+  font-size: clamp(42px, 6vw, 80px);
+  max-width: 14em;
+}
+.atmosphere-page .solutions-group {
+  margin-top: 64px;
+}
+.atmosphere-page main .solutions-hub .solutions-group h2,
+.atmosphere-page main .solution-page .solution-block h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+.atmosphere-page .solutions-group-summary {
+  max-width: 40em;
+  margin: 0;
+  color: #c9d0da;
+  line-height: 1.6;
+}
+.atmosphere-page .solutions-group .tools-grid {
+  margin-top: 24px;
+}
+
+/* Solution pages and /relay/. */
+.atmosphere-page .solution-layout {
+  display: grid;
+  gap: 48px;
+}
+.atmosphere-page main .solution-page .tool-intro h1,
+.atmosphere-page main .relay-page .tool-intro h1 {
+  font-size: clamp(42px, 6vw, 80px);
+}
+.atmosphere-page main .tool-intro p.solution-headline {
+  font-family: var(--a-serif);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.25;
+  color: var(--f-gold, #c8b795);
+  margin: 0 0 12px;
+  max-width: 26em;
+}
+.atmosphere-page .solution-page .tool-intro p:not(.eyebrow):not(.solution-headline) {
+  max-width: 40em;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* The demo keeps its paper palette (see .capabilities-section, .jf-screen). */
+.atmosphere-page .solution-demo-screen {
+  --cx-ink: #102434;
+  --cx-muted: #53646e;
+  --cx-soft: #6b7b82;
+  --cx-line: #d6dcd7;
+  --cx-paper: #fbfbf7;
+  --cx-navy: #17313f;
+  --cx-gold: #c8b795;
+  --cx-gold-deep: #8e733f;
+  --cx-sage: #6f8a76;
+  --cx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--cx-paper);
+  color: var(--cx-ink);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(243, 240, 232, 0.12);
+  box-shadow: 0 50px 90px -40px rgba(3, 8, 26, 0.85);
+  min-width: 0;
+}
+
+.atmosphere-page .solution-includes,
+.atmosphere-page .solution-steps {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.atmosphere-page .solution-includes li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 17px;
+  color: #dfe4ea;
+}
+.atmosphere-page .solution-includes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 12px;
+  height: 1px;
+  background: var(--f-gold, #c8b795);
+}
+.atmosphere-page .solution-steps {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  counter-reset: solution-step;
+}
+.atmosphere-page .solution-steps li {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 24px;
+  border: 1px solid rgba(200, 183, 149, 0.35);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  counter-increment: solution-step;
+}
+.atmosphere-page .solution-steps li::before {
+  content: "0" counter(solution-step);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--f-gold, #c8b795);
+}
+.atmosphere-page .solution-steps strong {
+  font-family: var(--a-serif);
+  font-weight: 500;
+  font-size: 28px;
+}
+.atmosphere-page .solution-steps span {
+  color: #c9d0da;
+  line-height: 1.55;
+}
+.atmosphere-page .solution-promise {
+  margin: 22px 0 0;
+  max-width: 40em;
+  color: #dfe4ea;
+  line-height: 1.6;
+}
+.atmosphere-page .solution-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.atmosphere-page .solution-actions .tool-ask {
+  min-height: 52px;
+  white-space: normal;
+}
+.atmosphere-page .solution-block .tools-grid {
+  margin-top: 20px;
+}
+
+/* "In pilot" beside the Relay name. */
+.atmosphere-page .pilot-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 12px;
+  padding: 7px 14px;
+  border: 1px solid var(--f-gold, #c8b795);
+  border-radius: 999px;
+  font: 600 12px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--f-gold, #c8b795);
+}
+/* On /relay/ the showcase heading is an h2; keep the showcase's own type. */
+.atmosphere-page main .relay-page .relay-showcase {
+  margin-top: 0;
+}
+.atmosphere-page main .relay-page .relay-showcase .rs-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(34px, 3.6vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 10px 0 18px;
+  color: #f3f0e8;
+}
+.atmosphere-page main .relay-page .relay-showcase .rs-title em {
+  color: #e6d6b5;
+}
+
+@media (max-width: 850px) {
+  .atmosphere-page .solution-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atmosphere-page .solution-layout {
+    gap: 36px;
+  }
+  .atmosphere-page .solutions-group {
+    margin-top: 48px;
+  }
+  .atmosphere-page .pilot-badge {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}

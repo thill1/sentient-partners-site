@@ -4,14 +4,19 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { marked } from "marked";
+import { escapeHtml, renderSiteFooter, renderSiteHeader } from "./chrome.mjs";
 import { BOOKING_URL, FILTERS, SITE, SOCIAL, groupOf, includeDrafts, isSocial, loadIssues } from "./lib.mjs";
 
 const OUT = process.argv[2] || "dist";
 const drafts = includeDrafts();
 const issues = loadIssues("content/insights", drafts);
 
-const esc = (s) =>
-  String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const esc = escapeHtml;
+// The shared site header and footer (same nav data as the React app). The
+// Insights links only appear when this build has issues, as in vite.config.ts.
+const siteChrome = { insightsLive: issues.length > 0, year: new Date().getFullYear() };
+const SITE_HEADER = renderSiteHeader(siteChrome);
+const SITE_FOOTER = renderSiteFooter(siteChrome);
 const longDate = (d) =>
   new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 const pad = (n) => String(n).padStart(2, "0");
@@ -51,25 +56,14 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:t
 <link rel="preload" href="/fonts/cormorant-garamond-normal-400.woff2?v=2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-normal-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>${FONTS}</style>
+<script>document.documentElement.classList.add("js")</script>
 <script type="speculationrules">{"prerender":[{"where":{"and":[{"href_matches":"/insights/*"},{"not":{"href_matches":"/insights/*.xml"}}]},"eagerness":"moderate"}],"prefetch":[{"where":{"href_matches":"/"},"eagerness":"moderate"}]}</script>
 <link rel="stylesheet" href="/insights/insights.css">
 <link rel="stylesheet" href="/insights/signup-band.css">
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="ins-header">
-  <a class="ins-brand" href="/" aria-label="Sentient Partners home">
-    <img src="/atmosphere/sp-monogram-white-72.png" alt="" width="22" height="36">
-    <span>Sentient Partners</span>
-  </a>
-  <nav class="ins-nav" aria-label="Main navigation">
-    <a href="/#capabilities">Capabilities</a>
-    <a href="/#work">Our work</a>
-    <a href="/#founder">Our founder</a>
-    <a href="/insights/">Insights</a>
-    <a class="ins-book" href="${BOOKING_URL}">Book an intro call <span aria-hidden="true">→</span></a>
-  </nav>
-</header>
+${SITE_HEADER}
 <main id="main">
 ${body}
 </main>
@@ -90,16 +84,8 @@ ${body}
     </form>
   </div>
 </section>
-<footer class="ins-footer">
-  <span>© ${new Date().getFullYear()} Sentient Partners · Auburn, California</span>
-  <nav aria-label="Footer">
-    <a href="/">Home</a>
-    ${issues.length ? '<a href="/insights/">Insights</a>' : ""}
-    <a href="mailto:hello@sentientpartners.ai">hello@sentientpartners.ai</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-  </nav>
-</footer>
+${SITE_FOOTER}
+<script src="/insights/nav.js" defer></script>
 <script src="/insights/signup.js" defer></script>
 <script src="/insights/filter.js" defer></script>
 <script src="/insights/track.js" defer></script>
@@ -118,7 +104,7 @@ function renderBody(md) {
 
 const dir = join(OUT, "insights");
 mkdirSync(dir, { recursive: true });
-for (const f of ["insights.css", "signup-band.css", "signup.js", "filter.js", "track.js"]) copyFileSync(join("insights", f), join(dir, f));
+for (const f of ["insights.css", "signup-band.css", "signup.js", "filter.js", "track.js", "nav.js"]) copyFileSync(join("insights", f), join(dir, f));
 
 const typeLabel = (i) =>
   i.type === "newsletter" ? `Newsletter · Issue ${pad(i.issue)}` : i.type === "article" ? "Article" : SOCIAL[i.type];

@@ -1,0 +1,159 @@
+/* Shared site chrome: the flat Solutions panel, the flat mobile menu and the
+   four-column footer. Selectors carry the header/menu/footer scope so they
+   hold against the older layers (atmosphere, launch, polish). */
+
+/* ——— Desktop: Solutions button and its single-level panel ——— */
+.site-header .desktop-nav {
+  align-items: center;
+}
+.site-header .solutions-menu {
+  position: relative;
+}
+.site-header .solutions-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.site-header .solutions-menu-button:hover,
+.site-header .solutions-menu-button[aria-expanded="true"] {
+  color: var(--a-gold);
+}
+.site-header .solutions-menu-button svg {
+  transition: transform 0.2s;
+}
+.site-header .solutions-menu-button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+/* The panel keeps its own navy and ivory whatever the header sits on. */
+.site-header .solutions-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -24px;
+  width: min(520px, calc(100vw - 48px));
+  padding: 22px 24px 18px;
+  border: 1px solid rgba(200, 183, 149, 0.28);
+  border-radius: 14px;
+  background: var(--f-deep, #081536);
+  color: var(--f-ivory, #f3f0e8);
+  box-shadow: 0 24px 60px -20px rgba(3, 9, 26, 0.7);
+}
+.site-header .solutions-panel[hidden] {
+  display: none;
+}
+.site-header .solutions-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-header .solutions-panel-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 24px;
+}
+.site-header .solutions-panel a {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 0;
+  font-size: 14px;
+  white-space: normal;
+  color: var(--f-ivory, #f3f0e8);
+}
+.site-header .solutions-panel a:hover {
+  color: var(--f-gold, #c8b795);
+}
+.site-header .solutions-panel ul.solutions-panel-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(200, 183, 149, 0.22);
+}
+.site-header .solutions-panel-footer a {
+  font-size: 13px;
+  color: var(--f-gold, #c8b795);
+}
+.site-header .solutions-panel-footer a:hover {
+  color: var(--f-ivory, #f3f0e8);
+}
+
+/* ——— Mobile menu: one flat list, nothing to expand ——— */
+.mobile-nav .mobile-nav-solutions {
+  padding-bottom: 14px;
+}
+.mobile-nav .mobile-nav-solutions h2 {
+  margin: 0 0 6px;
+  font: 500 12px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--f-gold, #c8b795);
+}
+.mobile-nav .mobile-nav-solutions ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+.mobile-nav .mobile-nav-solutions a {
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 8px 0;
+  border-top: 0;
+  font: 400 15px/1.3 Inter, system-ui, sans-serif;
+  color: var(--f-ivory, #f3f0e8);
+}
+.mobile-nav .mobile-nav-item {
+  font-size: clamp(24px, 6.4vw, 34px);
+  padding: 11px 0;
+}
+
+/* ——— Footer: tagline block plus four link columns ——— */
+/* The contact column is never narrower than its longest line, so the email
+   address always fits on one line (see the mailto rule below). */
+.atmosphere-page .footer-top {
+  grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)) minmax(max-content, 1fr);
+  gap: 36px;
+}
+@media (max-width: 1100px) {
+  .atmosphere-page .footer-top {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(max-content, 1fr);
+    gap: 36px 28px;
+  }
+  .atmosphere-page .footer-top > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+/* Two columns: Solutions on the left beside Company and Free tools, then the
+   contact column across the full width so the email address has room. */
+@media (max-width: 760px) {
+  .atmosphere-page .footer-top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .atmosphere-page .footer-top .footer-column-solutions {
+    grid-row: span 2;
+  }
+  .atmosphere-page .footer-top .footer-column-contact {
+    grid-column: 1 / -1;
+  }
+}
+.atmosphere-page .footer-top .footer-column a,
+.atmosphere-page .footer-top .footer-column button {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+/* An email address is one word: never break it across lines. */
+.atmosphere-page .footer-top .footer-column a[href^="mailto:"] {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}

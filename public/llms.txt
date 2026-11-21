@@ -28,6 +28,20 @@ Growing businesses: service businesses, trades and home services (HVAC, cleaning
 ## Pages
 
 - [Home](https://sentientpartners.ai/): capabilities, interactive demos, founder, approach and contact
+- [Solutions](https://sentientpartners.ai/solutions/)
+- [Business strategy](https://sentientpartners.ai/solutions/advisory/): a clear view of your business, a sensible roadmap and priorities, and hands-on implementation
+- [Premium websites](https://sentientpartners.ai/solutions/websites/)
+- [Search visibility](https://sentientpartners.ai/solutions/search/)
+- [AI chat assistants](https://sentientpartners.ai/solutions/ai-chatbots/)
+- [AI voice agents](https://sentientpartners.ai/solutions/voice-agents/)
+- [Calendar and scheduling](https://sentientpartners.ai/solutions/scheduling/)
+- [Reputation and reviews](https://sentientpartners.ai/solutions/reviews/)
+- [Business applications](https://sentientpartners.ai/solutions/business-apps/)
+- [Workflow automation](https://sentientpartners.ai/solutions/automation/)
+- [Sentient Relay (in pilot)](https://sentientpartners.ai/relay/): schedule the visit, write the estimate, get it signed and record the payment, from the field or the office
+- [Capabilities overview (PDF)](https://sentientpartners.ai/capabilities.pdf)
+- [Free tools](https://sentientpartners.ai/tools/): website check, missed-call calculator, AI readiness check, time-back estimator, reputation snapshot and free templates
+- [Website check](https://sentientpartners.ai/tools/website-check/): a plain-English check of phones, search, speed and booking
 - [Insights](https://sentientpartners.ai/insights/): a practical newsletter and articles for owners of growing businesses, every other week
 - [Privacy](https://sentientpartners.ai/privacy)
 - [Terms](https://sentientpartners.ai/terms)

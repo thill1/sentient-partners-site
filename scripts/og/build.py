@@ -68,6 +68,12 @@ def eyebrow_for(path, page_html):
         return "Free tool"
     if path == "/tools/":
         return "Free tools and templates"
+    if path == "/solutions/":
+        return "Solutions"
+    if path.startswith("/solutions/"):
+        return "Solution"
+    if path == "/relay/":
+        return "In pilot"
     if path.startswith("/insights/"):
         m = re.search(r'class="(?:kicker|eyebrow)[^"]*"[^>]*>([^<]+)<', page_html)
         return html.unescape(m.group(1)).strip() if m else "Insights"
